@@ -100,12 +100,72 @@ def test_func_with_own_union_type():
 def test_decorated_class_method():
 
     class A:
-        @match_typing(is_class_function=True)
+        @match_typing
         def func_a(self, a: int):
+            return True
+
+        @staticmethod
+        @match_typing
+        def func_b(b: str):
+            return True
+
+        @classmethod
+        @match_typing
+        def func_c(cls, c: str):
             return True
 
     a = A()
     assert a.func_a(2) is True
+    assert a.func_b('test success') is True
+    assert A.func_c('test success') is True
+
+
+def test_use_different_exception():
+
+    @match_typing(excep_raise=TypeError)
+    def func_a(a: str):
+        return True
+
+    @match_typing(excep_raise=ValueError)
+    def func_b(a: str):
+        return True
+
+    with pytest.raises(TypeError):
+        func_a(12)
+
+    with pytest.raises(ValueError):
+        func_b(22)
+
+
+def test_use_own_exception():
+
+    class MyException(Exception):
+        pass
+
+    @match_typing(excep_raise=MyException)
+    def func_a(a: str):
+        return True
+
+    with pytest.raises(MyException):
+        func_a(12)
+
+
+def test_use_str_repr_as_type():
+
+    class A:
+        @match_typing
+        def func_a(self, a: 'A'):
+            return True
+
+    class Foo:
+        pass
+
+    with pytest.raises(TypeMisMatch):
+        b = A()
+        b.func_a(Foo())
+
+    b = A()
+    assert b.func_a(A()) is True
 
 
 if __name__ == '__main__':
