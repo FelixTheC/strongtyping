@@ -108,5 +108,35 @@ def test_decorated_class_method():
     assert a.func_a(2) is True
 
 
+def test_use_different_exception():
+
+    @match_typing(excep_raise=TypeError)
+    def func_a(a: str):
+        return True
+
+    @match_typing(excep_raise=ValueError)
+    def func_b(a: str):
+        return True
+
+    with pytest.raises(TypeError):
+        func_a(12)
+
+    with pytest.raises(ValueError):
+        func_b(22)
+
+
+def test_use_own_exception():
+
+    class MyException(Exception):
+        pass
+
+    @match_typing(excep_raise=MyException)
+    def func_a(a: str):
+        return True
+
+    with pytest.raises(MyException):
+        func_a(12)
+
+
 if __name__ == '__main__':
     pytest.main(['-vv', '-s'])

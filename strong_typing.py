@@ -20,8 +20,8 @@ def check_type(argument, type_of):
     if type_of is not None:
         if isinstance(type_of, typing._GenericAlias):
             if type_of._name is not None:
-                check_result = isinstance(argument, type_of.__origin__) and\
-                               all([check_type(arg, typ) for arg, typ in zip_longest(argument, type_of.__args__)]) and\
+                check_result = isinstance(argument, type_of.__origin__) and \
+                               all([check_type(arg, typ) for arg, typ in zip_longest(argument, type_of.__args__)]) and \
                                len(argument) == len(type_of.__args__)
             else:
                 check_result = isinstance(argument, type_of.__args__)
@@ -30,8 +30,7 @@ def check_type(argument, type_of):
     return check_result
 
 
-def match_typing(_func=None, *, is_class_function: bool = False):
-
+def match_typing(_func=None, *, is_class_function: bool = False, excep_raise: Exception = TypeMisMatch):
     def wrapper(func):
         @functools.wraps(func)
         def inner(*args, **kwargs):
@@ -46,7 +45,11 @@ def match_typing(_func=None, *, is_class_function: bool = False):
                 return func(*args, **kwargs)
             else:
                 params = [f'{key}: {val}' for key, val in parameter_types.items() if key != 'return']
-                raise TypeMisMatch(message=f'Parameters must have following type: {";".join(params)}')
+                msg = f'Parameters must have following type: {";".join(params)}'
+                try:
+                    raise excep_raise(message=msg)
+                except TypeError:
+                    raise excep_raise
 
         return inner
 
