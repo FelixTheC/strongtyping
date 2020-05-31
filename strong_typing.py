@@ -32,11 +32,13 @@ def check_type(argument, type_of):
     return check_result
 
 
-def match_typing(_func=None, *, is_class_function: bool = False, excep_raise: Exception = TypeMisMatch):
+def match_typing(_func=None, *, excep_raise: Exception = TypeMisMatch):
 
     def wrapper(func):
         @functools.wraps(func)
         def inner(*args, **kwargs):
+            is_class_function = hasattr(args[0], '__weakref__') if len(args) > 0 else False
+            print(is_class_function)
             self, args = (args[0], args[1:]) if is_class_function else (None, args)
             parameter_types = func.__annotations__
 
