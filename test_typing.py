@@ -100,12 +100,24 @@ def test_func_with_own_union_type():
 def test_decorated_class_method():
 
     class A:
-        @match_typing(is_class_function=True)
+        @match_typing
         def func_a(self, a: int):
+            return True
+
+        @staticmethod
+        @match_typing
+        def func_b(b: str):
+            return True
+
+        @classmethod
+        @match_typing
+        def func_c(cls, c: str):
             return True
 
     a = A()
     assert a.func_a(2) is True
+    assert a.func_b('test success') is True
+    assert A.func_c('test success') is True
 
 
 def test_use_different_exception():
@@ -141,7 +153,7 @@ def test_use_own_exception():
 def test_use_str_repr_as_type():
 
     class A:
-        @match_typing(is_class_function=True)
+        @match_typing
         def func_a(self, a: 'A'):
             return True
 
