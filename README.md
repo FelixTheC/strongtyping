@@ -26,7 +26,7 @@ as class method decorator
 ```
 class Foo:
     ...
-    @match_typing(is_class_function=True)
+    @match_typing
     def foo_bar(self, a: int):
         ...
 ```
