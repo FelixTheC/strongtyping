@@ -138,5 +138,23 @@ def test_use_own_exception():
         func_a(12)
 
 
+def test_use_str_repr_as_type():
+
+    class A:
+        @match_typing(is_class_function=True)
+        def func_a(self, a: 'A'):
+            return True
+
+    class Foo:
+        pass
+
+    with pytest.raises(TypeMisMatch):
+        b = A()
+        b.func_a(Foo())
+
+    b = A()
+    assert b.func_a(A()) is True
+
+
 if __name__ == '__main__':
     pytest.main(['-vv', '-s'])

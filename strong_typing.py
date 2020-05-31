@@ -25,12 +25,15 @@ def check_type(argument, type_of):
                                len(argument) == len(type_of.__args__)
             else:
                 check_result = isinstance(argument, type_of.__args__)
+        elif isinstance(type_of, str):
+            check_result = argument.__class__.__name__ == type_of
         else:
             check_result = isinstance(argument, type_of)
     return check_result
 
 
 def match_typing(_func=None, *, is_class_function: bool = False, excep_raise: Exception = TypeMisMatch):
+
     def wrapper(func):
         @functools.wraps(func)
         def inner(*args, **kwargs):
