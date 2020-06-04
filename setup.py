@@ -27,7 +27,7 @@ setup(
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.7",
     ],
-    scripts=['strong_typing.py'],
+    packages=['strongtyping'],
     include_package_data=True,
     install_requires=[
         'attrs',
