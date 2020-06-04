@@ -38,7 +38,6 @@ def match_typing(_func=None, *, excep_raise: Exception = TypeMisMatch):
         @functools.wraps(func)
         def inner(*args, **kwargs):
             is_class_function = hasattr(args[0], '__weakref__') if len(args) > 0 else False
-            print(is_class_function)
             self, args = (args[0], args[1:]) if is_class_function else (None, args)
             parameter_types = func.__annotations__
 
