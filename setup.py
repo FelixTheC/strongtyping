@@ -13,7 +13,7 @@ HERE = pathlib.Path(__file__).parent
 # The text of the README file
 README = (HERE / "README.md").read_text()
 setup(
-    name="strong-typing",
+    name="strong_typing_ftc",
     version="1.1.0",
     description="Decorator which checks whether the function is called with the correct type of parameters",
     long_description=README,
