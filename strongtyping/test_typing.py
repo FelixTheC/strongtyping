@@ -8,7 +8,7 @@ from typing import Union, Tuple
 
 import pytest
 
-from strong_typing import match_typing, TypeMisMatch
+from strongtyping.strong_typing import match_typing, TypeMisMatch
 
 
 def test_func_without_typing():
