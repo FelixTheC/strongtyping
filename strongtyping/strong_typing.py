@@ -8,6 +8,8 @@ import functools
 from itertools import zip_longest
 import typing
 
+from strongtyping.cached_dict import CachedDict
+
 
 class TypeMisMatch(AttributeError):
     def __init__(self, message):
@@ -34,17 +36,27 @@ def check_type(argument, type_of):
 
 def match_typing(_func=None, *, excep_raise: Exception = TypeMisMatch):
 
+    cached_dict = CachedDict()
+
     def wrapper(func):
         @functools.wraps(func)
         def inner(*args, **kwargs):
+            # check if func with args and kwargs was checked once before with positive result
+            cached_key = f'{func}{args.__repr__()}{kwargs.__repr__()}'
+            if cached_key in cached_dict:
+                if cached_dict[cached_key]:
+                    return func(*args, **kwargs)
+
+            # check if a class method is decorated or a 'normal' function
             is_class_function = hasattr(args[0], '__weakref__') if len(args) > 0 else False
             self, args = (args[0], args[1:]) if is_class_function else (None, args)
-            parameter_types = func.__annotations__
 
-            check_kwargs = all([check_type(val, parameter_types.get(key, None)) for key, val in kwargs.items()])
+            parameter_types = func.__annotations__
             check_args = all([check_type(arg, typ) for arg, typ in zip(args, parameter_types.values())])
+            check_kwargs = all([check_type(val, parameter_types.get(key, None)) for key, val in kwargs.items()])
 
             if check_kwargs and check_args:
+                cached_dict[cached_key] = True
                 args = [self, *args] if is_class_function else args
                 return func(*args, **kwargs)
             else:
