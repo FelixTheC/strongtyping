@@ -4,6 +4,7 @@
 @created: 30.04.20
 @author: felix
 """
+from typing import List
 from typing import Union, Tuple
 
 import pytest
@@ -199,6 +200,45 @@ def test_second_pos_arg_hinted():
 
     with pytest.raises(TypeMisMatch):
         assert func_b("1", "2") == "1, 2"
+
+
+def test_with_lists():
+
+    @match_typing
+    def func_b(a, b: List):
+        return f"{len(a)}, {len(b)}"
+
+    assert func_b([1, 2], ['a', 'b', 'c']) == '2, 3'
+
+    with pytest.raises(TypeMisMatch):
+        func_b([1, 2], ('a', 'b', 'c')) == '2, 3'
+
+    @match_typing
+    def func_c(a: list, b: List[str]):
+        return f"{len(a)}, {len(b)}"
+
+    assert func_c([1, 2], ['a', 'b', 'c']) == '2, 3'
+
+    with pytest.raises(TypeMisMatch):
+        func_c([1, 2], ('a', 'b', 'c')) == '2, 3'
+
+    with pytest.raises(TypeMisMatch):
+        func_c((1, 2), ['a', 'b', 'c']) == '2, 3'
+
+    with pytest.raises(TypeMisMatch):
+        func_c([1, 2], [1, 2, 3]) == '2, 3'
+
+    @match_typing
+    def func_c(a: list, b: List[int]):
+        return f"{len(a)}, {len(b)}"
+
+    assert func_c([1, 2], [1, 2, 3]) == '2, 3'
+
+    @match_typing
+    def func_d(a: list, b: Union[List[int], List[str]]):
+        return f"{len(a)}, {len(b)}"
+
+    assert func_d([1, 2], [1, 2, '3', '4']) == '2, 4'
 
 
 if __name__ == '__main__':
