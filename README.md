@@ -50,3 +50,7 @@ class Foo:
 
 ### License
 - This project is licensed under the MIT License - see the LICENSE.md file for details
+
+### Special thanks
+- Thanks to Ruud van der Ham for helping me improve my code
+- And all how gave me Feedback in the Pythonista Cafe
