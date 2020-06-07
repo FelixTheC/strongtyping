@@ -6,13 +6,10 @@
 """
 import functools
 import inspect
-import sys
 from itertools import zip_longest
 import typing
 
 from strongtyping.cached_set import CachedSet
-
-memory_size = 1000
 
 
 class TypeMisMatch(AttributeError):
@@ -79,8 +76,6 @@ def match_typing(_func=None, *, excep_raise: Exception = TypeMisMatch):
             check_kwargs = all([check_type(val, parameter_types.get(key)) for key, val in kwargs.items()])
 
             if check_kwargs and check_args:
-                if sys.getsizeof(cached_set) > memory_size:
-                    cached_set.clear()
                 cached_set.add(cached_key)
                 args = [args[0], *func_args] if is_class_function else args
                 return func(*args, **kwargs)
