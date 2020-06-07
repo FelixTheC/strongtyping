@@ -44,7 +44,7 @@ def test_func_with_multiple_typing_param():
     def func_a(a: str, b: int, c: list):
         return True
 
-    assert func_a('1', 2, [i for i in range(5)]) is True
+    assert func_a('1', 2, [i for i in range(5)])
 
 
 def test_func_with_union_typing_param():
@@ -94,7 +94,23 @@ def test_func_with_own_union_type():
     def func_a(a: MyType):
         return True
 
-    assert func_a(a=('Lumos', [1, 2, 3], A())) is True
+    assert func_a(a=('Lumos', [1, 2, 3], A()))
+
+
+def test_func_with_own_union_type():
+    class A:
+        pass
+
+    class B:
+        pass
+
+    MyType = Tuple[Union[str, int], Union[list, tuple], Union[A, B]]
+
+    @match_typing
+    def func_a(a: MyType):
+        return True
+
+    assert func_a(a=('Lumos', [1, 2, 3], A()))
 
 
 def test_decorated_class_method():
@@ -116,8 +132,8 @@ def test_decorated_class_method():
 
     a = A()
     assert a.func_a(2) is True
-    assert a.func_b('test success') is True
-    assert A.func_c('test success') is True
+    assert a.func_b('test success')
+    assert A.func_c('test success')
 
 
 def test_use_different_exception():
@@ -165,7 +181,24 @@ def test_use_str_repr_as_type():
         b.func_a(Foo())
 
     b = A()
-    assert b.func_a(A()) is True
+    assert b.func_a(A())
+
+
+def test_second_pos_arg_hinted():
+
+    @match_typing
+    def func_b(a, b: int):
+        return f"{a}, {b}"
+
+    assert func_b(1, 2) == "1, 2"
+
+    assert func_b("1", 2) == "1, 2"  # shouldn't raise a TypeMisMatch
+
+    with pytest.raises(TypeMisMatch):
+        assert func_b(1, "2") == "1, 2"  # Should raise a TypeMisMatch
+
+    with pytest.raises(TypeMisMatch):
+        assert func_b("1", "2") == "1, 2"
 
 
 if __name__ == '__main__':
