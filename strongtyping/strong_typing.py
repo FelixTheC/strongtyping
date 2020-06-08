@@ -9,7 +9,7 @@ import inspect
 from itertools import zip_longest
 import typing
 
-from strongtyping.cached_set import CachedSet
+from cached_set import CachedSet
 
 
 class TypeMisMatch(AttributeError):
