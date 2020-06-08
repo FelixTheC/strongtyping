@@ -34,7 +34,6 @@ def get_fillvalue(typ_to_check: any, return_val: any) -> typing.Union[str, int, 
 
 def get_origins(typ_to_check: any) -> tuple:
     origin = typ_to_check.__origin__ if typ_to_check.__origin__ is not None else typ_to_check.__orig_bases__
-    print(origin)
     return origin, origin._name if hasattr(origin, '_name') else ''
 
 

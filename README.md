@@ -31,7 +31,8 @@ class Foo:
         ...
 ```
 
-
+### Tested for Versions
+- 3.6, 3.7, 3.8
 ### Prerequisites
 - pytest
 
