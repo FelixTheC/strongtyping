@@ -16,7 +16,7 @@ HERE = pathlib.Path(__file__).parent
 README = (HERE / "README.md").read_text()
 setup(
     name="strongtyping",
-    version="1.1.5",
+    version="1.1.6",
     description="Decorator which checks whether the function is called with the correct type of parameters",
     long_description=README,
     long_description_content_type="text/markdown",
@@ -28,10 +28,7 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3",
     ],
-    packages=find_packages(),
+    packages=find_packages(exclude=['test_*']),
     python_requires='>=3.6',
     include_package_data=True,
-    install_requires=[
-        'pytest',
-    ],
 )
