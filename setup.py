@@ -5,6 +5,8 @@
 @author: felix
 """
 import pathlib
+
+from setuptools import find_packages
 from setuptools import setup
 
 # The directory containing this file
@@ -25,21 +27,11 @@ setup(
     classifiers=[
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8",
     ],
-    packages=['strongtyping'],
+    packages=find_packages(),
+    python_requires='>=3.6',
     include_package_data=True,
     install_requires=[
-        'attrs',
-        'more-itertools',
-        'packaging',
-        'pluggy',
-        'py',
-        'pyparsing',
         'pytest',
-        'six',
-        'wcwidth'
     ],
 )
