@@ -30,6 +30,33 @@ class Foo:
     def foo_bar(self, a: int):
         ...
 ```
+You can also use a mix of typed and untyped parameters but then only the typed parameters are check on runtime
+```
+@match_typing
+def foo_bar(with_type_a: str, without_type_a, with_type_b: list, without_type_b):
+    ...
+
+# no exception
+foo_bar('hello', 'world', [1, 2, 3], ('a', 'b'))
+
+# will raise an exception
+foo_bar(123, 'world', [1, 2, 3], ('a', 'b'))
+```
+
+It is also possibile to add you own exception
+```
+@match_typing(excep_raise=SomeException)
+def foo_bar(with_type_a: str, without_type_a, with_type_b: list, without_type_b):
+    ...
+```
+
+And last but not least you can also enable internal cache with cache_size = 1
+```
+@match_typing(cache_size=1)
+def foo_bar(a: tuple, b: MyClass):
+    ...
+```
+
 
 ### Tested for Versions
 - 3.6, 3.7, 3.8
