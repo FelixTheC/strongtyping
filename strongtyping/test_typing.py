@@ -9,6 +9,7 @@ from typing import Any
 from typing import Dict
 from typing import List
 from typing import Optional
+from typing import Set
 from typing import Union, Tuple
 
 import pytest
@@ -239,7 +240,7 @@ def test_with_lists():
     assert func_c([1, 2], [1, 2, 3]) == '2, 3'
 
     @match_typing
-    def func_d(a: list, b: Union[List[int], List[str]]):
+    def func_d(a: list, b: List[Union[int, str]]):
         return f"{len(a)}, {len(b)}"
 
     assert func_d([1, 2], [1, 2, '3', '4']) == '2, 4'
@@ -308,12 +309,30 @@ def test_with_dict_2():
     def func_b(a: Dict[str, int], b: Dict[Tuple[Tuple[Tuple[str, str], str], str], int]):
         return True
 
+    @match_typing
+    def func_c(a: Dict[Union[str, int], int]):
+        return True
+
     assert func_b({'a': 1}, {((('fbar', 'fbar'), 'foo'), 'bar'): 2020})
+    assert func_c({'b': 2, 34: 313})
 
     with pytest.raises(TypeMisMatch):
         assert func_b({'a': 1}, {((('fbar', 1), 'foo'), 'bar'): 2020})
 
+    with pytest.raises(TypeMisMatch):
+        assert func_c({'b': 2, 34: 'foo'})
+
+
+def test_with_set():
+    @match_typing
+    def func_a(a: Set[Union[str, int]], b: Set[int]):
+        return True
+
+    assert func_a({'A', 2, 'b', 4, 'c'}, {1, 2, 3, 4})
+
+    with pytest.raises(TypeMisMatch):
+        func_a({'A', 2, 'b', 4, 'c'}, {'A', 2, 'b', 4, 'c'})
+
 
 if __name__ == '__main__':
-
     pytest.main(['-vv', '-s'])

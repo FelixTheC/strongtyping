@@ -55,6 +55,11 @@ def check_typing_dict(arg: typing.Any, possible_types: tuple):
     return result_key and result_val
 
 
+def checking_typing_set(arg: typing.Any, possible_types: tuple):
+    pssble_type = possible_types[0]
+    return all(check_type(argument, pssble_type) for argument in arg)
+
+
 def check_type(argument, type_of):
     check_result = True
     if type_of is not None:
@@ -68,6 +73,8 @@ def check_type(argument, type_of):
 
                 if 'dict' in origin_name.lower():
                     return check_typing_dict(argument, possible_types)
+                if 'set' in origin_name.lower():
+                    return checking_typing_set(argument, possible_types)
 
                 if possible_types and origin_name != 'Union':
                     fillvalue = get_fillvalue(type_of, possible_types[0])
@@ -79,7 +86,7 @@ def check_type(argument, type_of):
                     try:
                         check_result = isinstance(argument, possible_types)
                     except TypeError:
-                        all(check_type(argument, typ) for typ in possible_types)
+                        check_result = all(check_type(argument, typ) for typ in possible_types)
                 else:
                     possible_type = origin[0] if isinstance(origin, (list, tuple)) else origin
                     check_result = isinstance(argument, possible_type)
