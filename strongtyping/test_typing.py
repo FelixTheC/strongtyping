@@ -4,6 +4,8 @@
 @created: 30.04.20
 @author: felix
 """
+from datetime import datetime
+from typing import Any
 from typing import List
 from typing import Union, Tuple
 
@@ -239,6 +241,28 @@ def test_with_lists():
         return f"{len(a)}, {len(b)}"
 
     assert func_d([1, 2], [1, 2, '3', '4']) == '2, 4'
+
+
+def test_lists_whith_unions():
+
+    @match_typing
+    def func_e(a: List[Union[str, int]], b: List[Union[str, int, tuple]]):
+        return f'{len(a)}-{len(b)}'
+
+    assert func_e([1, '2', 3, '4'], [5, ('a', 'b'), '10'])
+
+    with pytest.raises(TypeMisMatch):
+        func_e([5, ('a', 'b'), '10'], [1, '2', 3, datetime.date])
+
+
+def test_any():
+    @match_typing
+    def func_a(a: Any, b: any):
+        return f'{a}-{b}'
+
+    assert func_a(2, '2') == '2-2'
+    assert func_a([], ()) == '[]-()'
+    assert func_a(datetime, set())
 
 
 if __name__ == '__main__':

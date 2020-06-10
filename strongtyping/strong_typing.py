@@ -33,24 +33,30 @@ def get_fillvalue(typ_to_check: any, return_val: any) -> typing.Union[str, int, 
 
 
 def get_origins(typ_to_check: any) -> tuple:
-    origin = typ_to_check.__origin__ if typ_to_check.__origin__ is not None else typ_to_check.__orig_bases__
-    return origin, origin._name if hasattr(origin, '_name') else ''
+    origin = None
+    if hasattr(typ_to_check, '__origin__') or hasattr(typ_to_check, '__orig_bases__'):
+        origin = typ_to_check.__origin__ if typ_to_check.__origin__ is not None else typ_to_check.__orig_bases__
+    return origin, origin._name if hasattr(origin, '_name') else\
+        typ_to_check._name if hasattr(typ_to_check, '_name') else f'{typ_to_check}'
 
 
 def check_type(argument, type_of):
     check_result = True
     if type_of is not None:
+        origin, origin_name = get_origins(type_of)
+
+        if 'any' in origin_name.lower():
+            return check_result
+
         if isinstance(type_of, typing_base_class):
             if hasattr(type_of, '__origin__'):
                 possible_types = get_possible_types(type_of)
-                origin, origin_name = get_origins(type_of)
-
                 if possible_types and origin_name != 'Union':
                     fillvalue = get_fillvalue(type_of, possible_types[0])
                     check_result = isinstance(argument, origin) and all(check_type(arg, typ) for arg, typ in
                                                                         zip_longest(argument, possible_types,
                                                                                     fillvalue=fillvalue)) and (
-                                               len(argument) == len(type_of.__args__) or (isinstance(argument, list)))
+                                           len(argument) == len(type_of.__args__) or (isinstance(argument, list)))
                 elif origin_name == 'Union':
                     try:
                         check_result = isinstance(argument, possible_types)
