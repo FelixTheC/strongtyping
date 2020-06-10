@@ -40,17 +40,35 @@ def get_origins(typ_to_check: any) -> tuple:
         typ_to_check._name if hasattr(typ_to_check, '_name') else f'{typ_to_check}'
 
 
+def check_typing_dict(arg: typing.Any, possible_types: tuple):
+    if not isinstance(arg, dict):
+        return False
+    key, val = possible_types
+    if hasattr(key, '__origin__'):
+        result_key = all(check_type(a, key) for a in arg.keys())
+    else:
+        result_key = all(isinstance(k, key) for k in arg.keys())
+    if hasattr(val, '__origin__'):
+        result_val = all(check_type(a, val) for a in arg.values())
+    else:
+        result_val = all(isinstance(v, val) for v in arg.values())
+    return result_key and result_val
+
+
 def check_type(argument, type_of):
     check_result = True
     if type_of is not None:
         origin, origin_name = get_origins(type_of)
-
         if 'any' in origin_name.lower():
             return check_result
 
         if isinstance(type_of, typing_base_class):
             if hasattr(type_of, '__origin__'):
                 possible_types = get_possible_types(type_of)
+
+                if 'dict' in origin_name.lower():
+                    return check_typing_dict(argument, possible_types)
+
                 if possible_types and origin_name != 'Union':
                     fillvalue = get_fillvalue(type_of, possible_types[0])
                     check_result = isinstance(argument, origin) and all(check_type(arg, typ) for arg, typ in

@@ -6,7 +6,9 @@
 """
 from datetime import datetime
 from typing import Any
+from typing import Dict
 from typing import List
+from typing import Optional
 from typing import Union, Tuple
 
 import pytest
@@ -243,7 +245,7 @@ def test_with_lists():
     assert func_d([1, 2], [1, 2, '3', '4']) == '2, 4'
 
 
-def test_lists_whith_unions():
+def test_lists_with_unions():
 
     @match_typing
     def func_e(a: List[Union[str, int]], b: List[Union[str, int, tuple]]):
@@ -255,7 +257,7 @@ def test_lists_whith_unions():
         func_e([5, ('a', 'b'), '10'], [1, '2', 3, datetime.date])
 
 
-def test_any():
+def test_with_any():
     @match_typing
     def func_a(a: Any, b: any):
         return f'{a}-{b}'
@@ -265,5 +267,53 @@ def test_any():
     assert func_a(datetime, set())
 
 
+def test_with_optional():
+
+    @match_typing
+    def func_a(a: Optional[str], b: Optional[int]):
+        return f'{a}-{b}'
+
+    assert func_a(None, None) == 'None-None'
+    assert func_a('2', 1) == '2-1'
+
+    with pytest.raises(TypeMisMatch):
+        func_a(1, '2')
+
+
+def test_with_dict():
+
+    @match_typing
+    def func_a(a: Dict[str, int], b: Dict[Tuple[str, str], int]):
+        return f'{a}-{b}'
+
+    assert func_a({'a': 5, 'b': 2},
+                  {('hello', 'world'): 10,
+                   ('foo', 'bar'): 6}) == "{'a': 5, 'b': 2}-{('hello', 'world'): 10, ('foo', 'bar'): 6}"
+
+    with pytest.raises(TypeMisMatch):
+        func_a({'a': 5, 'b': 2}, {'helloworld': 10, 'foobar': 6})
+
+    with pytest.raises(TypeMisMatch):
+        func_a({'a': 5, 'b': 2}, {('hello', 'world'): '2', ('foo', 'bar'): '9'})
+
+    with pytest.raises(TypeMisMatch):
+        func_a({'a': 5, 'b': '2'}, {('hello', 'world'): 12, ('foo', 'bar'): 19})
+
+    with pytest.raises(TypeMisMatch):
+        func_a({'a': 5, 'b': 2}, {('hello', 'world'): 12, ('foo', 'bar'): '19'})
+
+
+def test_with_dict_2():
+    @match_typing
+    def func_b(a: Dict[str, int], b: Dict[Tuple[Tuple[Tuple[str, str], str], str], int]):
+        return True
+
+    assert func_b({'a': 1}, {((('fbar', 'fbar'), 'foo'), 'bar'): 2020})
+
+    with pytest.raises(TypeMisMatch):
+        assert func_b({'a': 1}, {((('fbar', 1), 'foo'), 'bar'): 2020})
+
+
 if __name__ == '__main__':
+
     pytest.main(['-vv', '-s'])
