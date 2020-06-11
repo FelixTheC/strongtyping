@@ -57,6 +57,25 @@ def foo_bar(a: tuple, b: MyClass):
     ...
 ```
 
+At the current state it will work with
+
+- builtin types like: str, int, tuple etc
+- from typing: 
+    - List
+    - Tuple
+    - Union also nested ( Tuple[Union[str, int], Union[list, tuple]] )
+    - Any
+    - Dict
+    - Set
+    - Type
+    - Iterator
+    - Callable
+- with string types representation like
+```
+class A:
+    @match_typing
+    def func_a(self, a: 'A'):
+```
 
 ### Tested for Versions
 - 3.6, 3.7, 3.8
