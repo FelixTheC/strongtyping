@@ -76,6 +76,10 @@ def checking_typing_union(arg: typing.Any, possible_types: tuple, mro):
         return all(check_type(arg, typ) for typ in possible_types)
 
 
+def checking_typing_iterator(arg: typing.Any):
+    return hasattr(arg, '__iter__') and hasattr(arg, '__next__')
+
+
 def check_type(argument, type_of, mro=False):
     check_result = True
     if type_of is not None:
@@ -91,6 +95,8 @@ def check_type(argument, type_of, mro=False):
                     return checking_typing_set(argument, possible_types)
                 if 'type' in origin_name.lower():
                     return checking_typing_type(argument, possible_types)
+                if 'iterator' in origin_name.lower():
+                    return checking_typing_iterator(argument)
 
                 if possible_types and origin_name != 'Union':
                     fillvalue = get_fillvalue(type_of, possible_types[0])

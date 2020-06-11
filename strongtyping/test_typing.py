@@ -7,6 +7,7 @@
 from datetime import datetime
 from typing import Any
 from typing import Dict
+from typing import Iterator
 from typing import List
 from typing import Optional
 from typing import Set
@@ -372,6 +373,44 @@ def test_with_type():
 
     with pytest.raises(TypeMisMatch):
         func_a(NoUser, User)
+
+
+def test_with_iterator():
+
+    class Fibonacci:
+        def __init__(self, limit):
+            self.limit = limit
+            self.count = 0
+            self.values = []
+
+        def __iter__(self):
+            return self
+
+        def __next__(self):
+            self.count += 1
+            if self.count > self.limit:
+                raise StopIteration
+
+            if len(self.values) < 2:
+                self.values.append(1)
+            else:
+                self.values = [self.values[-1], self.values[-1] + self.values[-2]]
+            return self.values[-1]
+
+    class NonFibonacci:
+        def __init__(self, limit):
+            self.limit = limit
+            self.count = 0
+            self.values = []
+
+    @match_typing
+    def func_a(a: Iterator):
+        return [f for f in a]
+
+    assert func_a(Fibonacci(5)) == [1, 1, 2, 3, 5]
+
+    with pytest.raises(TypeMisMatch):
+        func_a(NonFibonacci(5))
 
 
 if __name__ == '__main__':
