@@ -6,6 +6,7 @@
 """
 from datetime import datetime
 from typing import Any
+from typing import Callable
 from typing import Dict
 from typing import Iterator
 from typing import List
@@ -411,6 +412,23 @@ def test_with_iterator():
 
     with pytest.raises(TypeMisMatch):
         func_a(NonFibonacci(5))
+
+
+def test_with_callable():
+
+    def dummy_func(a: int, b: str, c: Union[str, int]) -> str:
+        return 'success'
+
+    def fail_func(a: int, b: str, c: Union[str, int]) -> int:
+        return 42
+
+    @match_typing
+    def func_a(a: Callable[[int, str, Union[str, int]], str]):
+        return True
+
+    assert func_a(dummy_func)
+    with pytest.raises(TypeMisMatch):
+        func_a(fail_func)
 
 
 if __name__ == '__main__':

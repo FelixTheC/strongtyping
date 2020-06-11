@@ -80,6 +80,13 @@ def checking_typing_iterator(arg: typing.Any):
     return hasattr(arg, '__iter__') and hasattr(arg, '__next__')
 
 
+def checking_typing_callable(arg: typing.Any, possible_types: tuple):
+    insp = inspect.signature(arg)
+    return_val = insp.return_annotation == possible_types[-1]
+    params = insp.parameters
+    return return_val and all(p.annotation == pt for p, pt in zip(params.values(), possible_types))
+
+
 def check_type(argument, type_of, mro=False):
     check_result = True
     if type_of is not None:
@@ -89,6 +96,7 @@ def check_type(argument, type_of, mro=False):
         if isinstance(type_of, typing_base_class):
             if hasattr(type_of, '__origin__'):
                 possible_types = get_possible_types(type_of)
+
                 if 'dict' in origin_name.lower():
                     return check_typing_dict(argument, possible_types)
                 if 'set' in origin_name.lower():
@@ -97,6 +105,8 @@ def check_type(argument, type_of, mro=False):
                     return checking_typing_type(argument, possible_types)
                 if 'iterator' in origin_name.lower():
                     return checking_typing_iterator(argument)
+                if 'callable' in origin_name.lower():
+                    return checking_typing_callable(argument, possible_types)
 
                 if possible_types and origin_name != 'Union':
                     fillvalue = get_fillvalue(type_of, possible_types[0])
