@@ -60,21 +60,37 @@ def checking_typing_set(arg: typing.Any, possible_types: tuple):
     return all(check_type(argument, pssble_type) for argument in arg)
 
 
-def check_type(argument, type_of):
+def checking_typing_type(arg: typing.Any, possible_types: tuple):
+    if not hasattr(arg, '__mro__'):
+        return False
+    arguments = arg.__mro__
+    return any(check_type(arguments, possible_type, mro=True) for possible_type in possible_types)
+
+
+def checking_typing_union(arg: typing.Any, possible_types: tuple, mro):
+    if mro:
+        return any(pssble_type in arg for pssble_type in possible_types)
+    try:
+        return isinstance(arg, possible_types)
+    except TypeError:
+        return all(check_type(arg, typ) for typ in possible_types)
+
+
+def check_type(argument, type_of, mro=False):
     check_result = True
     if type_of is not None:
         origin, origin_name = get_origins(type_of)
         if 'any' in origin_name.lower():
             return check_result
-
         if isinstance(type_of, typing_base_class):
             if hasattr(type_of, '__origin__'):
                 possible_types = get_possible_types(type_of)
-
                 if 'dict' in origin_name.lower():
                     return check_typing_dict(argument, possible_types)
                 if 'set' in origin_name.lower():
                     return checking_typing_set(argument, possible_types)
+                if 'type' in origin_name.lower():
+                    return checking_typing_type(argument, possible_types)
 
                 if possible_types and origin_name != 'Union':
                     fillvalue = get_fillvalue(type_of, possible_types[0])
@@ -83,10 +99,7 @@ def check_type(argument, type_of):
                                                                                     fillvalue=fillvalue)) and (
                                            len(argument) == len(type_of.__args__) or (isinstance(argument, list)))
                 elif origin_name == 'Union':
-                    try:
-                        check_result = isinstance(argument, possible_types)
-                    except TypeError:
-                        check_result = all(check_type(argument, typ) for typ in possible_types)
+                    return checking_typing_union(argument, possible_types, mro)
                 else:
                     possible_type = origin[0] if isinstance(origin, (list, tuple)) else origin
                     check_result = isinstance(argument, possible_type)
@@ -94,6 +107,8 @@ def check_type(argument, type_of):
                 check_result = isinstance(argument, type_of.__args__)
         elif isinstance(type_of, str):
             check_result = argument.__class__.__name__ == type_of
+        elif mro:
+            check_result = type_of in argument
         else:
             try:
                 check_result = isinstance(argument, type_of)

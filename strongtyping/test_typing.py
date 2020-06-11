@@ -10,6 +10,7 @@ from typing import Dict
 from typing import List
 from typing import Optional
 from typing import Set
+from typing import Type
 from typing import Union, Tuple
 
 import pytest
@@ -332,6 +333,45 @@ def test_with_set():
 
     with pytest.raises(TypeMisMatch):
         func_a({'A', 2, 'b', 4, 'c'}, {'A', 2, 'b', 4, 'c'})
+
+
+def test_with_type():
+
+    class NoUser:
+        def __repr__(self):
+            return 'NoUser'
+
+    class User:
+        def __repr__(self):
+            return 'User'
+
+    class BasicUser(User):
+        pass
+
+    class ProUser(User):
+        pass
+
+    class TeamUser(BasicUser, ProUser):
+        pass
+
+    @match_typing
+    def func_a(a: Type[User]):
+        _a = a()
+        return repr(_a)
+
+    @match_typing
+    def func_b(a: Type[User], b: Type[Union[BasicUser, ProUser]]):
+        _a, _b = a(), b()
+        return repr(_a), repr(_b)
+
+    assert func_a(User) == 'User'
+    assert func_b(User, TeamUser) == ('User', 'User')
+
+    with pytest.raises(TypeMisMatch):
+        func_a(NoUser)
+
+    with pytest.raises(TypeMisMatch):
+        func_a(NoUser, User)
 
 
 if __name__ == '__main__':
