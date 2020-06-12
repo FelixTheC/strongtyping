@@ -5,6 +5,10 @@
 @author: felix
 """
 from datetime import datetime
+from enum import Enum
+from enum import IntEnum
+from types import FunctionType
+from types import MethodType
 from typing import Any
 from typing import Callable
 from typing import Dict
@@ -123,7 +127,6 @@ def test_func_with_own_union_type():
 
 
 def test_decorated_class_method():
-
     class A:
         @match_typing
         def func_a(self, a: int):
@@ -146,7 +149,6 @@ def test_decorated_class_method():
 
 
 def test_use_different_exception():
-
     @match_typing(excep_raise=TypeError)
     def func_a(a: str):
         return True
@@ -163,7 +165,6 @@ def test_use_different_exception():
 
 
 def test_use_own_exception():
-
     class MyException(Exception):
         pass
 
@@ -176,7 +177,6 @@ def test_use_own_exception():
 
 
 def test_use_str_repr_as_type():
-
     class A:
         @match_typing
         def func_a(self, a: 'A'):
@@ -194,7 +194,6 @@ def test_use_str_repr_as_type():
 
 
 def test_second_pos_arg_hinted():
-
     @match_typing
     def func_b(a, b: int):
         return f"{a}, {b}"
@@ -211,7 +210,6 @@ def test_second_pos_arg_hinted():
 
 
 def test_with_lists():
-
     @match_typing
     def func_b(a, b: List):
         return f"{len(a)}, {len(b)}"
@@ -250,12 +248,11 @@ def test_with_lists():
 
 
 def test_lists_with_unions():
-
     @match_typing
     def func_e(a: List[Union[str, int]], b: List[Union[str, int, tuple]]):
         return f'{len(a)}-{len(b)}'
 
-    assert func_e([1, '2', 3, '4'], [5, ('a', 'b'), '10'])
+    assert func_e([1, '2', 3, '4'], [5, ('a', 'b'), '10']) == '4-3'
 
     with pytest.raises(TypeMisMatch):
         func_e([5, ('a', 'b'), '10'], [1, '2', 3, datetime.date])
@@ -272,7 +269,6 @@ def test_with_any():
 
 
 def test_with_optional():
-
     @match_typing
     def func_a(a: Optional[str], b: Optional[int]):
         return f'{a}-{b}'
@@ -285,7 +281,6 @@ def test_with_optional():
 
 
 def test_with_dict():
-
     @match_typing
     def func_a(a: Dict[str, int], b: Dict[Tuple[str, str], int]):
         return f'{a}-{b}'
@@ -338,7 +333,6 @@ def test_with_set():
 
 
 def test_with_type():
-
     class NoUser:
         def __repr__(self):
             return 'NoUser'
@@ -377,7 +371,6 @@ def test_with_type():
 
 
 def test_with_iterator():
-
     class Fibonacci:
         def __init__(self, limit):
             self.limit = limit
@@ -415,7 +408,6 @@ def test_with_iterator():
 
 
 def test_with_callable():
-
     def dummy_func(a: int, b: str, c: Union[str, int]) -> str:
         return 'success'
 
@@ -429,6 +421,109 @@ def test_with_callable():
     assert func_a(dummy_func)
     with pytest.raises(TypeMisMatch):
         func_a(fail_func)
+
+
+def test_with_functiontype():
+    class A:
+        def inner_func(self):
+            return 'inner_success'
+
+    def dummy_func():
+        return 'success'
+
+    @match_typing
+    def func_a(a: FunctionType):
+        return a()
+
+    assert func_a(dummy_func) == 'success'
+
+    with pytest.raises(TypeMisMatch):
+        func_a(A().inner_func)
+
+
+def test_with_methodtype():
+    class A:
+        def inner_func(self):
+            return 'inner_success'
+
+    def dummy_func():
+        return 'success'
+
+    @match_typing
+    def func_a(a: MethodType):
+        return a()
+
+    assert func_a(A().inner_func) == 'inner_success'
+
+    with pytest.raises(TypeMisMatch):
+        func_a(dummy_func)
+
+
+def test_with_method_and_functiontype():
+
+    class A:
+        def inner_func(self):
+            return 'inner_success'
+
+    def dummy_func():
+        return 'success'
+
+    @match_typing
+    def func_a(a: Union[FunctionType, MethodType]):
+        return a()
+
+    assert func_a(A().inner_func) == 'inner_success'
+    assert func_a(dummy_func) == 'success'
+
+    with pytest.raises(TypeMisMatch):
+        func_a(A())
+
+
+def test_mix():
+    @match_typing
+    def func_a(a: Dict):
+        return True
+
+    assert func_a({'a': 1, 'b': 2})
+
+    with pytest.raises(TypeMisMatch):
+        func_a({1, 2, 3})
+
+    @match_typing
+    def func_a(a: Tuple):
+        return True
+
+    assert func_a((1, 2, 3))
+    with pytest.raises(TypeMisMatch):
+        func_a([1, 2, 3])
+
+    @match_typing
+    def func_a(a: Set):
+        return True
+
+    assert func_a({1, 2, 3})
+    with pytest.raises(TypeMisMatch):
+        func_a({'a': 1, 'b': 2})
+
+
+def test_with_enum():
+
+    class Shake(Enum):
+        VANILLA = 7
+        CHOCOLATE = 4
+        COOKIES = 9
+        MINT = 3
+
+    House = IntEnum('House', 'GRIFFINDOR, SLITHERIN, HUFFELPUFF, RAVENCLAW')
+
+    @match_typing
+    def func_a(a: Enum, b: Shake):
+        return f'{a.value}-{b.value}'
+
+    assert func_a(Shake.CHOCOLATE, Shake.COOKIES)
+
+    with pytest.raises(TypeMisMatch):
+        func_a(Shake.MINT, House.SLITHERIN)
 
 
 if __name__ == '__main__':
