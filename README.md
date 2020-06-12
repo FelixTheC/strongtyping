@@ -135,7 +135,7 @@ class A:
 - pytest
 
 ### Installing
-- python setup.py install
+- pip install strongtyping
 - pip install git+https://github.com/FelixTheC/strongtyping.git
 
 ### Running the tests
