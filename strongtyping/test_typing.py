@@ -12,7 +12,6 @@ from types import MethodType
 from typing import Any
 from typing import Callable
 from typing import Dict
-from typing import Generator
 from typing import Iterator
 from typing import List
 from typing import Optional
@@ -22,7 +21,6 @@ from typing import Union, Tuple
 
 import pytest
 
-from strong_typing import check_type
 from strongtyping.strong_typing import match_typing, TypeMisMatch
 
 
