@@ -10,6 +10,7 @@ from itertools import zip_longest
 import typing
 
 from functools import lru_cache
+
 from strongtyping.cached_set import CachedSet
 
 
@@ -26,11 +27,6 @@ typing_base_class = typing._GenericAlias if hasattr(typing, '_GenericAlias') els
 def get_possible_types(typ_to_check) -> typing.Union[tuple, None]:
     if typ_to_check.__args__ is not None:
         return tuple(typ for typ in typ_to_check.__args__ if not isinstance(typ, typing.TypeVar))
-
-
-def get_possible_types_2(typ_to_check) -> typing.Union[tuple, None]:
-    if typ_to_check.__args__ is not None:
-        return [typ for typ in typ_to_check.__args__ if not isinstance(typ, typing.TypeVar)]
 
 
 @lru_cache
@@ -162,7 +158,7 @@ def match_typing(_func=None, *, excep_raise: Exception = TypeMisMatch, cache_siz
 
             if cached_set is not None:
                 # check if func with args and kwargs was checked once before with positive result
-                cached_key = (func, str(args), str(kwargs))
+                cached_key = (func, args.__str__(), kwargs.__str__())
                 if cached_key in cached_set:
                     return func(*args, **kwargs)
 
