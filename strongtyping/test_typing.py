@@ -5,6 +5,8 @@
 @author: felix
 """
 from datetime import datetime
+from types import FunctionType
+from types import MethodType
 from typing import Any
 from typing import Callable
 from typing import Dict
@@ -255,7 +257,7 @@ def test_lists_with_unions():
     def func_e(a: List[Union[str, int]], b: List[Union[str, int, tuple]]):
         return f'{len(a)}-{len(b)}'
 
-    assert func_e([1, '2', 3, '4'], [5, ('a', 'b'), '10'])
+    assert func_e([1, '2', 3, '4'], [5, ('a', 'b'), '10']) == '4-3'
 
     with pytest.raises(TypeMisMatch):
         func_e([5, ('a', 'b'), '10'], [1, '2', 3, datetime.date])
@@ -429,6 +431,70 @@ def test_with_callable():
     assert func_a(dummy_func)
     with pytest.raises(TypeMisMatch):
         func_a(fail_func)
+
+
+def test_with_functiontype():
+    class A:
+        def inner_func(self):
+            return 'inner_success'
+
+    def dummy_func():
+        return 'success'
+
+    @match_typing
+    def func_a(a: FunctionType):
+        return a()
+
+    assert func_a(dummy_func) == 'success'
+
+    with pytest.raises(TypeMisMatch):
+        func_a(A().inner_func)
+
+
+def test_with_methodtype():
+    class A:
+        def inner_func(self):
+            return 'inner_success'
+
+    def dummy_func():
+        return 'success'
+
+    @match_typing
+    def func_a(a: MethodType):
+        return a()
+
+    assert func_a(A().inner_func) == 'inner_success'
+
+    with pytest.raises(TypeMisMatch):
+        func_a(dummy_func)
+
+
+def test_mix():
+
+    @match_typing
+    def func_a(a: Dict):
+        return True
+
+    assert func_a({'a': 1, 'b': 2})
+
+    with pytest.raises(TypeMisMatch):
+        func_a({1, 2, 3})
+
+    @match_typing
+    def func_a(a: Tuple):
+        return True
+
+    assert func_a((1, 2, 3))
+    with pytest.raises(TypeMisMatch):
+        func_a([1, 2, 3])
+
+    @match_typing
+    def func_a(a: Set):
+        return True
+
+    assert func_a({1, 2, 3})
+    with pytest.raises(TypeMisMatch):
+        func_a({'a': 1, 'b': 2})
 
 
 if __name__ == '__main__':

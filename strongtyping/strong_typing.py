@@ -43,6 +43,8 @@ def get_origins(typ_to_check: any) -> tuple:
 def check_typing_dict(arg: typing.Any, possible_types: tuple):
     if not isinstance(arg, dict):
         return False
+    if len(possible_types) == 0:
+        return True
     key, val = possible_types
     if hasattr(key, '__origin__'):
         result_key = all(check_type(a, key) for a in arg.keys())
@@ -56,6 +58,10 @@ def check_typing_dict(arg: typing.Any, possible_types: tuple):
 
 
 def checking_typing_set(arg: typing.Any, possible_types: tuple):
+    if not isinstance(arg, set):
+        return False
+    if len(possible_types) == 0:
+        return True
     pssble_type = possible_types[0]
     return all(check_type(argument, pssble_type) for argument in arg)
 
@@ -91,31 +97,32 @@ def check_type(argument, type_of, mro=False):
     check_result = True
     if type_of is not None:
         origin, origin_name = get_origins(type_of)
-        if 'any' in origin_name.lower():
+        origin_name = origin_name.lower()
+        if 'any' in origin_name:
             return check_result
         if isinstance(type_of, typing_base_class):
             if hasattr(type_of, '__origin__'):
                 possible_types = get_possible_types(type_of)
 
-                if 'dict' in origin_name.lower():
+                if 'dict' in origin_name:
                     return check_typing_dict(argument, possible_types)
-                if 'set' in origin_name.lower():
+                if 'set' in origin_name:
                     return checking_typing_set(argument, possible_types)
-                if 'type' in origin_name.lower():
+                if 'type' in origin_name:
                     return checking_typing_type(argument, possible_types)
-                if 'iterator' in origin_name.lower():
+                if 'iterator' in origin_name:
                     return checking_typing_iterator(argument)
-                if 'callable' in origin_name.lower():
+                if 'callable' in origin_name:
                     return checking_typing_callable(argument, possible_types)
+                if 'union' in origin_name:
+                    return checking_typing_union(argument, possible_types, mro)
 
-                if possible_types and origin_name != 'Union':
+                if possible_types and origin_name != 'union':
                     fillvalue = get_fillvalue(type_of, possible_types[0])
                     check_result = isinstance(argument, origin) and all(check_type(arg, typ) for arg, typ in
                                                                         zip_longest(argument, possible_types,
                                                                                     fillvalue=fillvalue)) and (
                                            len(argument) == len(type_of.__args__) or (isinstance(argument, list)))
-                elif origin_name == 'Union':
-                    return checking_typing_union(argument, possible_types, mro)
                 else:
                     possible_type = origin[0] if isinstance(origin, (list, tuple)) else origin
                     check_result = isinstance(argument, possible_type)
