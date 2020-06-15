@@ -79,7 +79,7 @@ def checking_typing_union(arg: typing.Any, possible_types: tuple, mro):
     try:
         return isinstance(arg, possible_types)
     except TypeError:
-        return all(check_type(arg, typ) for typ in possible_types)
+        return any(check_type(arg, typ) for typ in possible_types)
 
 
 def checking_typing_iterator(arg: typing.Any, *args):
