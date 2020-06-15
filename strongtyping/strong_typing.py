@@ -39,36 +39,38 @@ def get_origins(typ_to_check: any) -> tuple:
 
 
 def check_typing_dict(arg: typing.Any, possible_types: tuple, *args):
-    if not isinstance(arg, dict):
-        return False
-    if len(possible_types) == 0:
-        return True
-    key, val = possible_types
-    if hasattr(key, '__origin__'):
-        result_key = all(check_type(a, key) for a in arg.keys())
+    try:
+        key, val = possible_types
+    except ValueError:
+        return isinstance(arg, dict)
     else:
-        result_key = all(isinstance(k, key) for k in arg.keys())
-    if hasattr(val, '__origin__'):
-        result_val = all(check_type(a, val) for a in arg.values())
-    else:
-        result_val = all(isinstance(v, val) for v in arg.values())
-    return result_key and result_val
+        try:
+            result_key = all(check_type(a, key) for a in arg.keys())
+        except AttributeError:
+            result_key = all(isinstance(k, key) for k in arg.keys())
+        try:
+            result_val = all(check_type(a, val) for a in arg.values())
+        except AttributeError:
+            result_val = all(isinstance(v, val) for v in arg.values())
+        return result_key and result_val
 
 
 def checking_typing_set(arg: typing.Any, possible_types: tuple, *args):
-    if not isinstance(arg, set):
-        return False
-    if len(possible_types) == 0:
-        return True
-    pssble_type = possible_types[0]
-    return all(check_type(argument, pssble_type) for argument in arg)
+    try:
+        pssble_type = possible_types[0]
+    except (TypeError, IndexError):
+        return isinstance(arg, set)
+    else:
+        return isinstance(arg, set) and all(check_type(argument, pssble_type) for argument in arg)
 
 
 def checking_typing_type(arg: typing.Any, possible_types: tuple, *args):
-    if not hasattr(arg, '__mro__'):
+    try:
+        arguments = arg.__mro__
+    except AttributeError:
         return False
-    arguments = arg.__mro__
-    return any(check_type(arguments, possible_type, mro=True) for possible_type in possible_types)
+    else:
+        return any(check_type(arguments, possible_type, mro=True) for possible_type in possible_types)
 
 
 def checking_typing_union(arg: typing.Any, possible_types: tuple, mro):
@@ -126,13 +128,10 @@ def check_type(argument, type_of, mro=False):
             return check_result
 
         if isinstance(type_of, typing_base_class):
-
-            if hasattr(type_of, '__origin__'):
-
+            try:
                 possible_types = get_possible_types(type_of)
                 return supported_typings[origin_name](argument, possible_types, mro)
-
-            else:
+            except AttributeError:
                 return isinstance(argument, type_of.__args__)
         elif isinstance(type_of, str):
             return argument.__class__.__name__ == type_of
@@ -163,17 +162,17 @@ def match_typing(_func=None, *, excep_raise: Exception = TypeMisMatch, cache_siz
                     return func(*args, **kwargs)
 
             # Thanks to Ruud van der Ham who find a better and more stable solution for check_args
-            failed_arg_names = tuple(
+            failed_params = tuple(
                 arg_name for arg, arg_name in zip(args, arg_names) if not check_type(arg, annotations.get(arg_name))
             )
-            failed_kwarg_names = tuple(
+            failed_params += tuple(
                 kwarg_name for kwarg_name, kwarg in kwargs.items() if not check_type(kwarg, annotations.get(kwarg_name))
             )
 
-            if failed_arg_names or failed_kwarg_names:
-                params = [f"{name}: {annotations[name]}" for name in failed_arg_names + failed_kwarg_names]
-                msg = f'Incorrect parameters: {", ".join(params)}'
-                raise excep_raise(msg)
+            if failed_params:
+                raise excep_raise(
+                    f'Incorrect parameters: {", ".join(f"{name}: {annotations[name]}" for name in failed_params)}'
+                )
 
             if cached_set is not None:
                 cached_set.add(cached_key)
