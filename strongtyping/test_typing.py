@@ -320,12 +320,26 @@ def test_with_dict_2():
     with pytest.raises(TypeMisMatch):
         assert func_c({'b': 2, 34: 'foo'})
 
+    JSON_KEYS = Union[str, int, float, bool]
+    JSON_VALUES = Union[str, int, float, bool, list, dict]
+
+    JSON_SERIALIZABLE = Union[List[Dict[JSON_KEYS, JSON_VALUES]], Dict[JSON_KEYS, JSON_VALUES]]
+
+    @match_typing
+    def func_c(a: JSON_SERIALIZABLE):
+        return True
+
+    assert func_c({'key': 'value'})
+    assert func_c({'key': ['value', {'more_key': True}]})
+
 
 def test_with_set():
     @match_typing
     def func_a(a: Set[Union[str, int]], b: Set[int]):
         return True
 
+    assert func_a({'A', 'b', 'c'}, {1, 2, 3, 4})
+    assert func_a({2, 4, 6}, {1, 2, 3, 4})
     assert func_a({'A', 2, 'b', 4, 'c'}, {1, 2, 3, 4})
 
     with pytest.raises(TypeMisMatch):
@@ -524,6 +538,14 @@ def test_with_enum():
 
     with pytest.raises(TypeMisMatch):
         func_a(Shake.MINT, House.SLITHERIN)
+
+
+def test_with_kwargs():
+    @match_typing
+    def func_a(a: Set[Union[str, int]], b: Set[int]):
+        return True
+
+    assert func_a(a={1, '2', 3}, b=set([i for i in range(10)]))
 
 
 if __name__ == '__main__':
