@@ -11,6 +11,7 @@ import typing
 
 from functools import lru_cache
 
+
 from strongtyping.cached_set import CachedSet
 
 
@@ -106,6 +107,15 @@ def checkin_typing_list(arg: typing.Any, possible_types: tuple, *args):
                                                                           fillvalue=possible_types[0]))
 
 
+def checking_json(arg, possible_types, *args):
+    try:
+        possible_types.dumps(arg)
+    except TypeError:
+        return isinstance(arg, str)
+    else:
+        return True
+
+
 supported_typings = {
     'list': checkin_typing_list,
     'tuple': checking_typing_tuple,
@@ -114,7 +124,8 @@ supported_typings = {
     'type': checking_typing_type,
     'iterator': checking_typing_iterator,
     'callable': checking_typing_callable,
-    'union': checking_typing_union
+    'union': checking_typing_union,
+    'json': checking_json
 }
 
 
@@ -126,6 +137,8 @@ def check_type(argument, type_of, mro=False):
 
         if 'any' in origin_name:
             return check_result
+        if 'json' in origin_name:
+            return supported_typings['json'](argument, type_of, mro)
 
         if isinstance(type_of, typing_base_class):
             try:
