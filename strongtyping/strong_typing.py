@@ -125,7 +125,7 @@ supported_typings = {
     'iterator': checking_typing_iterator,
     'callable': checking_typing_callable,
     'union': checking_typing_union,
-    'json': checking_json
+    'json': checking_json,
 }
 
 
@@ -139,6 +139,10 @@ def check_type(argument, type_of, mro=False):
             return check_result
         if 'json' in origin_name:
             return supported_typings['json'](argument, type_of, mro)
+        if 'new_type' in origin_name:
+            type_of = type_of.__supertype__
+            origin, origin_name = get_origins(type_of)
+            origin_name = origin_name.lower()
 
         if isinstance(type_of, typing_base_class):
             try:
