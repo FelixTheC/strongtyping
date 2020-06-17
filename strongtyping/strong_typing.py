@@ -4,14 +4,15 @@
 @created: 28.04.20
 @author: felix
 """
-import functools
 import inspect
 from itertools import zip_longest
+from functools import lru_cache
+from functools import wraps
 import typing
 
-from functools import lru_cache
-
-
+from typing import Any
+from typing import Union
+from typing import TypeVar
 from strongtyping.cached_set import CachedSet
 
 
@@ -25,9 +26,9 @@ typing_base_class = typing._GenericAlias if hasattr(typing, '_GenericAlias') els
 
 
 @lru_cache
-def get_possible_types(typ_to_check) -> typing.Union[tuple, None]:
+def get_possible_types(typ_to_check) -> Union[tuple, None]:
     if typ_to_check.__args__ is not None:
-        return tuple(typ for typ in typ_to_check.__args__ if not isinstance(typ, typing.TypeVar))
+        return tuple(typ for typ in typ_to_check.__args__ if not isinstance(typ, TypeVar))
 
 
 @lru_cache
@@ -39,7 +40,7 @@ def get_origins(typ_to_check: any) -> tuple:
         typ_to_check._name if hasattr(typ_to_check, '_name') else f'{typ_to_check}'
 
 
-def check_typing_dict(arg: typing.Any, possible_types: tuple, *args):
+def check_typing_dict(arg: Any, possible_types: tuple, *args):
     try:
         key, val = possible_types
     except ValueError:
@@ -56,7 +57,7 @@ def check_typing_dict(arg: typing.Any, possible_types: tuple, *args):
         return result_key and result_val
 
 
-def checking_typing_set(arg: typing.Any, possible_types: tuple, *args):
+def checking_typing_set(arg: Any, possible_types: tuple, *args):
     try:
         pssble_type = possible_types[0]
     except (TypeError, IndexError):
@@ -65,7 +66,7 @@ def checking_typing_set(arg: typing.Any, possible_types: tuple, *args):
         return isinstance(arg, set) and all(check_type(argument, pssble_type) for argument in arg)
 
 
-def checking_typing_type(arg: typing.Any, possible_types: tuple, *args):
+def checking_typing_type(arg: Any, possible_types: tuple, *args):
     try:
         arguments = arg.__mro__
     except AttributeError:
@@ -74,7 +75,7 @@ def checking_typing_type(arg: typing.Any, possible_types: tuple, *args):
         return any(check_type(arguments, possible_type, mro=True) for possible_type in possible_types)
 
 
-def checking_typing_union(arg: typing.Any, possible_types: tuple, mro):
+def checking_typing_union(arg: Any, possible_types: tuple, mro):
     if mro:
         return any(pssble_type in arg for pssble_type in possible_types)
     try:
@@ -83,24 +84,24 @@ def checking_typing_union(arg: typing.Any, possible_types: tuple, mro):
         return any(check_type(arg, typ) for typ in possible_types)
 
 
-def checking_typing_iterator(arg: typing.Any, *args):
+def checking_typing_iterator(arg: Any, *args):
     return hasattr(arg, '__iter__') and hasattr(arg, '__next__')
 
 
-def checking_typing_callable(arg: typing.Any, possible_types: tuple, *args):
+def checking_typing_callable(arg: Any, possible_types: tuple, *args):
     insp = inspect.signature(arg)
     return_val = insp.return_annotation == possible_types[-1]
     params = insp.parameters
     return return_val and all(p.annotation == pt for p, pt in zip(params.values(), possible_types))
 
 
-def checking_typing_tuple(arg: typing.Any, possible_types: tuple, *args):
+def checking_typing_tuple(arg: Any, possible_types: tuple, *args):
     if len(possible_types) > 0 and not len(arg) == len(possible_types) or not isinstance(arg, tuple):
         return False
     return all(check_type(argument, typ) for argument, typ in zip(arg, possible_types))
 
 
-def checkin_typing_list(arg: typing.Any, possible_types: tuple, *args):
+def checkin_typing_list(arg: Any, possible_types: tuple, *args):
     if not isinstance(arg, list):
         return False
     return all(check_type(argument, typ) for argument, typ in zip_longest(arg, possible_types,
@@ -169,7 +170,7 @@ def match_typing(_func=None, *, excep_raise: Exception = TypeMisMatch, cache_siz
         arg_names = [name for name in inspect.signature(func).parameters]
         annotations = func.__annotations__
 
-        @functools.wraps(func)
+        @wraps(func)
         def inner(*args, **kwargs):
 
             if cached_set is not None:
