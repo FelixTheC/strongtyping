@@ -13,6 +13,7 @@ from types import MethodType
 from typing import Any
 from typing import Callable
 from typing import Dict
+from typing import Generator
 from typing import Iterator
 from typing import List
 from typing import NewType
@@ -581,6 +582,17 @@ def test_with_new_type():
 
     with pytest.raises(TypeMisMatch):
         func_a('new', {'not': 'my_type'})
+
+
+def test_with_generator():
+
+    @match_typing
+    def func_a(a: Generator):
+        return True
+
+    assert func_a((i for i in range(10)))
+    with pytest.raises(TypeMisMatch):
+        func_a([i for i in range(10)])
 
 
 if __name__ == '__main__':

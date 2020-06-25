@@ -2,7 +2,7 @@
 <p>Decorator which <b>checks at Runtime</b> whether the function is called with the correct type of parameters.<br> 
 And <b><em>raises</em> TypeMisMatch</b> if the used parameters in a function call where invalid.</p>
  
-###The problem:
+### The problem:
 ```
 def multipler(a: int, b: int):
     return a * b
@@ -33,7 +33,7 @@ def multipler(a: int, b: int):
 >
 > And why should we then use typing in our parameters??
 
-###My solution:
+### My solution:
 <p>I created a decorator called <b>@match_typing</b> which will check at runtime if the parameters you used when calling this function are from the same type as you wanted.</p>
 Here are some examples from my tests
 
@@ -122,6 +122,10 @@ At the current state it will work with
     - Type
     - Iterator
     - Callable
+    - Generator
+- from types:
+    - FunctionType
+    - MethodType
 - with string types representation like
 ```
 class A:
@@ -129,17 +133,52 @@ class A:
     def func_a(self, a: 'A'):
 ```
 
+### Now with support for reST docstrings
+therefore use the decorator __match_docstring__
+```
+@match_docstring
+def func_a(a):
+    """
+    :param a:
+    :type a: list
+    ...
+    """
+
+@match_docstring
+def func_a(a, b):
+    """
+    :param int a: foo
+    :vartype b: str
+    ...
+    """
+
+@match_docstring
+def func_a(a, b):
+    """
+    :parameter int a: foo
+    :argument str b: bar
+    ...
+    """
+```
+
+At the current state it will work with basically everything which is written here
+https://gist.github.com/jesuGMZ/d83b5e9de7ccc16f71c02adf7d2f3f44
+
+- extended with support for 
+    - Iterator
+    - Callable
+    - Generator
+    - FunctionType
+    - MethodType
+
+please check __tests/test_typing__ to see what is supported
+
 ### Tested for Versions
 - 3.6, 3.7, 3.8
-### Prerequisites
-- pytest
 
 ### Installing
 - pip install strongtyping
 - pip install git+https://github.com/FelixTheC/strongtyping.git
-
-### Running the tests
-- python test_typing.py
 
 #### Versioning
 - For the versions available, see the tags on this repository.

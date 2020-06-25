@@ -5,6 +5,7 @@
 @author: felix
 """
 import inspect
+from collections import Generator
 from itertools import zip_longest
 from functools import lru_cache
 from functools import wraps
@@ -25,13 +26,13 @@ class TypeMisMatch(AttributeError):
 typing_base_class = typing._GenericAlias if hasattr(typing, '_GenericAlias') else typing.GenericMeta
 
 
-@lru_cache
-def get_possible_types(typ_to_check) -> Union[tuple, None]:
+@lru_cache(maxsize=1024)
+def get_possible_types(typ_to_check) -> typing.Union[tuple, None]:
     if typ_to_check.__args__ is not None:
         return tuple(typ for typ in typ_to_check.__args__ if not isinstance(typ, TypeVar))
 
 
-@lru_cache
+@lru_cache(maxsize=1024)
 def get_origins(typ_to_check: any) -> tuple:
     origin = None
     if hasattr(typ_to_check, '__origin__') or hasattr(typ_to_check, '__orig_bases__'):
@@ -117,6 +118,10 @@ def checking_json(arg, possible_types, *args):
         return True
 
 
+def checking_generator(arg, possible_types, *args):
+    return isinstance(arg, Generator)
+
+
 supported_typings = {
     'list': checkin_typing_list,
     'tuple': checking_typing_tuple,
@@ -127,6 +132,7 @@ supported_typings = {
     'callable': checking_typing_callable,
     'union': checking_typing_union,
     'json': checking_json,
+    'generator': checking_generator
 }
 
 
