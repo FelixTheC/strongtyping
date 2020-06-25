@@ -2,7 +2,7 @@
 <p>Decorator which <b>checks at Runtime</b> whether the function is called with the correct type of parameters.<br> 
 And <b><em>raises</em> TypeMisMatch</b> if the used parameters in a function call where invalid.</p>
  
-###The problem:
+### The problem:
 ```
 def multipler(a: int, b: int):
     return a * b
@@ -33,7 +33,7 @@ def multipler(a: int, b: int):
 >
 > And why should we then use typing in our parameters??
 
-###My solution:
+### My solution:
 <p>I created a decorator called <b>@match_typing</b> which will check at runtime if the parameters you used when calling this function are from the same type as you wanted.</p>
 Here are some examples from my tests
 
@@ -122,6 +122,9 @@ At the current state it will work with
     - Type
     - Iterator
     - Callable
+- from types:
+    - FunctionType
+    - MethodType
 - with string types representation like
 ```
 class A:
@@ -131,8 +134,6 @@ class A:
 
 ### Tested for Versions
 - 3.6, 3.7, 3.8
-### Prerequisites
-- pytest
 
 ### Installing
 - pip install strongtyping
