@@ -16,6 +16,7 @@ from typing import Dict
 from typing import Generator
 from typing import Iterator
 from typing import List
+from typing import NewType
 from typing import Optional
 from typing import Set
 from typing import Type
@@ -552,6 +553,35 @@ def test_with_json():
 
     with pytest.raises(TypeMisMatch):
         func_a({('not', 'allowed'): [i for i in range(5)]}, [{2: b'hello'}, {42: b'world'}])
+
+
+def test_with_new_type():
+
+    FruitType = NewType('FruitType', Tuple[str, str])
+
+    @match_typing
+    def func_a(a: str, b: FruitType):
+        return True
+
+    assert func_a('some', FruitType(('apple', 'sweet')))
+    assert func_a('free', FruitType(('pineapple', 'super sweet')))
+
+    with pytest.raises(TypeMisMatch):
+        # problem with NewType: I only get the supertype and nothing about the name or similar
+        # this will be true because the supertype of FruitType is Tuple[str, str]
+        # func_a('new', ('coconut', 'soft'))
+        func_a('new', ['coconut', 'soft'])
+
+    MyType = NewType('MyType', List[Tuple[str, Dict[str, Union[int, str]]]])
+
+    @match_typing
+    def func_a(a: str, b: MyType):
+        return True
+
+    assert func_a('some', MyType([('apple', {'foo': 'bar'})]))
+
+    with pytest.raises(TypeMisMatch):
+        func_a('new', {'not': 'my_type'})
 
 
 def test_with_generator():
