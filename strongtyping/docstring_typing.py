@@ -9,6 +9,8 @@ import inspect
 import typing
 import builtins
 import re
+from types import FunctionType
+from types import MethodType
 
 from cached_set import CachedSet
 from strong_typing import TypeMisMatch
@@ -21,6 +23,7 @@ PATTERN = r'[\(\)\[\[]'
 OR_PATTERN = r'([\(\[]\w+)\W+(or)\W+(\w+)'
 COMMA_PATTERN = r'([\(\[]\w+)\W+(\w+)'
 REMOVE_PATTERN = r'[\(\[\)\]]'
+FM_PATTERN = r'([FM][a-z]{5,7}Type)'
 
 
 def separate_param_type(docstring_type_part: str) -> tuple:
@@ -104,7 +107,7 @@ def get_container_types(ttype_of: str) -> typing.Union[None, tuple]:
 
 
 def get_or_types(ttype: str) -> list:
-    if 'or' in ttype:
+    if ' or ' in ttype:
         return [t for t in re.findall(r'(\w+)\W+(or)\W+(\w+)', ttype)[0] if t != 'or']
     else:
         return re.findall(r'\w{2,}', ttype)
@@ -134,6 +137,14 @@ def is_set(arg, type_of: str):
     return isinstance(arg, set)
 
 
+def is_function_or_method_type(arg, type_of):
+    type_dict = {
+        'F': isinstance(arg, FunctionType),
+        'M': isinstance(arg, MethodType)
+    }
+    return type_dict[type_of[0]]
+
+
 options = {
     'tuple': is_tuple,
     'list': is_list,
@@ -148,6 +159,8 @@ def check_doc_str_type(arg, type_of):
         try:
             return options[re.split(REMOVE_PATTERN, type_of)[0]](arg, type_of)
         except KeyError:
+            if len(re.findall(FM_PATTERN, type_of)) == 1:
+                return is_function_or_method_type(arg, type_of)
             try:
                 return isinstance(arg, tuple(map(param_attr, get_or_types(type_of))))
             except AttributeError:
@@ -155,16 +168,35 @@ def check_doc_str_type(arg, type_of):
     return check_result
 
 
+def is_type_info(docstring_line: str) -> bool:
+    allowed = [':type', ':vartype']
+    return any(docstring_line.startswith(a) for a in allowed)
+
+
+def is_param_info(docstring_line: str) -> bool:
+    allowed = [':param', ':parameter', ':arg', ':argument', ':key', ':keyword']
+    return any(docstring_line.startswith(a) for a in allowed)
+
+
+def extract_docstring_param_types(func) -> dict:
+    """
+    extract the types to the defined parameters from the docstring
+    """
+    param = [separate_param_type(string)[0].split() for string in inspect.getdoc(func).split('\n') if
+             is_param_info(string)]
+    docstring = [separate_param_type(string) for string in inspect.getdoc(func).split('\n') if is_type_info(string)]
+    docstring += [list(reversed(p)) for p in param if len(p) > 1]
+    _docstring_types = {ds[0]: ds[1] for ds in docstring}
+    # there is mismatch when user will mix type and param to bring them in the right order
+    # we will look at the signature and recreate the previous dict to the final one
+    return {k: _docstring_types[k] for k in inspect.signature(func).parameters.keys()}
+
+
 def match_docstring(_func=None, *, excep_raise: Exception = TypeMisMatch, cache_size=0):
     cached_set = None if cache_size == 0 else CachedSet(cache_size)
 
     def wrapper(func):
-        param = [separate_param_type(string)[0].split() for string in inspect.getdoc(func).split('\n') if
-                 string[:6] == ':param']
-        docstring = [separate_param_type(string) for string in inspect.getdoc(func).split('\n') if
-                     string[:5] == ':type']
-        docstring += [list(reversed(p)) for p in param if len(p) > 1]
-        docstring_types = {ds[0]: ds[1] for ds in docstring}
+        docstring_types = extract_docstring_param_types(func)
 
         @functools.wraps(func)
         def inner(*args, **kwargs):

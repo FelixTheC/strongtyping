@@ -198,5 +198,100 @@ def test_with_docstring_type_in_param():
         func_a('hello', 3)
 
 
+def test_with_docstring_function_method_type():
+
+    class D:
+
+        def some_func(self) -> str:
+            return 'Hello'
+
+    def dummy() -> str:
+        return 'World'
+
+    @match_docstring
+    def func_a(a, b):
+        """
+        :param MethodType a: foo
+        :param FunctionType b: bar
+        """
+        return b(), a()
+
+    assert func_a(D().some_func, dummy) == ('World', 'Hello')
+    with pytest.raises(TypeMisMatch):
+        func_a(dummy, D().some_func)
+
+
+def test_with_docstring_iterator():
+
+    @match_docstring
+    def func_a(a, b):
+        """
+        :param Iterator a: foo
+        :param Generator b: bar
+        """
+        return True
+
+    assert func_a(iter(range(10)), (i for i in range(10)))
+    with pytest.raises(TypeMisMatch):
+        func_a((i for i in range(10)), iter(range(10)))
+    with pytest.raises(TypeMisMatch):
+        func_a([1, 2, 3], (21, 42, 71))
+
+
+def test_with_docstring_mix_param_type():
+
+    @match_docstring
+    def func_a(a, b):
+        """
+        :param int a: foo
+        :param b: bar
+        :type b: str
+        """
+        return b * a
+
+    assert func_a(3, 'ni') == 'ninini'
+    with pytest.raises(TypeMisMatch):
+        func_a('ni', 3)
+
+
+def test_with_docstring_diff_naming():
+
+    @match_docstring
+    def func_a(a, b):
+        """
+        :param int a: foo
+        :vartype b: str
+        """
+        return b * a
+
+    assert func_a(3, 'ni') == 'ninini'
+    with pytest.raises(TypeMisMatch):
+        func_a('ni', 3)
+
+    @match_docstring
+    def func_a(a, b):
+        """
+        :parameter int a: foo
+        :argument str b: bar
+        """
+        return b * a
+
+    assert func_a(3, 'ni') == 'ninini'
+    with pytest.raises(TypeMisMatch):
+        func_a('ni', 3)
+
+    @match_docstring
+    def func_a(a, b):
+        """
+        :arg int a: foo
+        :keyword str b: bar
+        """
+        return b * a
+
+    assert func_a(3, 'ni') == 'ninini'
+    with pytest.raises(TypeMisMatch):
+        func_a('ni', 3)
+
+
 if __name__ == '__main__':
     pytest.main(['-vv', '-s', __file__])
