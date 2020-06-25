@@ -221,6 +221,29 @@ def test_with_docstring_function_method_type():
         func_a(dummy, D().some_func)
 
 
+def test_with_docstring_callable():
+
+    class D:
+
+        def some_func(self) -> str:
+            return 'Hello'
+
+    def dummy() -> str:
+        return 'World'
+
+    @match_docstring
+    def func_a(a, b):
+        """
+        :param Callable a: foo
+        :param Callable b: bar
+        """
+        return b(), a()
+
+    assert func_a(D().some_func, dummy) == ('World', 'Hello')
+    with pytest.raises(TypeMisMatch):
+        func_a(dummy, [1, 2, 3])
+
+
 def test_with_docstring_iterator():
 
     @match_docstring
