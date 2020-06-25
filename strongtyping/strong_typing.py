@@ -6,6 +6,7 @@
 """
 import functools
 import inspect
+from collections import Generator
 from itertools import zip_longest
 import typing
 
@@ -116,6 +117,10 @@ def checking_json(arg, possible_types, *args):
         return True
 
 
+def checking_generator(arg, possible_types, *args):
+    return isinstance(arg, Generator)
+
+
 supported_typings = {
     'list': checkin_typing_list,
     'tuple': checking_typing_tuple,
@@ -125,7 +130,8 @@ supported_typings = {
     'iterator': checking_typing_iterator,
     'callable': checking_typing_callable,
     'union': checking_typing_union,
-    'json': checking_json
+    'json': checking_json,
+    'generator': checking_generator
 }
 
 
