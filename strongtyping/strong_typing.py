@@ -25,13 +25,13 @@ class TypeMisMatch(AttributeError):
 typing_base_class = typing._GenericAlias if hasattr(typing, '_GenericAlias') else typing.GenericMeta
 
 
-@lru_cache
+@lru_cache(maxsize=1024)
 def get_possible_types(typ_to_check) -> typing.Union[tuple, None]:
     if typ_to_check.__args__ is not None:
         return tuple(typ for typ in typ_to_check.__args__ if not isinstance(typ, typing.TypeVar))
 
 
-@lru_cache
+@lru_cache(maxsize=1024)
 def get_origins(typ_to_check: any) -> tuple:
     origin = None
     if hasattr(typ_to_check, '__origin__') or hasattr(typ_to_check, '__orig_bases__'):
