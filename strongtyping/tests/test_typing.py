@@ -4,6 +4,7 @@
 @created: 30.04.20
 @author: felix
 """
+import json
 from datetime import datetime
 from enum import Enum
 from enum import IntEnum
@@ -12,6 +13,7 @@ from types import MethodType
 from typing import Any
 from typing import Callable
 from typing import Dict
+from typing import Generator
 from typing import Iterator
 from typing import List
 from typing import Optional
@@ -20,6 +22,7 @@ from typing import Type
 from typing import Union, Tuple
 
 import pytest
+import ujson as ujson
 
 from strongtyping.strong_typing import match_typing, TypeMisMatch
 
@@ -320,18 +323,6 @@ def test_with_dict_2():
     with pytest.raises(TypeMisMatch):
         assert func_c({'b': 2, 34: 'foo'})
 
-    JSON_KEYS = Union[str, int, float, bool]
-    JSON_VALUES = Union[str, int, float, bool, list, dict]
-
-    JSON_SERIALIZABLE = Union[List[Dict[JSON_KEYS, JSON_VALUES]], Dict[JSON_KEYS, JSON_VALUES]]
-
-    @match_typing
-    def func_c(a: JSON_SERIALIZABLE):
-        return True
-
-    assert func_c({'key': 'value'})
-    assert func_c({'key': ['value', {'more_key': True}]})
-
 
 def test_with_set():
     @match_typing
@@ -546,6 +537,32 @@ def test_with_kwargs():
         return True
 
     assert func_a(a={1, '2', 3}, b=set([i for i in range(10)]))
+
+
+def test_with_json():
+
+    @match_typing
+    def func_a(a: json, b: ujson):
+        return True
+
+    assert func_a(json.dumps({'some': 'json'}), ujson.dumps([{1: 'foo'}, {2: 'bar'}]))
+    assert func_a({'some': 'json'}, [{1: 'foo'}, {2: 'bar'}])
+    assert func_a(json.dumps({'some': 'json'}, indent=4), ujson.dumps([{1: 'foo'}, {2: 'bar'}, {3: b'foobar'}],
+                                                                      reject_bytes=False))
+
+    with pytest.raises(TypeMisMatch):
+        func_a({('not', 'allowed'): [i for i in range(5)]}, [{2: b'hello'}, {42: b'world'}])
+
+
+def test_with_generator():
+
+    @match_typing
+    def func_a(a: Generator):
+        return True
+
+    assert func_a((i for i in range(10)))
+    with pytest.raises(TypeMisMatch):
+        func_a([i for i in range(10)])
 
 
 if __name__ == '__main__':

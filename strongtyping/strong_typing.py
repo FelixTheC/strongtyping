@@ -6,10 +6,12 @@
 """
 import functools
 import inspect
+from collections import Generator
 from itertools import zip_longest
 import typing
 
 from functools import lru_cache
+
 
 from strongtyping.cached_set import CachedSet
 
@@ -23,13 +25,13 @@ class TypeMisMatch(AttributeError):
 typing_base_class = typing._GenericAlias if hasattr(typing, '_GenericAlias') else typing.GenericMeta
 
 
-@lru_cache
+@lru_cache(maxsize=1024)
 def get_possible_types(typ_to_check) -> typing.Union[tuple, None]:
     if typ_to_check.__args__ is not None:
         return tuple(typ for typ in typ_to_check.__args__ if not isinstance(typ, typing.TypeVar))
 
 
-@lru_cache
+@lru_cache(maxsize=1024)
 def get_origins(typ_to_check: any) -> tuple:
     origin = None
     if hasattr(typ_to_check, '__origin__') or hasattr(typ_to_check, '__orig_bases__'):
@@ -106,6 +108,19 @@ def checkin_typing_list(arg: typing.Any, possible_types: tuple, *args):
                                                                           fillvalue=possible_types[0]))
 
 
+def checking_json(arg, possible_types, *args):
+    try:
+        possible_types.dumps(arg)
+    except TypeError:
+        return isinstance(arg, str)
+    else:
+        return True
+
+
+def checking_generator(arg, possible_types, *args):
+    return isinstance(arg, Generator)
+
+
 supported_typings = {
     'list': checkin_typing_list,
     'tuple': checking_typing_tuple,
@@ -114,7 +129,9 @@ supported_typings = {
     'type': checking_typing_type,
     'iterator': checking_typing_iterator,
     'callable': checking_typing_callable,
-    'union': checking_typing_union
+    'union': checking_typing_union,
+    'json': checking_json,
+    'generator': checking_generator
 }
 
 
@@ -126,6 +143,8 @@ def check_type(argument, type_of, mro=False):
 
         if 'any' in origin_name:
             return check_result
+        if 'json' in origin_name:
+            return supported_typings['json'](argument, type_of, mro)
 
         if isinstance(type_of, typing_base_class):
             try:

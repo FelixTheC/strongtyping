@@ -122,6 +122,7 @@ At the current state it will work with
     - Type
     - Iterator
     - Callable
+    - Generator
 - from types:
     - FunctionType
     - MethodType
@@ -131,6 +132,46 @@ class A:
     @match_typing
     def func_a(self, a: 'A'):
 ```
+
+### Now with support for reST docstrings
+therefore use the decorator __match_docstring__
+```
+@match_docstring
+def func_a(a):
+    """
+    :param a:
+    :type a: list
+    ...
+    """
+
+@match_docstring
+def func_a(a, b):
+    """
+    :param int a: foo
+    :vartype b: str
+    ...
+    """
+
+@match_docstring
+def func_a(a, b):
+    """
+    :parameter int a: foo
+    :argument str b: bar
+    ...
+    """
+```
+
+At the current state it will work with basically everything which is written here
+https://gist.github.com/jesuGMZ/d83b5e9de7ccc16f71c02adf7d2f3f44
+
+- extended with support for 
+    - Iterator
+    - Callable
+    - Generator
+    - FunctionType
+    - MethodType
+
+please check __tests/test_typing__ to see what is supported
 
 ### Tested for Versions
 - 3.6, 3.7, 3.8
