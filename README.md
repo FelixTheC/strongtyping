@@ -139,9 +139,6 @@ class A:
 - pip install strongtyping
 - pip install git+https://github.com/FelixTheC/strongtyping.git
 
-### Running the tests
-- python test_typing.py
-
 #### Versioning
 - For the versions available, see the tags on this repository.
 
