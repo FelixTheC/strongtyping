@@ -6,8 +6,8 @@
 """
 import pytest
 
-from docstring_typing import match_docstring
-from strong_typing import TypeMisMatch
+from strongtyping.docstring_typing import match_docstring
+from strongtyping.strong_typing import TypeMisMatch
 
 
 def test_with_docstring_list():

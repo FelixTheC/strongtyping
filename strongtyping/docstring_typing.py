@@ -12,8 +12,8 @@ import re
 from types import FunctionType
 from types import MethodType
 
-from cached_set import CachedSet
-from strong_typing import TypeMisMatch
+from strongtyping.cached_set import CachedSet
+from strongtyping.strong_typing import TypeMisMatch
 
 TYPE_EXTRACTION_PATTERN = r'(^[:a-zA-Z0-9 _-]+(:))'
 PATTERN_1 = r''
