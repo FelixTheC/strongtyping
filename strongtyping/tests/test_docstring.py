@@ -6,7 +6,7 @@
 """
 import pytest
 
-from docstring_typing import match_docstring
+from strongtyping.docstring_typing import match_docstring
 from strong_typing import TypeMisMatch
 
 
