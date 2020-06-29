@@ -14,7 +14,7 @@ import typing
 from typing import Any
 from typing import TypeVar
 
-from cached_set import CachedSet
+from strongtyping.cached_set import CachedSet
 
 
 class TypeMisMatch(AttributeError):
@@ -163,6 +163,9 @@ def check_type(argument, type_of, mro=False):
         elif isinstance(type_of, str):
             return argument.__class__.__name__ == type_of
         elif mro:
+            if origin_name == 'union':
+                possible_types = get_possible_types(type_of)
+                return supported_typings[origin_name](argument, possible_types, mro)
             return type_of in argument
         else:
             try:
