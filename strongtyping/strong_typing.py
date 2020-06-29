@@ -5,16 +5,16 @@
 @author: felix
 """
 import inspect
+import sys
 from collections import Generator
 from itertools import zip_longest
-from functools import lru_cache
 from functools import wraps
 import typing
 
 from typing import Any
-from typing import Union
 from typing import TypeVar
-from strongtyping.cached_set import CachedSet
+
+from cached_set import CachedSet
 
 
 class TypeMisMatch(AttributeError):
@@ -26,25 +26,25 @@ class TypeMisMatch(AttributeError):
 typing_base_class = typing._GenericAlias if hasattr(typing, '_GenericAlias') else typing.GenericMeta
 
 
-@lru_cache(maxsize=1024)
 def get_possible_types(typ_to_check) -> typing.Union[tuple, None]:
     if typ_to_check.__args__ is not None:
         return tuple(typ for typ in typ_to_check.__args__ if not isinstance(typ, TypeVar))
 
 
-@lru_cache(maxsize=1024)
 def get_origins(typ_to_check: any) -> tuple:
     origin = None
     if hasattr(typ_to_check, '__origin__') or hasattr(typ_to_check, '__orig_bases__'):
         origin = typ_to_check.__origin__ if typ_to_check.__origin__ is not None else typ_to_check.__orig_bases__
+    if hasattr(typ_to_check, '_gorg'):
+        return None, str(typ_to_check._gorg).replace('typing.', '')
     return origin, origin._name if hasattr(origin, '_name') else \
-        typ_to_check._name if hasattr(typ_to_check, '_name') else f'{typ_to_check}'
+        typ_to_check._name if hasattr(typ_to_check, '_name') else str(origin).replace('typing.', '')
 
 
 def check_typing_dict(arg: Any, possible_types: tuple, *args):
     try:
         key, val = possible_types
-    except ValueError:
+    except (ValueError, TypeError):
         return isinstance(arg, dict)
     else:
         try:
@@ -97,6 +97,8 @@ def checking_typing_callable(arg: Any, possible_types: tuple, *args):
 
 
 def checking_typing_tuple(arg: Any, possible_types: tuple, *args):
+    if possible_types is None:
+        return isinstance(arg, tuple)
     if len(possible_types) > 0 and not len(arg) == len(possible_types) or not isinstance(arg, tuple):
         return False
     return all(check_type(argument, typ) for argument, typ in zip(arg, possible_types))
@@ -142,15 +144,16 @@ def check_type(argument, type_of, mro=False):
         origin, origin_name = get_origins(type_of)
         origin_name = origin_name.lower()
 
-        if 'any' in origin_name:
+        if 'any' in origin_name or 'any' in str(type_of).lower():
             return check_result
-        if 'json' in origin_name:
+        if 'json' in origin_name or 'json' in str(type_of):
             return supported_typings['json'](argument, type_of, mro)
         if 'new_type' in origin_name:
+            if '3.6' in sys.version:
+                return check_result
             type_of = type_of.__supertype__
             origin, origin_name = get_origins(type_of)
             origin_name = origin_name.lower()
-
         if isinstance(type_of, typing_base_class):
             try:
                 possible_types = get_possible_types(type_of)
