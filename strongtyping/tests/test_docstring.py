@@ -316,5 +316,25 @@ def test_with_docstring_diff_naming():
         func_a('ni', 3)
 
 
+def test_with_docstring_custom_class():
+
+    class MyClass:
+
+        def __mul__(self, other):
+            return 3 * other
+
+    @match_docstring
+    def func_a(a):
+        """
+        :parameter a: foo
+        :type a: MyClass
+        """
+        return a * 3
+
+    assert func_a(MyClass()) == 9
+    with pytest.raises(TypeMisMatch):
+        func_a('MyClass')
+
+
 if __name__ == '__main__':
     pytest.main(['-vv', '-s', __file__])
