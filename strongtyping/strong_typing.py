@@ -10,6 +10,7 @@ from collections import Generator
 from itertools import zip_longest
 from functools import wraps
 import typing
+import warnings
 
 from typing import Any
 from typing import TypeVar
@@ -200,9 +201,11 @@ def match_typing(_func=None, *, excep_raise: Exception = TypeMisMatch, cache_siz
             )
 
             if failed_params:
-                raise excep_raise(
-                    f'Incorrect parameters: {", ".join(f"{name}: {annotations[name]}" for name in failed_params)}'
-                )
+                msg = f'Incorrect parameters: {", ".join(f"{name}: {annotations[name]}" for name in failed_params)}'
+                if excep_raise is not None:
+                    raise excep_raise(msg)
+                else:
+                    warnings.warn(msg, RuntimeWarning)
 
             if cached_set is not None:
                 cached_set.add(cached_key)

@@ -9,6 +9,7 @@ import inspect
 import typing
 import builtins
 import re
+import warnings
 from types import FunctionType
 from types import MethodType
 
@@ -220,9 +221,11 @@ def match_docstring(_func=None, *, excep_raise: Exception = TypeMisMatch, cache_
             )
 
             if failed_params:
-                raise excep_raise(
-                    f'Incorrect parameters: {", ".join(f"{name}: {docstring_types[name]}" for name in failed_params)}'
-                )
+                msg = f'Incorrect parameters: {", ".join(f"{name}: {docstring_types[name]}" for name in failed_params)}'
+                if excep_raise is not None:
+                    raise excep_raise(msg)
+                else:
+                    warnings.warn(msg, RuntimeWarning)
 
             if cached_set is not None:
                 cached_set.add(cached_key)
