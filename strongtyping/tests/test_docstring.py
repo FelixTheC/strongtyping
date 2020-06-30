@@ -336,5 +336,19 @@ def test_with_docstring_custom_class():
         func_a('MyClass')
 
 
+def test_exception_none():
+
+    @match_docstring(excep_raise=None)
+    def multipler(a, b):
+        """
+        :param int a: foo
+        :param int b: bar
+        """
+        return a * b
+
+    with pytest.warns(RuntimeWarning):
+        assert multipler('hello', 3) == 'hellohellohello'
+
+
 if __name__ == '__main__':
     pytest.main(['-vv', '-s', __file__])

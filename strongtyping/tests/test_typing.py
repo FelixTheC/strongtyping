@@ -597,5 +597,15 @@ def test_with_generator():
         func_a([i for i in range(10)])
 
 
+def test_exception_none():
+
+    @match_typing(excep_raise=None)
+    def multipler(a: int, b: int):
+        return a * b
+
+    with pytest.warns(RuntimeWarning):
+        assert multipler('hello', 3) == 'hellohellohello'
+
+
 if __name__ == '__main__':
     pytest.main(['-vv', '-s'])
