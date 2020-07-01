@@ -1,3 +1,5 @@
+![Python application](https://github.com/FelixTheC/strongtyping/workflows/Python%20application/badge.svg)
+
 # Strong Typing
 <p>Decorator which <b>checks at Runtime</b> whether the function is called with the correct type of parameters.<br> 
 And <b><em>raises</em> TypeMisMatch</b> if the used parameters in a function call where invalid.</p>
