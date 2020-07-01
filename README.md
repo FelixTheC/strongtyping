@@ -1,5 +1,6 @@
 [![PyPI version](https://badge.fury.io/py/strongtyping.svg)](https://badge.fury.io/py/strongtyping)
 ![Python application](https://github.com/FelixTheC/strongtyping/workflows/Python%20application/badge.svg)
+![image](https://codecov.io/gh/FelixTheC/strongtyping/graph/badge.svg)
 
 # Strong Typing
 <p>Decorator which <b>checks at Runtime</b> whether the function is called with the correct type of parameters.<br> 
