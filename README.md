@@ -1,6 +1,6 @@
-[![PyPI version](https://badge.fury.io/py/strongtyping.svg)](https://badge.fury.io/py/strongtyping)
-![Python application](https://github.com/FelixTheC/strongtyping/workflows/Python%20application/badge.svg)
-![image](https://codecov.io/gh/FelixTheC/strongtyping/graph/badge.svg)
+[![PyPI version](https://badge.fury.io/py/autoinclude-blueprints.svg)](https://badge.fury.io/py/autoinclude-blueprints)
+![Python application](https://github.com/FelixTheC/autoinclude_flask_blueprints/workflows/Python%20application/badge.svg?branch=master)
+![image](https://codecov.io/gh/FelixTheC/autoinclude_flask_blueprints/graph/badge.svg)
 
 # Strong Typing
 <p>Decorator which <b>checks at Runtime</b> whether the function is called with the correct type of parameters.<br> 
@@ -170,6 +170,7 @@ HelloHelloHelloHello
     - Iterator
     - Callable
     - Generator
+    - Literal
 - from types:
     - FunctionType
     - MethodType
