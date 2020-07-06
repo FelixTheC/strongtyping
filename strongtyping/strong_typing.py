@@ -125,6 +125,10 @@ def checking_generator(arg, possible_types, *args):
     return isinstance(arg, Generator)
 
 
+def checking_literals(arg, possible_types, *args):
+    return arg in possible_types
+
+
 supported_typings = {
     'list': checkin_typing_list,
     'tuple': checking_typing_tuple,
@@ -135,7 +139,8 @@ supported_typings = {
     'callable': checking_typing_callable,
     'union': checking_typing_union,
     'json': checking_json,
-    'generator': checking_generator
+    'generator': checking_generator,
+    'literal': checking_literals,
 }
 
 
