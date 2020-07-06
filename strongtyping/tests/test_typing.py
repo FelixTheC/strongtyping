@@ -17,6 +17,10 @@ from typing import Dict
 from typing import Generator
 from typing import Iterator
 from typing import List
+try:
+    from typing import Literal
+except ImportError:
+    print('python version < 3.8')
 from typing import NewType
 from typing import Optional
 from typing import Set
@@ -605,6 +609,17 @@ def test_exception_none():
 
     with pytest.warns(RuntimeWarning):
         assert multipler('hello', 3) == 'hellohellohello'
+
+
+@pytest.mark.skipif('3.8' not in sys.version_info, reason='Literal first available in py3.8')
+def test_with_literals():
+    @match_typing
+    def with_literals(direction: Literal['horizontal', 'vertical']):
+        return direction
+
+    assert with_literals('vertical') == 'vertical'
+    with pytest.raises(TypeMisMatch):
+        with_literals('up')
 
 
 if __name__ == '__main__':

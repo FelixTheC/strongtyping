@@ -1,3 +1,7 @@
+[![PyPI version](https://badge.fury.io/py/autoinclude-blueprints.svg)](https://badge.fury.io/py/autoinclude-blueprints)
+![Python application](https://github.com/FelixTheC/autoinclude_flask_blueprints/workflows/Python%20application/badge.svg?branch=master)
+![image](https://codecov.io/gh/FelixTheC/autoinclude_flask_blueprints/graph/badge.svg)
+
 # Strong Typing
 <p>Decorator which <b>checks at Runtime</b> whether the function is called with the correct type of parameters.<br> 
 And <b><em>raises</em> TypeMisMatch</b> if the used parameters in a function call where invalid.</p>
@@ -166,6 +170,7 @@ HelloHelloHelloHello
     - Iterator
     - Callable
     - Generator
+    - Literal
 - from types:
     - FunctionType
     - MethodType
