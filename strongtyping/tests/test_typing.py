@@ -17,6 +17,8 @@ from typing import Dict
 from typing import Generator
 from typing import Iterator
 from typing import List
+
+
 try:
     from typing import Literal
 except ImportError:
@@ -30,7 +32,9 @@ from typing import Union, Tuple
 import pytest
 import ujson as ujson
 
-from strongtyping.strong_typing import match_typing, TypeMisMatch
+from strongtyping.strong_typing import match_typing
+from strongtyping.strong_typing import match_class_typing
+from strongtyping.strong_typing import TypeMisMatch
 
 
 def test_func_without_typing():
@@ -607,11 +611,12 @@ def test_exception_none():
     def multipler(a: int, b: int):
         return a * b
 
-    with pytest.warns(RuntimeWarning):
+    with pytest.warns(RuntimeWarning) as record:
         assert multipler('hello', 3) == 'hellohellohello'
+        assert str(record[0].message) == "Incorrect parameters: a: <class 'int'>"
 
 
-@pytest.mark.skipif('3.8' not in sys.version_info, reason='Literal first available in py3.8')
+@pytest.mark.skipif(sys.version_info.minor < 8, reason='Literal first available in py3.8')
 def test_with_literals():
     @match_typing
     def with_literals(direction: Literal['horizontal', 'vertical']):
@@ -622,5 +627,83 @@ def test_with_literals():
         with_literals('up')
 
 
+def test_with_class_decorator():
+
+    @match_class_typing
+    class Dummy:
+        attr = 100
+
+        def a(self, val: int):
+            return val * .25
+
+        def b(self):
+            return 'b'
+
+        def c(self):
+            return 'c'
+
+        def _my_secure_func(self, val: Union[int, float], other: 'Dummy'):
+            return val * other.attr
+
+    d = Dummy()
+    assert d._my_secure_func(.5, d) == 50
+
+    with pytest.raises(Exception):
+        d._my_secure_func(d, .5)
+
+
+def test_with_class_decorator_no_execption():
+
+    @match_class_typing(excep_raise=None)
+    class Dummy:
+        attr = 100
+
+        def a(self, val: int):
+            return val * 3
+
+        def b(self):
+            return 'b'
+
+        def c(self):
+            return 'c'
+
+        def _my_secure_func(self, val: Union[int, float], other: 'Dummy'):
+            return val * other.attr
+
+    d = Dummy()
+    assert d._my_secure_func(.5, d) == 50
+    with pytest.warns(RuntimeWarning) as record:
+        d.a('Hello RuntimeWarning')
+        assert str(record[0].message) == "Incorrect parameters: val: <class 'int'>"
+
+
+def test_with_class_decorator_and_function_override():
+
+    @match_class_typing
+    class Dummy:
+        attr = 100
+
+        @match_typing(excep_raise=None)
+        def a(self, val: int):
+            return val * 3
+
+        def b(self):
+            return 'b'
+
+        def c(self):
+            return 'c'
+
+        def _my_secure_func(self, val: Union[int, float], other: 'Dummy'):
+            return val * other.attr
+
+    d = Dummy()
+    assert d._my_secure_func(.5, d) == 50
+    with pytest.warns(RuntimeWarning) as record:
+        d.a('Hello RuntimeWarning')
+        assert str(record[0].message) == "Incorrect parameters: val: <class 'int'>"
+    with pytest.raises(Exception):
+        d._my_secure_func(d, .5)
+
+
 if __name__ == '__main__':
-    pytest.main(['-vv', '-s'])
+    pytest.main(['-vv', '-s', __file__])

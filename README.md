@@ -2,10 +2,26 @@
 ![Python application](https://github.com/FelixTheC/strongtyping/workflows/Python%20application/badge.svg)
 ![image](https://codecov.io/gh/FelixTheC/strongtyping/graph/badge.svg)
 
+
 # Strong Typing
 <p>Decorator which <b>checks at Runtime</b> whether the function is called with the correct type of parameters.<br> 
 And <b><em>raises</em> TypeMisMatch</b> if the used parameters in a function call where invalid.</p>
  
+## Included decorators
+
+| from strongtyping.strong_typing import            | description                           |
+| :-------------                                    | ----------:                           |
+| [match_typing](#getting-started)                  | decorator for a function              |
+| [match_class_typing](#match_class_typing)         | decorator for a class                 |
+| [setter](#setter)                                 | property decorator for set            |
+| [getter_setter](#getter_setter)                   | property decorator for get and set    |
+
+| from strongtyping.docstring_typing import         | description                           |
+| :-------------                                    | ----------:                           |
+| [match_docstring](#reST-docstrings)               | decorator for a function              |
+| [match_class_docstring](#match_class_docstring)   | decorator for a class                 |
+
+
 ### The problem:
 - Highlighting
     - __Some__ IDE's will/can highlight that one of the parameters in a function call doesn't match but you can execute the function.
@@ -184,9 +200,123 @@ class A:
     def func_a(self, a: 'A'):
         ...
 ```
+- [Back to top](#strong-typing)
 
-### Now with support for reST docstrings
+## match_class_typing
+- this decorator will cover each class function automatically with the __match_typing__ decorator
+ 
+```python
+from strongtyping.strong_typing import match_class_typing
 
+@match_class_typing
+class Dummy:
+    attr = 100
+
+    def a(self, val: int):
+        return val * .25
+
+    def b(self):
+        return 'b'
+
+    def c(self):
+        return 'c'
+
+    def _my_secure_func(self, val: Union[int, float], other: 'Dummy'):
+        return val * other.attr
+```
+- this decorator supports also disabling of raising Exception and internal caching
+```python
+from strongtyping.strong_typing import match_class_typing
+
+@match_class_typing(excep_raise=None)
+class Dummy:
+    attr = 100
+
+    def a(self, val: int):
+        return val * 3
+
+    def b(self):
+        return 'b'
+
+    def c(self):
+        return 'c'
+
+    def _my_secure_func(self, val: Union[int, float], other: 'Dummy'):
+        return val * other.attr
+
+```
+- single class methods inside of a allready decorated class can be overwritten with the match_typing decorator
+```python
+from strongtyping.strong_typing import match_class_typing
+from strongtyping.strong_typing import match_typing
+
+@match_class_typing
+class Dummy:
+    attr = 100
+
+    @match_typing(excep_raise=None)  # this decorator will be used
+    def a(self, val: int):
+        return val * 3
+
+    def b(self):
+        return 'b'
+
+    def c(self):
+        return 'c'
+
+    def _my_secure_func(self, val: Union[int, float], other: 'Dummy'):
+        return val * other.attr
+```
+- [Back to top](#strong-typing)
+
+## setter
+this decorator can replace your *@foo.setter* from property and check your typing
+- this is an extension of [easy_property](https://github.com/salabim/easy_property)
+```python
+from strongtyping.strong_typing import setter
+
+class Dummy:
+    attr = 100
+    val = 'foo'
+
+    @setter
+    def b(self, val: str):
+        self.val = val
+
+d = Dummy()
+d.b == 'foo'  # will raise AttributeError 
+
+d.b = 'bar'  # works like a charm
+
+d.b = 1  # will raise TypeMisMatch
+```
+- [Back to top](#strong-typing)
+
+## getter_setter
+this decorator can replace *@propery* from property and check your typing
+- this is an extension of [easy_property](https://github.com/salabim/easy_property)
+```python
+from strongtyping.strong_typing import getter_setter
+
+class Dummy:
+    attr = 100
+
+    @getter_setter  # here you will have all in one place (DRY) 
+    def c(self, val: int = None):
+        if val is not None:
+            self.attr = val
+        return self.attr
+
+d = Dummy()
+d.c == 100  # works like a charm
+
+d.c = 1  # works like a charm
+
+d.c = 'foobar'  # will raise TypeMisMatch
+```
+- [Back to top](#strong-typing)
+
+## reST docstrings
 When working with docstrings in reST style format use the decorator __match_docstring__
 ```python
 from strongtyping.docstring_typing import match_docstring
@@ -215,8 +345,6 @@ def func_a(a, b):
     ...
     """
 ```
-
-
 At the current state, it will work with basically everything which is written here
 https://gist.github.com/jesuGMZ/d83b5e9de7ccc16f71c02adf7d2f3f44
 
@@ -228,9 +356,106 @@ https://gist.github.com/jesuGMZ/d83b5e9de7ccc16f71c02adf7d2f3f44
     - MethodType
 
 please check __tests/test_typing__ to see what is supported and if something is missing feel free to create an issue.
+- [Back to top](#strong-typing)
+
+## match_class_docstring
+- this decorator will cover each class function automatically with the __match_docstring__ decorator
+```python
+from strongtyping.docstring_typing import match_class_docstring
+
+@match_class_docstring
+class Dummy:
+    attr = 100
+
+    def a(self, val: int):
+        """
+        :param int val: foo
+        """
+        return val * .25
+
+    def b(self):
+        return 'b'
+
+    def c(self):
+        return 'c'
+
+    def _my_secure_func(self, val, other):
+        """
+        :param val: foo
+        :type val: int or float
+        :param other: Dummy
+        :return:
+        """
+        return val * other.attr
+```
+- this decorator supports also disabling of raising Exception and internal caching
+
+```python
+from strongtyping.docstring_typing import match_class_docstring
+
+@match_class_docstring(excep_raise=None)
+class Dummy:
+    attr = 100
+
+    def a(self, val: int):
+        """
+        :param int val: foo
+        """
+        return val * 5
+
+    def b(self):
+        return 'b'
+
+    def c(self):
+        return 'c'
+
+    def _my_secure_func(self, val, other):
+        """
+        :param val: foo
+        :type val: int or float
+        :param other: this class
+        :type other: Dummy
+        :return:
+        """
+        return val * other.attr
+```
+- single class methods inside of a allready decorated class can be overwritten with the match_docstring decorator
+```python
+from strongtyping.docstring_typing import match_class_docstring
+from strongtyping.docstring_typing import match_docstring
+
+@match_class_docstring
+class Other:
+    attr = 100
+
+    def a(self, val: int):
+        """
+        :param int val: foo
+        """
+        return val * 2
+
+    def b(self):
+        return 'b'
+
+    def c(self):
+        return 'c'
+
+    @match_docstring(excep_raise=None)  # this decorator will be used
+    def _my_secure_func(self, other):
+        """
+        :param other: instance of same class
+        :type other: Other
+        :return:
+        """
+        return 2 * other.attr
+```
+- [Back to top](#strong-typing)
+<br>
+
+## Package
 
 ### Tested for Versions
-- 3.6, 3.7, 3.8
+- 3.6, 3.7, 3.8, 3.9.0b4
 
 ### Installing
 - pip install strongtyping
@@ -245,5 +470,6 @@ please check __tests/test_typing__ to see what is supported and if something is 
 - This project is licensed under the MIT License - see the LICENSE.md file for details
 
 ### Special thanks
-- Thanks to Ruud van der Ham for helping me improve my code
+- Thanks to Ruud van der Ham for helping me to improve my code and for his [easy_property](https://github.com/salabim/easy_property) package
+- Thanks to Dan Bader who puts this package into [PyCoder’s Weekly Issue #428 (July 7, 2020)](https://pycoders.com/issues/428)
 - And all how gave me Feedback in the Pythonista Cafe

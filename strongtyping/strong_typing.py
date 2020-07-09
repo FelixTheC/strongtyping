@@ -7,6 +7,7 @@
 import inspect
 import sys
 from collections import Generator
+from functools import lru_cache
 from itertools import zip_longest
 from functools import wraps
 import typing
@@ -15,6 +16,7 @@ import warnings
 from typing import Any
 from typing import TypeVar
 
+from easy_property import action
 from strongtyping.cached_set import CachedSet
 
 
@@ -27,6 +29,7 @@ class TypeMisMatch(AttributeError):
 typing_base_class = typing._GenericAlias if hasattr(typing, '_GenericAlias') else typing.GenericMeta
 
 
+@lru_cache(maxsize=1024)
 def get_possible_types(typ_to_check) -> typing.Union[tuple, None]:
     if typ_to_check.__args__ is not None:
         return tuple(typ for typ in typ_to_check.__args__ if not isinstance(typ, TypeVar))
@@ -190,7 +193,6 @@ def match_typing(_func=None, *, excep_raise: Exception = TypeMisMatch, cache_siz
 
         @wraps(func)
         def inner(*args, **kwargs):
-
             if cached_set is not None:
                 # check if func with args and kwargs was checked once before with positive result
                 cached_key = (func, args.__str__(), kwargs.__str__())
@@ -214,12 +216,52 @@ def match_typing(_func=None, *, excep_raise: Exception = TypeMisMatch, cache_siz
 
             if cached_set is not None:
                 cached_set.add(cached_key)
-
             return func(*args, **kwargs)
 
+        inner.__fe_strng_mtch__ = 0
         return inner
 
     if _func is not None:
         return wrapper(_func)
     else:
         return wrapper
+
+
+exclude_builtins = dir(object)
+
+
+class match_class_typing:
+
+    match_func = match_typing
+
+    def __init__(self, cls=None, *, excep_raise: Exception = TypeMisMatch, cache_size=0):
+        self.cls = cls
+        self.excep_raise = excep_raise
+        self.cache_size = cache_size
+
+    def __call__(self, this_cls=None, *args, **kwargs):
+        cls = self.cls or this_cls
+
+        def new_with_match_typing(cls_):
+            x = object.__new__(cls_)
+            [setattr(x, cls_func, match_class_typing.match_func(getattr(x, cls_func),
+                                                                excep_raise=self.excep_raise,
+                                                                cache_size=self.cache_size)
+                     ) for cls_func in dir(x)
+             if callable(getattr(x, cls_func)) and cls_func not in exclude_builtins and
+             not hasattr(getattr(x, cls_func), '__fe_strng_mtch__')]
+            return x
+
+        cls.__new__ = new_with_match_typing
+        if this_cls is not None:
+            return cls
+        return cls(*args, **kwargs)
+
+
+def setter(func):
+    return action(func, 'setter')
+
+
+def getter_setter(func):
+    return action(func, 'getter_setter')
+
