@@ -6,6 +6,7 @@
 """
 import pytest
 
+from strongtyping.docstring_typing import match_class_docstring
 from strongtyping.docstring_typing import match_docstring
 from strongtyping.strong_typing import TypeMisMatch
 
@@ -323,6 +324,10 @@ def test_with_docstring_custom_class():
         def __mul__(self, other):
             return 3 * other
 
+    class Other:
+        def __mul__(self, other):
+            return 4 * other
+
     @match_docstring
     def func_a(a):
         """
@@ -334,6 +339,8 @@ def test_with_docstring_custom_class():
     assert func_a(MyClass()) == 9
     with pytest.raises(TypeMisMatch):
         func_a('MyClass')
+    with pytest.raises(TypeMisMatch):
+        func_a(Other())
 
 
 def test_exception_none():
@@ -348,6 +355,118 @@ def test_exception_none():
 
     with pytest.warns(RuntimeWarning):
         assert multipler('hello', 3) == 'hellohellohello'
+
+
+def test_with_class_decorator():
+
+    @match_class_docstring
+    class Dummy:
+        attr = 100
+
+        def a(self, val: int):
+            """
+            :param int val: foo
+            """
+            return val * .25
+
+        def b(self):
+            return 'b'
+
+        def c(self):
+            return 'c'
+
+        def _my_secure_func(self, val, other):
+            """
+            :param val: foo
+            :type val: int or float
+            :param other: Dummy
+            :return:
+            """
+            return val * other.attr
+
+    d = Dummy()
+    assert d._my_secure_func(.5, d) == 50
+
+    with pytest.raises(Exception):
+        d._my_secure_func(d, .5)
+
+
+def test_with_class_decorator_no_execption():
+
+    @match_class_docstring(excep_raise=None)
+    class Dummy:
+        attr = 100
+
+        def a(self, val: int):
+            """
+            :param int val: foo
+            """
+            return val * 5
+
+        def b(self):
+            return 'b'
+
+        def c(self):
+            return 'c'
+
+        def _my_secure_func(self, val, other):
+            """
+            :param val: foo
+            :type val: int or float
+            :param other: this class
+            :type other: Dummy
+            :return:
+            """
+            return val * other.attr
+
+    d = Dummy()
+    assert d._my_secure_func(.5, d) == 50
+    with pytest.warns(RuntimeWarning) as record:
+        d.a('Hello RuntimeWarning')
+        assert str(record[0].message) == "Incorrect parameters: val: <class 'int'>"
+
+
+def test_with_class_decorator_and_function_override():
+
+    @match_class_docstring
+    class Other:
+        attr = 100
+
+        def a(self, val: int):
+            """
+            :param int val: foo
+            """
+            return val * 2
+
+        def b(self):
+            return 'b'
+
+        def c(self):
+            return 'c'
+
+        @match_docstring(excep_raise=None)
+        def _my_secure_func(self, other):
+            """
+            :param other: instance of same class
+            :type other: Other
+            :return:
+            """
+            return 2 * other.attr
+
+    d = Other()
+    assert d._my_secure_func(d) == 200
+
+    with pytest.raises(Exception):
+        d.a('Hello RuntimeWarning')
+
+    class Dummy:
+        attr = 200
+
+    o = Dummy()
+    with pytest.warns(RuntimeWarning) as record:
+        assert d._my_secure_func(o) == 400
+        assert str(record[0].message) == "Incorrect parameters: other: Other"
+
 
 if __name__ == '__main__':
     pytest.main(['-vv', '-s', __file__])
