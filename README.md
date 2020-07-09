@@ -9,17 +9,17 @@ And <b><em>raises</em> TypeMisMatch</b> if the used parameters in a function cal
  
 ## Included decorators
 
-| from strongtyping.strong_typing import        | description                           |
-| :-------------                                | ----------:                           |
-| [match_typing](#getting-started)              | decorator for a function              |
-| [match_class_typing](#match_class_typing)     | decorator for a class                 |
-| [setter](#setter)                             | property decorator for set            |
-| [getter_setter](#getter_setter)               | property decorator for get and set    |
+| from strongtyping.strong_typing import            | description                           |
+| :-------------                                    | ----------:                           |
+| [match_typing](#getting-started)                  | decorator for a function              |
+| [match_class_typing](#match_class_typing)         | decorator for a class                 |
+| [setter](#setter)                                 | property decorator for set            |
+| [getter_setter](#getter_setter)                   | property decorator for get and set    |
 
-| from strongtyping.docstring_typing import     | description                           |
-| :-------------                                | ----------:                           |
-| [match_docstring](#reST-docstrings)           | decorator for a function              |
-| match_class_docstring                         | decorator for a class                 |
+| from strongtyping.docstring_typing import         | description                           |
+| :-------------                                    | ----------:                           |
+| [match_docstring](#reST-docstrings)               | decorator for a function              |
+| [match_class_docstring](#match_class_docstring)   | decorator for a class                 |
 
 
 ### The problem:
