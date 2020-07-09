@@ -20,7 +20,7 @@ packages.append('easy_property.py')
 
 setup(
     name="strongtyping",
-    version="1.3.2",
+    version="1.4.0",
     description="Decorator which checks whether the function is called with the correct type of parameters",
     long_description=README,
     long_description_content_type="text/markdown",
