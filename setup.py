@@ -16,7 +16,6 @@ HERE = pathlib.Path(__file__).parent
 README = (HERE / "README.md").read_text()
 
 packages = find_packages(exclude=['test_*', '*.tests'])
-packages.append('easy_property.py')
 
 setup(
     name="strongtyping",
@@ -33,7 +32,7 @@ setup(
         "Programming Language :: Python :: 3",
     ],
     packages=packages,
-    package_data={'easy_property': ['easy_property', ]},
     python_requires='>=3.6',
+    include_package_data=True,
 )
 
