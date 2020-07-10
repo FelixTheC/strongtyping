@@ -16,6 +16,7 @@ import warnings
 from typing import Any
 from typing import TypeVar
 
+from easy_property import action
 from strongtyping.cached_set import CachedSet
 
 
@@ -276,13 +277,8 @@ def action(f, frefs):
     return property(*(action.f[ref] if (ref != "documenter" or action.f[ref] is None)
                       else action.f[ref](0) for ref in action.f))
 
-
 action.qualname = None
 action.f = dict.fromkeys(["getter", "setter", "deleter", "documenter"], None)
-
-
-def getter(func):
-    return action(func, 'getter')
 
 
 def setter(func):
