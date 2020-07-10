@@ -16,8 +16,8 @@ import warnings
 from typing import Any
 from typing import TypeVar
 
-from easy_property import action
 from strongtyping.cached_set import CachedSet
+import strongtyping.easy_property
 
 
 class TypeMisMatch(AttributeError):
@@ -259,9 +259,9 @@ class match_class_typing:
 
 
 def setter(func):
-    return action(func, 'setter')
+    return strongtyping.easy_property.action(func, 'setter')
 
 
 def getter_setter(func):
-    return action(func, 'getter_setter')
+    return strongtyping.easy_property.action(func, 'getter_setter')
 

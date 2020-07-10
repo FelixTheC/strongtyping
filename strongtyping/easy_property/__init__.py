@@ -5,7 +5,8 @@
 @author: felix
 """
 from functools import partial
-import strongtyping
+
+from strongtyping.strong_typing import match_typing
 
 
 def action(f, frefs):
@@ -22,7 +23,7 @@ def action(f, frefs):
     action.f.update({}.fromkeys(frefs.split('_'), f))  # set all frefs values to f
 
     # this line was added by myself
-    action.f['setter'] = strongtyping.strong_typing.match_typing(action.f['setter']) if action.f['setter'] is not None else None
+    action.f['setter'] = match_typing(action.f['setter']) if action.f['setter'] is not None else None
 
     return property(*(action.f[ref] if (ref != "documenter" or action.f[ref] is None)
                       else action.f[ref](0) for ref in action.f))

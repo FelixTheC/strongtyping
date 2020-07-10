@@ -6,7 +6,7 @@
 """
 import pytest
 
-from easy_property import getter
+from strongtyping.easy_property import getter
 from strongtyping.strong_typing import getter_setter
 from strongtyping.strong_typing import setter
 from strongtyping.strong_typing import TypeMisMatch
