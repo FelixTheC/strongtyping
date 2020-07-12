@@ -6,7 +6,7 @@
 """
 import inspect
 import sys
-from collections import Generator
+from collections.abc import Generator
 from functools import lru_cache
 from itertools import zip_longest
 from functools import wraps
