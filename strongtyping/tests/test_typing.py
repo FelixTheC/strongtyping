@@ -18,6 +18,17 @@ from typing import Generator
 from typing import Iterator
 from typing import List
 
+from strongtyping.strong_typing import checkin_typing_list
+from strongtyping.strong_typing import checking_json
+from strongtyping.strong_typing import checking_typing_tuple
+from strongtyping.strong_typing import checking_typing_type
+from strongtyping.strong_typing import checking_typing_set
+from strongtyping.strong_typing import check_typing_dict
+from strongtyping.strong_typing import get_possible_types
+from strongtyping.strong_typing import get_origins
+from strongtyping.strong_typing import match_typing
+from strongtyping.strong_typing import match_class_typing
+from strongtyping.strong_typing import TypeMisMatch
 
 try:
     from typing import Literal
@@ -32,9 +43,77 @@ from typing import Union, Tuple
 import pytest
 import ujson as ujson
 
-from strongtyping.strong_typing import match_typing
-from strongtyping.strong_typing import match_class_typing
-from strongtyping.strong_typing import TypeMisMatch
+
+def test_get_possible_types_from_typing():
+    # using pytest.mark.parametrize is also an option but for the moment this is fine also
+    assert get_possible_types(List[str]) == (str, )
+    assert get_possible_types(Tuple[str, str]) == (str, str)
+    assert get_possible_types(Dict[str, int]) == (str, int)
+    assert get_possible_types(List[Union[str, int]]) == (Union[str, int], )
+    assert get_possible_types(Union[str, int]) == (str, int, )
+    assert get_possible_types(Set[int]) == (int, )
+    assert get_possible_types(Tuple[Union[str, int], List[int]]) == (Union[str, int], List[int], )
+
+
+@pytest.mark.skipif(sys.version_info.minor == 6, reason='some special cases py3.6')
+def test_get_origins():
+    assert get_origins(List[str]) == (list, 'List')
+    assert get_origins(Tuple[str, str]) == (tuple, 'Tuple')
+    assert get_origins(Union[str, int]) == (Union, 'Union')
+    assert get_origins(FunctionType) == (None, 'None')
+
+
+def test_check_typing_dict_builtin():
+    arg = {'spell': 'lumos'}
+    assert check_typing_dict(arg, ())
+    assert check_typing_dict({1, 2, 3}, ()) is False
+
+
+def test_check_typing_dict_typ():
+    arg = {'spell': 'lumos'}
+    assert check_typing_dict(arg, (str, str))
+    assert check_typing_dict(arg, (str, int)) is False
+    assert check_typing_dict(arg, (int, str)) is False
+    assert check_typing_dict(arg, (Union[int, str], str))
+    assert check_typing_dict(arg, (str, Union[int, str]))
+
+
+def test_check_typing_set_builtin():
+    arg = {'avadra', 'kevadra'}
+    assert checking_typing_set(arg, ())
+    assert checking_typing_set({'spell': 'lumos'}, ()) is False
+
+
+def test_check_typing_list_builtin():
+    arg = ['avadra', 'kevadra']
+    assert checkin_typing_list(arg, (str, ))
+    assert checkin_typing_list({'spell': 'lumos'}, ()) is False
+
+
+def test_check_typing_tuple_builtin():
+    arg = ('avadra', 'kevadra')
+    assert checking_typing_tuple(arg, None)
+    assert checking_typing_tuple(arg, (str, str))
+    assert checking_typing_tuple({'spell': 'lumos'}, ()) is False
+
+
+def test_check_typing_json():
+    arg = {'spell': 'lumos'}
+    arg_2 = [{'spell': 'lumos'}, {'spell': 'accio'}]
+    arg_3 = '[{"spell": "lumos"}, {"spell": "accio"}]'
+    assert checking_json(arg, json)
+    assert checking_json(arg_2, ujson)
+    assert checking_json(arg_3, json)
+    assert checking_json({'spell', 'lumos'}, ujson) is False
+
+
+def test_check_typing_type():
+    class User:
+        def __repr__(self):
+            return 'User'
+
+    assert checking_typing_type(User, (User, ))
+    assert checking_typing_type({'spell': 'lumos'}, ()) is False
 
 
 def test_func_without_typing():

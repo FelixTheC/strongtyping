@@ -6,7 +6,7 @@
 """
 import inspect
 import sys
-from collections import Generator
+from collections.abc import Generator
 from functools import lru_cache
 from itertools import zip_longest
 from functools import wraps
@@ -26,20 +26,36 @@ class TypeMisMatch(AttributeError):
         print(message)
 
 
+py_version = sys.version_info.minor
 typing_base_class = typing._GenericAlias if hasattr(typing, '_GenericAlias') else typing.GenericMeta
 
 
 @lru_cache(maxsize=1024)
 def get_possible_types(typ_to_check) -> typing.Union[tuple, None]:
+    """
+    :param typ_to_check: some typing like List[str], Dict[str, int], Tuple[Union[str, int], List[int]]
+    :return: the inner types, classes of the type
+        - List[str] = (str, )
+        - Dict[str, int] = (str, int, )
+        - Tuple[Union[str, int], List[int]] = (Union[str, int], List[int], )
+    """
     if typ_to_check.__args__ is not None:
         return tuple(typ for typ in typ_to_check.__args__ if not isinstance(typ, TypeVar))
 
 
 def get_origins(typ_to_check: any) -> tuple:
+    """
+    :param typ_to_check: typ_to_check: some typing like List[str], Dict[str, int], Tuple[Union[str, int], List[int]]
+    :return: the class, alias_class and the class name
+        - List[str] = (list, 'List')
+        - Dict[str, int] = (dict, 'Dict')
+        - Tuple[Union[str, int], List[int]] = (tuple, 'Tuple)
+        - FunctionType = (None, 'None')
+    """
     origin = None
     if hasattr(typ_to_check, '__origin__') or hasattr(typ_to_check, '__orig_bases__'):
         origin = typ_to_check.__origin__ if typ_to_check.__origin__ is not None else typ_to_check.__orig_bases__
-    if hasattr(typ_to_check, '_gorg'):
+    if py_version == 6 and hasattr(typ_to_check, '_gorg'):
         return None, str(typ_to_check._gorg).replace('typing.', '')
     return origin, origin._name if hasattr(origin, '_name') else \
         typ_to_check._name if hasattr(typ_to_check, '_name') else str(origin).replace('typing.', '')
@@ -259,7 +275,6 @@ class match_class_typing:
 
 
 def action(f, frefs):
-
     """
     This code is original from Ruud van der Ham https://github.com/salabim/easy_property
     """

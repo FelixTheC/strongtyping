@@ -39,33 +39,6 @@ possible_types = {'(': tuple,
                   '{': set}
 
 
-def generate_token(type_of) -> list:
-    tokens = []
-    start_token = False
-    sub_list = []
-    possible_sub_type = ''
-    for p in type_of[1:-1].split():
-        try:
-            founded = re.search(PATTERN, p)
-            item = founded.string.replace(',', '').strip()
-            start_token = True if item[0] in ['(', '[', '{'] else False
-            if start_token:
-                possible_sub_type = item[0]
-                sub_list.append(item[1:])
-            if not start_token and sub_list:
-                sub_list.append(item[:-1])
-                tokens.append(possible_types[possible_sub_type]([param_attr(attr) for attr in sub_list]))
-                sub_list = []
-        except AttributeError:
-            if not start_token:
-                tokens.append(param_attr(p.replace(',', '').strip()))
-            else:
-                sub_list.append(p.replace(',', '').strip())
-
-    possible_sub_type = possible_sub_type if possible_sub_type else type_of[0]
-    return possible_types[possible_sub_type](tokens)
-
-
 def param_attr(attr: str):
     """
     :return: builtin class or typing instance
@@ -74,25 +47,6 @@ def param_attr(attr: str):
         return getattr(typing, attr)
     except AttributeError:
         return getattr(builtins, attr)
-
-
-def recursive_isinstance(obj: typing.Any, typ: typing.Any, *, length_matches: bool = False) -> bool:
-    try:
-        _isinstance = all(recursive_isinstance(o, t, length_matches=length_matches) for o, t in zip(obj, typ))
-    except TypeError:
-        _isinstance = isinstance(obj, typ)
-    if length_matches:
-        return _isinstance and length_is_matching(obj, typ)
-    return _isinstance
-
-
-def length_is_matching(obj: typing.Any, value: typing.Any):
-    try:
-        # resolve problem with strings because they are iterable too
-        obj_length = len(obj) if not isinstance(obj, str) else len(obj.split(' '))
-        return obj_length == len(value)
-    except TypeError:
-        return True
 
 
 def get_container_types(ttype_of: str) -> typing.Union[None, tuple]:
