@@ -5,8 +5,6 @@
 @author: eisenmenger
 """
 import pytest
-
-from strongtyping.strong_typing import getter
 from strongtyping.strong_typing import getter_setter
 from strongtyping.strong_typing import setter
 from strongtyping.strong_typing import TypeMisMatch
@@ -15,10 +13,6 @@ from strongtyping.strong_typing import TypeMisMatch
 class Dummy:
     attr = 100
     val = 'foo'
-
-    @getter
-    def a(self):
-        return self.attr
 
     @setter
     def b(self, val: str):
@@ -29,13 +23,6 @@ class Dummy:
         if val is not None:
             self.attr = val
         return self.attr
-
-
-def test_getter():
-    d = Dummy()
-    assert d.a == 100
-    with pytest.raises(AttributeError):
-        d.a = 10
 
 
 def test_setter():
