@@ -5,4 +5,4 @@
 @author: felix
 """
 
-__all__ = ['strong_typing', 'docstring_typing', 'cached_set', 'cached_dict']
+__all__ = ['strong_typing', 'docstring_typing', 'cached_set', 'cached_dict', 'type_namedtuple']
