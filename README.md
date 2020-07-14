@@ -22,6 +22,12 @@ And <b><em>raises</em> TypeMisMatch</b> if the used parameters in a function cal
 | [match_class_docstring](#match_class_docstring)   | decorator for a class                 |
 
 
+## Additional features
+| from strongtyping.strong_typing import            | description                           |
+| :-------------                                    | ----------:                           |
+| [typed_namedtuple](#typed_namedtuple)             | an extension of the original namedtuple|
+
+
 ### The problem:
 - Highlighting
     - __Some__ IDE's will/can highlight that one of the parameters in a function call doesn't match but you can execute the function.
@@ -449,6 +455,58 @@ class Other:
         """
         return 2 * other.attr
 ```
+- [Back to top](#strong-typing)
+
+
+## typed_namedtuple
+
+- from my side it was only logical to create an own version of namedtuple with typing support
+- for typing use the reST-style
+```python
+from strongtyping.type_namedtuple import typed_namedtuple
+
+Dummy = typed_namedtuple('Dummy', 'spell:str, mana:int or str,effect:list')
+
+Dummy(mana='Lumos', spell=5, effect='Makes light')  # will raise a TypeError
+Dummy(spell='Lumos', mana=5, effect=['Makes light', ])  # works like a charm
+
+```
+- the same happens also with wrong default values (the typed_namedtuple needs the exact same length)
+```python
+from strongtyping.type_namedtuple import typed_namedtuple
+
+# will raise a TypeError
+Dummy = typed_namedtuple('Dummy', ['spell:str', 'mana:int', 'effect:list'],  defaults=[0, '', ''])
+
+```
+- and also when you try to replace an attribute with a wrong type
+```python
+from strongtyping.type_namedtuple import typed_namedtuple
+Dummy = typed_namedtuple('Dummy', ['spell:str', 'mana:int', 'effect:list'])
+d = Dummy('Lumos', mana=5, effect=['Makes light', ])
+
+d._replace(effect=b'Makes light')  # will raise a TypeError
+
+```
+- the docstring will also display the types of the parameter in the reST-style
+```python
+from strongtyping.type_namedtuple import typed_namedtuple
+Dummy = typed_namedtuple('Dummy', 'spell:str, mana:int or str,effect:list')
+
+print(help(Dummy))
+
+"""
+class Dummy(builtins.tuple)
+     |  Dummy(*args, **kwargs)
+     |  
+     |  Dummy(spell, mana, effect)
+     |  :type spell: str
+     |  :type mana: int or str
+     |  :type effect: list
+    ...
+"""
+```
+
 - [Back to top](#strong-typing)
 <br>
 
