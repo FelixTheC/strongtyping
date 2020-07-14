@@ -96,7 +96,9 @@ def typed_namedtuple(typename: str, field_names: Union[List[str], str], *,
             if defaults is not None:
                 if len(_field_types) != len(defaults):
                     raise TypeError('Default values must match with field names')
-                return {k: v for k, v in zip(_field_types.keys(), defaults)}
+                _defaults = {k: v for k, v in zip(_field_types.keys(), defaults)}
+                check_type(_defaults)
+                return _defaults
             else:
                 raise TypeError(f'Initialise {typename} with values or add defaults')
 
@@ -153,7 +155,7 @@ def typed_namedtuple(typename: str, field_names: Union[List[str], str], *,
             '_replace': _replace,
             '__getnewargs__': __getnewargs__,
             '__repr__': __repr__,
-            '__doc__': f'{typename}\n{class_doc}',
+            '__doc__': f'{typename}({", ".join(_field_types.keys())})\n{class_doc}',
             '_field_defaults': _field_defaults,
         }
 

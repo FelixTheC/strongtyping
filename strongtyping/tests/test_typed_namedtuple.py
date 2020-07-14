@@ -118,18 +118,15 @@ def test_typed_namedtuple_instantiate_with_incorrect_types_raises_type_error(dum
 
 
 def test_typed_namedtuple_incorrect_default_types_raises_type_error():
-    Dummy = typed_namedtuple('Dummy', ['spell:str', 'mana:int', 'effect:list'], defaults=[0, '', ''])
     with pytest.raises(TypeError):
-        Dummy()
+        Dummy = typed_namedtuple('Dummy', ['spell:str', 'mana:int', 'effect:list'], defaults=[0, '', ''])
 
-    Dummy = typed_namedtuple('Dummy', ['spell:str', 'mana:int or str', 'effect:list'], defaults=['', (), []])
     with pytest.raises(TypeError):
-        Dummy()
+        Dummy = typed_namedtuple('Dummy', ['spell:str', 'mana:int or str', 'effect:list'], defaults=['', (), []])
 
-    Dummy = typed_namedtuple('Dummy', ['spell:str', 'mana:int or str', 'effect:list or tuple'],
-                             defaults=['', '5', {1, 2}])
     with pytest.raises(TypeError):
-        Dummy()
+        Dummy = typed_namedtuple('Dummy', ['spell:str', 'mana:int or str', 'effect:list or tuple'],
+                                 defaults=['', '5', {1, 2}])
 
 
 def test_typed_namedtuple_incorrect_replace_types_raises_type_error(dummy_obj):
@@ -143,9 +140,8 @@ def test_typed_namedtuple_with_field_names_as_str():
     with pytest.raises(TypeError):
         Dummy(mana='Lumos', spell=5, effect='Makes light')
 
-    Dummy = typed_namedtuple('Dummy', 'spell:str, mana:int or str,effect:list',  defaults=[0, '', ''])
     with pytest.raises(TypeError):
-        Dummy()
+        Dummy = typed_namedtuple('Dummy', 'spell:str, mana:int or str,effect:list',  defaults=[0, '', ''])
 
 
 def test_typed_namedtuple_default_values_and_instantiate_with_some_values():
@@ -172,4 +168,6 @@ def test_typed_namedtuple_mixing_typ_and_no_type_not_allowed():
 
 
 if __name__ == '__main__':
-    pytest.main(['-v', '-s', __file__])
+    Dummy = typed_namedtuple('Dummy', 'spell:str, mana:int or str,effect:list')
+    print(help(Dummy))
+    # pytest.main(['-v', '-s', __file__])
