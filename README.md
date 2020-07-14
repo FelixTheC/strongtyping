@@ -23,7 +23,7 @@ And <b><em>raises</em> TypeMisMatch</b> if the used parameters in a function cal
 
 
 ## Additional features
-| from strongtyping.strong_typing import            | description                           |
+| from strongtyping.type_namedtuple import          | description                           |
 | :-------------                                    | ----------:                           |
 | [typed_namedtuple](#typed_namedtuple)             | an extension of the original namedtuple|
 
