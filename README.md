@@ -488,6 +488,20 @@ d = Dummy('Lumos', mana=5, effect=['Makes light', ])
 d._replace(effect=b'Makes light')  # will raise a TypeError
 
 ```
+- it is also possible to use the typing.NamdeTuple way for instatiating
+```python
+from strongtyping.type_namedtuple import typed_namedtuple
+Dummy = typed_namedtuple('Dummy', [('spell', str), ('mana', int), ('effect', Union[list, tuple])])
+
+Dummy('Papyrus Reparo', 10, {1, 2, 3})  # will raise a TypeError
+
+# when using this way you will also have the __annototaions__
+
+print(Dummy.__annotations__)
+# {'spell': <class 'str'>, 'mana': <class 'int'>, 'effect': typing.Union[list, tuple]}
+
+```
+
 - the docstring will also display the types of the parameter in the reST-style
 ```python
 from strongtyping.type_namedtuple import typed_namedtuple
