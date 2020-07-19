@@ -61,7 +61,7 @@ def get_origins(typ_to_check: any) -> tuple:
         typ_to_check._name if hasattr(typ_to_check, '_name') else str(origin).replace('typing.', '')
 
 
-def check_typing_dict(arg: Any, possible_types: tuple, *args):
+def checking_typing_dict(arg: Any, possible_types: tuple, *args):
     try:
         key, val = possible_types
     except (ValueError, TypeError):
@@ -124,14 +124,14 @@ def checking_typing_tuple(arg: Any, possible_types: tuple, *args):
     return all(check_type(argument, typ) for argument, typ in zip(arg, possible_types))
 
 
-def checkin_typing_list(arg: Any, possible_types: tuple, *args):
+def checking_typing_list(arg: Any, possible_types: tuple, *args):
     if not isinstance(arg, list):
         return False
     return all(check_type(argument, typ) for argument, typ in zip_longest(arg, possible_types,
                                                                           fillvalue=possible_types[0]))
 
 
-def checking_json(arg, possible_types, *args):
+def checking_typing_json(arg, possible_types, *args):
     try:
         possible_types.dumps(arg)
     except TypeError:
@@ -140,27 +140,15 @@ def checking_json(arg, possible_types, *args):
         return True
 
 
-def checking_generator(arg, possible_types, *args):
+def checking_typing_generator(arg, possible_types, *args):
     return isinstance(arg, Generator)
 
 
-def checking_literals(arg, possible_types, *args):
+def checking_typing_literal(arg, possible_types, *args):
     return arg in possible_types
 
 
-supported_typings = {
-    'list': checkin_typing_list,
-    'tuple': checking_typing_tuple,
-    'dict': check_typing_dict,
-    'set': checking_typing_set,
-    'type': checking_typing_type,
-    'iterator': checking_typing_iterator,
-    'callable': checking_typing_callable,
-    'union': checking_typing_union,
-    'json': checking_json,
-    'generator': checking_generator,
-    'literal': checking_literals,
-}
+supported_typings = vars()
 
 
 def check_type(argument, type_of, mro=False):
@@ -172,7 +160,8 @@ def check_type(argument, type_of, mro=False):
         if 'any' in origin_name or 'any' in str(type_of).lower():
             return check_result
         if 'json' in origin_name or 'json' in str(type_of):
-            return supported_typings['json'](argument, type_of, mro)
+            return supported_typings['checking_typing_json'](argument, type_of, mro)
+
         if 'new_type' in origin_name:
             if '3.6' in sys.version:
                 return check_result
@@ -182,7 +171,7 @@ def check_type(argument, type_of, mro=False):
         if isinstance(type_of, typing_base_class):
             try:
                 possible_types = get_possible_types(type_of)
-                return supported_typings[origin_name](argument, possible_types, mro)
+                return supported_typings[f'checking_typing_{origin_name}'](argument, possible_types, mro)
             except AttributeError:
                 return isinstance(argument, type_of.__args__)
         elif isinstance(type_of, str):
@@ -190,7 +179,7 @@ def check_type(argument, type_of, mro=False):
         elif mro:
             if origin_name == 'union':
                 possible_types = get_possible_types(type_of)
-                return supported_typings[origin_name](argument, possible_types, mro)
+                return supported_typings[f'checking_typing_{origin_name}'](argument, possible_types, mro)
             return type_of in argument
         else:
             try:
@@ -264,7 +253,7 @@ class match_class_typing:
                                                                 excep_raise=self.excep_raise,
                                                                 cache_size=self.cache_size)
                      ) for cls_func in dir(x)
-             if callable(getattr(x, cls_func)) and cls_func not in exclude_builtins and
+             if callable(getattr(x, cls_func)) and hasattr(getattr(x, cls_func), '__annotations__') and
              not hasattr(getattr(x, cls_func), '__fe_strng_mtch__')]
             return x
 
@@ -306,4 +295,3 @@ def setter(func):
 
 def getter_setter(func):
     return action(func, 'getter_setter')
-
