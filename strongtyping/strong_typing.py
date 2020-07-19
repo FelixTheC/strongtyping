@@ -296,6 +296,10 @@ action.qualname = None
 action.f = dict.fromkeys(["getter", "setter", "deleter", "documenter"], None)
 
 
+def getter(func):
+    return action(func, 'getter')
+
+
 def setter(func):
     return action(func, 'setter')
 
