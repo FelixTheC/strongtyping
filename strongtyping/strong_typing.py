@@ -12,6 +12,9 @@ from itertools import zip_longest
 from functools import wraps
 import typing
 import warnings
+from keyword import iskeyword
+from types import FunctionType
+from types import MethodType
 
 from typing import Any
 from typing import TypeVar
@@ -189,7 +192,7 @@ def check_type(argument, type_of, mro=False):
     return check_result
 
 
-def match_typing(_func=None, *, excep_raise: Exception = TypeMisMatch, cache_size=0):
+def match_typing(_func=None, *, excep_raise: Exception = TypeMisMatch, cache_size=0, subclass: bool = False, **kwargs):
     cached_set = None if cache_size == 0 else CachedSet(cache_size)
 
     def wrapper(func):
@@ -198,29 +201,36 @@ def match_typing(_func=None, *, excep_raise: Exception = TypeMisMatch, cache_siz
 
         @wraps(func)
         def inner(*args, **kwargs):
-            if cached_set is not None:
-                # check if func with args and kwargs was checked once before with positive result
-                cached_key = (func, args.__str__(), kwargs.__str__())
-                if cached_key in cached_set:
-                    return func(*args, **kwargs)
+            if arg_names:
+                cls = args[0] if subclass else None
+                if cls is not None:
+                    args = args[1:]
 
-            # Thanks to Ruud van der Ham who find a better and more stable solution for check_args
-            failed_params = tuple(
-                arg_name for arg, arg_name in zip(args, arg_names) if not check_type(arg, annotations.get(arg_name))
-            )
-            failed_params += tuple(
-                kwarg_name for kwarg_name, kwarg in kwargs.items() if not check_type(kwarg, annotations.get(kwarg_name))
-            )
+                if cached_set is not None:
+                    # check if func with args and kwargs was checked once before with positive result
+                    cached_key = (func, args.__str__(), kwargs.__str__())
+                    if cached_key in cached_set:
+                        return func(*args, **kwargs)
 
-            if failed_params:
-                msg = f'Incorrect parameters: {", ".join(f"{name}: {annotations[name]}" for name in failed_params)}'
-                if excep_raise is not None:
-                    raise excep_raise(msg)
-                else:
-                    warnings.warn(msg, RuntimeWarning)
+                # Thanks to Ruud van der Ham who find a better and more stable solution for check_args
+                failed_params = tuple(
+                    arg_name for arg, arg_name in zip(args, arg_names) if not check_type(arg, annotations.get(arg_name))
+                )
+                failed_params += tuple(
+                    kwarg_name for kwarg_name, kwarg in kwargs.items() if not check_type(kwarg,
+                                                                                         annotations.get(kwarg_name))
+                )
 
-            if cached_set is not None:
-                cached_set.add(cached_key)
+                if failed_params:
+                    msg = f'Incorrect parameters: {", ".join(f"{name}: {annotations[name]}" for name in failed_params)}'
+                    if excep_raise is not None:
+                        raise excep_raise(msg)
+                    else:
+                        warnings.warn(msg, RuntimeWarning)
+
+                if cached_set is not None:
+                    cached_set.add(cached_key)
+
             return func(*args, **kwargs)
 
         inner.__fe_strng_mtch__ = 0
@@ -235,32 +245,34 @@ def match_typing(_func=None, *, excep_raise: Exception = TypeMisMatch, cache_siz
 exclude_builtins = dir(object)
 
 
-class match_class_typing:
+def match_class_typing(_cls=None, *, excep_raise: Exception = TypeError, cache_size=0, **kwargs):
+    def new_with_match_typing(cls_, *args, **kwargs):
+        x = object.__new__(cls_)
+        [setattr(x, cls_func, MethodType(match_typing(getattr(x, cls_func),
+                                                      excep_raise=excep_raise,
+                                                      cache_size=cache_size,
+                                                      subclass=True), x)
+                 ) for cls_func in dir(x)
+         if cls_func not in exclude_builtins and
+         hasattr(getattr(x, cls_func), '__annotations__') and
+         getattr(getattr(x, cls_func), '__annotations__') and
+         not hasattr(getattr(x, cls_func), '__fe_strng_mtch__')]
+        return x
 
-    match_func = match_typing
+    def wrapper(cls):
 
-    def __init__(self, cls=None, *, excep_raise: Exception = TypeMisMatch, cache_size=0):
-        self.cls = cls
-        self.excep_raise = excep_raise
-        self.cache_size = cache_size
+        def inner(*args, **kwargs):
+            cls.__new__ = new_with_match_typing
+            if hasattr(cls.__init__, '__annotations__'):
+                cls.__init__ = match_typing(cls.__init__)
+            return cls(*args, **kwargs)
 
-    def __call__(self, this_cls=None, *args, **kwargs):
-        cls = self.cls or this_cls
+        return inner
 
-        def new_with_match_typing(cls_):
-            x = object.__new__(cls_)
-            [setattr(x, cls_func, match_class_typing.match_func(getattr(x, cls_func),
-                                                                excep_raise=self.excep_raise,
-                                                                cache_size=self.cache_size)
-                     ) for cls_func in dir(x)
-             if callable(getattr(x, cls_func)) and hasattr(getattr(x, cls_func), '__annotations__') and
-             not hasattr(getattr(x, cls_func), '__fe_strng_mtch__')]
-            return x
-
-        cls.__new__ = new_with_match_typing
-        if this_cls is not None:
-            return cls
-        return cls(*args, **kwargs)
+    if _cls is not None:
+        return wrapper(_cls)
+    else:
+        return wrapper
 
 
 def action(f, frefs):
@@ -280,6 +292,7 @@ def action(f, frefs):
 
     return property(*(action.f[ref] if (ref != "documenter" or action.f[ref] is None)
                       else action.f[ref](0) for ref in action.f))
+
 
 action.qualname = None
 action.f = dict.fromkeys(["getter", "setter", "deleter", "documenter"], None)

@@ -6,6 +6,7 @@
 """
 import json
 import sys
+from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 from enum import IntEnum
@@ -18,12 +19,12 @@ from typing import Generator
 from typing import Iterator
 from typing import List
 
-from strongtyping.strong_typing import checkin_typing_list
-from strongtyping.strong_typing import checking_json
+from strongtyping.strong_typing import checking_typing_list
+from strongtyping.strong_typing import checking_typing_json
 from strongtyping.strong_typing import checking_typing_tuple
 from strongtyping.strong_typing import checking_typing_type
 from strongtyping.strong_typing import checking_typing_set
-from strongtyping.strong_typing import check_typing_dict
+from strongtyping.strong_typing import checking_typing_dict
 from strongtyping.strong_typing import get_possible_types
 from strongtyping.strong_typing import get_origins
 from strongtyping.strong_typing import match_typing
@@ -65,17 +66,17 @@ def test_get_origins():
 
 def test_check_typing_dict_builtin():
     arg = {'spell': 'lumos'}
-    assert check_typing_dict(arg, ())
-    assert check_typing_dict({1, 2, 3}, ()) is False
+    assert checking_typing_dict(arg, ())
+    assert checking_typing_dict({1, 2, 3}, ()) is False
 
 
 def test_check_typing_dict_typ():
     arg = {'spell': 'lumos'}
-    assert check_typing_dict(arg, (str, str))
-    assert check_typing_dict(arg, (str, int)) is False
-    assert check_typing_dict(arg, (int, str)) is False
-    assert check_typing_dict(arg, (Union[int, str], str))
-    assert check_typing_dict(arg, (str, Union[int, str]))
+    assert checking_typing_dict(arg, (str, str))
+    assert checking_typing_dict(arg, (str, int)) is False
+    assert checking_typing_dict(arg, (int, str)) is False
+    assert checking_typing_dict(arg, (Union[int, str], str))
+    assert checking_typing_dict(arg, (str, Union[int, str]))
 
 
 def test_check_typing_set_builtin():
@@ -86,8 +87,8 @@ def test_check_typing_set_builtin():
 
 def test_check_typing_list_builtin():
     arg = ['avadra', 'kevadra']
-    assert checkin_typing_list(arg, (str, ))
-    assert checkin_typing_list({'spell': 'lumos'}, ()) is False
+    assert checking_typing_list(arg, (str,))
+    assert checking_typing_list({'spell': 'lumos'}, ()) is False
 
 
 def test_check_typing_tuple_builtin():
@@ -101,10 +102,10 @@ def test_check_typing_json():
     arg = {'spell': 'lumos'}
     arg_2 = [{'spell': 'lumos'}, {'spell': 'accio'}]
     arg_3 = '[{"spell": "lumos"}, {"spell": "accio"}]'
-    assert checking_json(arg, json)
-    assert checking_json(arg_2, ujson)
-    assert checking_json(arg_3, json)
-    assert checking_json({'spell', 'lumos'}, ujson) is False
+    assert checking_typing_json(arg, json)
+    assert checking_typing_json(arg_2, ujson)
+    assert checking_typing_json(arg_3, json)
+    assert checking_typing_json({'spell', 'lumos'}, ujson) is False
 
 
 def test_check_typing_type():
@@ -725,10 +726,36 @@ def test_with_class_decorator():
             return val * other.attr
 
     d = Dummy()
+
+    assert d.a(8) == 2
+    assert d.b() == 'b'
+    assert d.c() == 'c'
+
     assert d._my_secure_func(.5, d) == 50
 
     with pytest.raises(Exception):
         d._my_secure_func(d, .5)
+
+
+def test_with_class_decorator_init():
+
+    @match_class_typing
+    class Dummy:
+        attr = 100
+
+        def __init__(self, a):
+            self.attr = a
+
+        def a(self, val: int):
+            return val * .25
+
+        def b(self):
+            return 'b'
+
+    d = Dummy(1)
+
+    assert d.a(8) == 2
+    assert d.b() == 'b'
 
 
 def test_with_class_decorator_no_execption():
@@ -777,11 +804,37 @@ def test_with_class_decorator_and_function_override():
 
     d = Dummy()
     assert d._my_secure_func(.5, d) == 50
+
     with pytest.warns(RuntimeWarning) as record:
         d.a('Hello RuntimeWarning')
         assert str(record[0].message) == "Incorrect parameters: val: <class 'int'>"
+
     with pytest.raises(Exception):
         d._my_secure_func(d, .5)
+
+
+def test_with_dataclass():
+
+    @dataclass
+    class Dummy:
+        attr_a: int
+        attr_b: str
+
+    assert Dummy.__annotations__ == {'attr_a': int, 'attr_b': str}
+
+    d = Dummy('10', 10)
+
+    assert d.attr_a == '10'
+    assert d.attr_b == 10
+
+    @match_class_typing
+    @dataclass
+    class Dummy:
+        attr_a: int
+        attr_b: str
+
+    with pytest.raises(TypeMisMatch):
+        Dummy('10', 10)
 
 
 if __name__ == '__main__':

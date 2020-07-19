@@ -423,7 +423,7 @@ def test_with_class_decorator_no_execption():
     assert d._my_secure_func(.5, d) == 50
     with pytest.warns(RuntimeWarning) as record:
         d.a('Hello RuntimeWarning')
-        assert str(record[0].message) == "Incorrect parameters: val: <class 'int'>"
+        assert str(record[0].message) == "Incorrect parameters: val: int"
 
 
 def test_with_class_decorator_and_function_override():
