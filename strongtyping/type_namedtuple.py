@@ -11,7 +11,7 @@ from typing import Tuple
 from typing import Union
 from keyword import iskeyword
 
-from strong_typing import check_type
+from strongtyping.strong_typing import check_type
 from strongtyping.docstring_typing import check_doc_str_type
 from strongtyping.strong_typing import match_typing
 
