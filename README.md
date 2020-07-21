@@ -498,6 +498,7 @@ d = Dummy('Lumos', mana=5, effect=['Makes light', ])
 d._replace(effect=b'Makes light')  # will raise a TypeError
 
 ```
+
 - it is also possible to use the typing.NamedTuple way for instantiating
 ```python
 from strongtyping.type_namedtuple import typed_namedtuple

@@ -67,33 +67,38 @@ def test_get_origins():
 
 def test_check_typing_dict_builtin():
     arg = {'spell': 'lumos'}
+    
     assert checking_typing_dict(arg, ())
     assert checking_typing_dict({1, 2, 3}, ()) is False
 
 
 def test_check_typing_dict_typ():
     arg = {'spell': 'lumos'}
+    
     assert checking_typing_dict(arg, (str, str))
     assert checking_typing_dict(arg, (str, int)) is False
     assert checking_typing_dict(arg, (int, str)) is False
     assert checking_typing_dict(arg, (Union[int, str], str))
     assert checking_typing_dict(arg, (str, Union[int, str]))
-
+    
 
 def test_check_typing_set_builtin():
     arg = {'avadra', 'kevadra'}
+    
     assert checking_typing_set(arg, ())
     assert checking_typing_set({'spell': 'lumos'}, ()) is False
 
 
 def test_check_typing_list_builtin():
     arg = ['avadra', 'kevadra']
+    
     assert checking_typing_list(arg, (str,))
     assert checking_typing_list({'spell': 'lumos'}, ()) is False
 
 
 def test_check_typing_tuple_builtin():
     arg = ('avadra', 'kevadra')
+    
     assert checking_typing_tuple(arg, None)
     assert checking_typing_tuple(arg, (str, str))
     assert checking_typing_tuple({'spell': 'lumos'}, ()) is False
@@ -103,6 +108,7 @@ def test_check_typing_json():
     arg = {'spell': 'lumos'}
     arg_2 = [{'spell': 'lumos'}, {'spell': 'accio'}]
     arg_3 = '[{"spell": "lumos"}, {"spell": "accio"}]'
+    
     assert checking_typing_json(arg, json)
     assert checking_typing_json(arg_2, ujson)
     assert checking_typing_json(arg_3, json)

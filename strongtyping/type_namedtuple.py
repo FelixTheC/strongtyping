@@ -175,5 +175,4 @@ def typed_namedtuple(typename: str, field_names: Union[List[str], str, List[Tupl
 
         if _use_match:
             namespace['__annotations__'] = _field_types
-
         return type(typename, (tuple,), namespace)

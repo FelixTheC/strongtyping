@@ -5,7 +5,6 @@
 @author: felix
 """
 from typing import Union
-
 import pytest
 
 from strongtyping.type_namedtuple import typed_namedtuple
