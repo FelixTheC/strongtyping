@@ -13,7 +13,9 @@ import warnings
 from types import FunctionType
 from types import MethodType
 
-from strongtyping.strong_typing import match_class_typing
+from strongtyping._utils import _get_new
+from strongtyping._utils import _severity_level
+from strongtyping._utils import remove_subclass
 from strongtyping.cached_set import CachedSet
 from strongtyping.strong_typing import TypeMisMatch
 
@@ -148,43 +150,50 @@ def extract_docstring_param_types(func) -> dict:
     return {k: _docstring_types.get(k, k) for k in inspect.signature(func).parameters.keys()}
 
 
-def match_docstring(_func=None, *, excep_raise: Exception = TypeMisMatch, cache_size=0):
+def match_docstring(_func=None, *, excep_raise: Exception = TypeMisMatch, cache_size=0,
+                    subclass: bool = False, severity='env', **kwargs):
     cached_set = None if cache_size == 0 else CachedSet(cache_size)
 
     def wrapper(func):
         docstring_types = extract_docstring_param_types(func)
 
+        severity_level = _severity_level(severity)
+
         @functools.wraps(func)
         def inner(*args, **kwargs):
-            if cached_set is not None:
-                # check if func with args and kwargs was checked once before with positive result
-                cached_key = (func, args.__str__(), kwargs.__str__())
-                if cached_key in cached_set:
-                    return func(*args, **kwargs)
+            if severity_level > 0:
 
-            if 'self' in docstring_types:
-                docstring_types['self'] = args[0].__class__.__name__
-            if 'cls' in docstring_types:
-                docstring_types['cls'] = args[0].__name__
-            # Thanks to Ruud van der Ham who find a better and more stable solution for check_args
-            failed_params = tuple(
-                arg_name for arg, arg_name in zip(args, docstring_types) if not check_doc_str_type(arg,
-                                                                                                   docstring_types.get(
-                                                                                                       arg_name))
-            )
-            failed_params += tuple(
-                kwarg_name for kwarg_name, kwarg in kwargs.items() if not check_doc_str_type(kwarg,
-                                                                                             docstring_types.get(
-                                                                                                 kwarg_name)))
-            if failed_params:
-                msg = f'Incorrect parameters: {", ".join(f"{name}: {docstring_types[name]}" for name in failed_params)}'
-                if excep_raise is not None:
-                    raise excep_raise(msg)
-                else:
-                    warnings.warn(msg, RuntimeWarning)
+                args = remove_subclass(args, subclass)
 
-            if cached_set is not None:
-                cached_set.add(cached_key)
+                if cached_set is not None:
+                    # check if func with args and kwargs was checked once before with positive result
+                    cached_key = (func, args.__str__(), kwargs.__str__())
+                    if cached_key in cached_set:
+                        return func(*args, **kwargs)
+
+                if 'self' in docstring_types:
+                    docstring_types['self'] = args[0].__class__.__name__
+                if 'cls' in docstring_types:
+                    docstring_types['cls'] = args[0].__name__
+                # Thanks to Ruud van der Ham who find a better and more stable solution for check_args
+                failed_params = tuple(
+                    arg_name for arg, arg_name in zip(args, docstring_types) if not check_doc_str_type(arg,
+                                                                                                       docstring_types.get(
+                                                                                                           arg_name))
+                )
+                failed_params += tuple(
+                    kwarg_name for kwarg_name, kwarg in kwargs.items() if not check_doc_str_type(kwarg,
+                                                                                                 docstring_types.get(
+                                                                                                     kwarg_name)))
+                if failed_params:
+                    msg = f'Incorrect parameters: {", ".join(f"{name}: {docstring_types[name]}" for name in failed_params)}'
+                    if excep_raise is not None and severity_level == 1:
+                        raise excep_raise(msg)
+                    else:
+                        warnings.warn(msg, RuntimeWarning)
+
+                if cached_set is not None:
+                    cached_set.add(cached_key)
 
             return func(*args, **kwargs)
 
@@ -197,5 +206,21 @@ def match_docstring(_func=None, *, excep_raise: Exception = TypeMisMatch, cache_
         return wrapper
 
 
-class match_class_docstring(match_class_typing):
-    match_func = match_docstring
+def match_class_docstring(_cls=None, *, excep_raise: Exception = TypeError, cache_size=0, severity='env', **kwargs):
+
+    def wrapper(cls):
+
+        severity_level = _severity_level(severity)
+
+        def inner(*args, **kwargs):
+            if severity_level > 0:
+                cls.__new__ = _get_new(match_docstring, excep_raise, cache_size, severity, **kwargs)
+                if hasattr(cls.__init__, '__annotations__'):
+                    cls.__init__ = match_docstring(cls.__init__)
+            return cls(*args, **kwargs)
+        return inner
+
+    if _cls is not None:
+        return wrapper(_cls)
+    else:
+        return wrapper

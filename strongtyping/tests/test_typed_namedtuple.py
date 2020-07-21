@@ -4,6 +4,7 @@
 @created: 13.07.20
 @author: felix
 """
+from typing import Union
 import pytest
 
 from strongtyping.type_namedtuple import typed_namedtuple
@@ -167,7 +168,15 @@ def test_typed_namedtuple_mixing_typ_and_no_type_not_allowed():
         Dummy = typed_namedtuple('Dummy', ['spell:str', 'mana', 'effect:list or tuple'])
 
 
+def test_typed_namedtuple_name_type_as_tuple():
+    Dummy = typed_namedtuple('Dummy', [('spell', str), ('mana', int), ('effect', Union[list, tuple])])
+
+    with pytest.raises(TypeError):
+        Dummy(['Mends torn pieces of paper.', ], 'Papyrus Reparo', 10)
+
+    with pytest.raises(TypeError):
+        Dummy('Papyrus Reparo', 10, {1, 2, 3})
+
+
 if __name__ == '__main__':
-    Dummy = typed_namedtuple('Dummy', 'spell:str, mana:int or str,effect:list')
-    print(help(Dummy))
-    # pytest.main(['-v', '-s', __file__])
+    pytest.main(['-v', '-s', __file__])

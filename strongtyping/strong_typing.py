@@ -16,7 +16,10 @@ import warnings
 from typing import Any
 from typing import TypeVar
 
+from strongtyping._utils import _get_new
 from easy_property import action
+from strongtyping._utils import _severity_level
+from strongtyping._utils import remove_subclass
 from strongtyping.cached_set import CachedSet
 
 
@@ -61,7 +64,7 @@ def get_origins(typ_to_check: any) -> tuple:
         typ_to_check._name if hasattr(typ_to_check, '_name') else str(origin).replace('typing.', '')
 
 
-def check_typing_dict(arg: Any, possible_types: tuple, *args):
+def checking_typing_dict(arg: Any, possible_types: tuple, *args):
     try:
         key, val = possible_types
     except (ValueError, TypeError):
@@ -124,14 +127,14 @@ def checking_typing_tuple(arg: Any, possible_types: tuple, *args):
     return all(check_type(argument, typ) for argument, typ in zip(arg, possible_types))
 
 
-def checkin_typing_list(arg: Any, possible_types: tuple, *args):
+def checking_typing_list(arg: Any, possible_types: tuple, *args):
     if not isinstance(arg, list):
         return False
     return all(check_type(argument, typ) for argument, typ in zip_longest(arg, possible_types,
                                                                           fillvalue=possible_types[0]))
 
 
-def checking_json(arg, possible_types, *args):
+def checking_typing_json(arg, possible_types, *args):
     try:
         possible_types.dumps(arg)
     except TypeError:
@@ -140,27 +143,15 @@ def checking_json(arg, possible_types, *args):
         return True
 
 
-def checking_generator(arg, possible_types, *args):
+def checking_typing_generator(arg, possible_types, *args):
     return isinstance(arg, Generator)
 
 
-def checking_literals(arg, possible_types, *args):
+def checking_typing_literal(arg, possible_types, *args):
     return arg in possible_types
 
 
-supported_typings = {
-    'list': checkin_typing_list,
-    'tuple': checking_typing_tuple,
-    'dict': check_typing_dict,
-    'set': checking_typing_set,
-    'type': checking_typing_type,
-    'iterator': checking_typing_iterator,
-    'callable': checking_typing_callable,
-    'union': checking_typing_union,
-    'json': checking_json,
-    'generator': checking_generator,
-    'literal': checking_literals,
-}
+supported_typings = vars()
 
 
 def check_type(argument, type_of, mro=False):
@@ -172,7 +163,8 @@ def check_type(argument, type_of, mro=False):
         if 'any' in origin_name or 'any' in str(type_of).lower():
             return check_result
         if 'json' in origin_name or 'json' in str(type_of):
-            return supported_typings['json'](argument, type_of, mro)
+            return supported_typings['checking_typing_json'](argument, type_of, mro)
+
         if 'new_type' in origin_name:
             if '3.6' in sys.version:
                 return check_result
@@ -182,7 +174,7 @@ def check_type(argument, type_of, mro=False):
         if isinstance(type_of, typing_base_class):
             try:
                 possible_types = get_possible_types(type_of)
-                return supported_typings[origin_name](argument, possible_types, mro)
+                return supported_typings[f'checking_typing_{origin_name}'](argument, possible_types, mro)
             except AttributeError:
                 return isinstance(argument, type_of.__args__)
         elif isinstance(type_of, str):
@@ -190,7 +182,7 @@ def check_type(argument, type_of, mro=False):
         elif mro:
             if origin_name == 'union':
                 possible_types = get_possible_types(type_of)
-                return supported_typings[origin_name](argument, possible_types, mro)
+                return supported_typings[f'checking_typing_{origin_name}'](argument, possible_types, mro)
             return type_of in argument
         else:
             try:
@@ -200,38 +192,47 @@ def check_type(argument, type_of, mro=False):
     return check_result
 
 
-def match_typing(_func=None, *, excep_raise: Exception = TypeMisMatch, cache_size=0):
+def match_typing(_func=None, *, excep_raise: Exception = TypeMisMatch, cache_size=0,
+                 subclass: bool = False, severity='env', **kwargs):
     cached_set = None if cache_size == 0 else CachedSet(cache_size)
 
     def wrapper(func):
         arg_names = [name for name in inspect.signature(func).parameters]
         annotations = func.__annotations__
 
+        severity_level = _severity_level(severity)
+
         @wraps(func)
         def inner(*args, **kwargs):
-            if cached_set is not None:
-                # check if func with args and kwargs was checked once before with positive result
-                cached_key = (func, args.__str__(), kwargs.__str__())
-                if cached_key in cached_set:
-                    return func(*args, **kwargs)
+            if arg_names and severity_level > 0:
 
-            # Thanks to Ruud van der Ham who find a better and more stable solution for check_args
-            failed_params = tuple(
-                arg_name for arg, arg_name in zip(args, arg_names) if not check_type(arg, annotations.get(arg_name))
-            )
-            failed_params += tuple(
-                kwarg_name for kwarg_name, kwarg in kwargs.items() if not check_type(kwarg, annotations.get(kwarg_name))
-            )
+                args = remove_subclass(args, subclass)
 
-            if failed_params:
-                msg = f'Incorrect parameters: {", ".join(f"{name}: {annotations[name]}" for name in failed_params)}'
-                if excep_raise is not None:
-                    raise excep_raise(msg)
-                else:
-                    warnings.warn(msg, RuntimeWarning)
+                if cached_set is not None:
+                    # check if func with args and kwargs was checked once before with positive result
+                    cached_key = (func, args.__str__(), kwargs.__str__())
+                    if cached_key in cached_set:
+                        return func(*args, **kwargs)
 
-            if cached_set is not None:
-                cached_set.add(cached_key)
+                # Thanks to Ruud van der Ham who find a better and more stable solution for check_args
+                failed_params = tuple(
+                    arg_name for arg, arg_name in zip(args, arg_names) if not check_type(arg, annotations.get(arg_name))
+                )
+                failed_params += tuple(
+                    kwarg_name for kwarg_name, kwarg in kwargs.items() if not check_type(kwarg,
+                                                                                         annotations.get(kwarg_name))
+                )
+
+                if failed_params:
+                    msg = f'Incorrect parameters: {", ".join(f"{name}: {annotations[name]}" for name in failed_params)}'
+
+                    if excep_raise is not None and severity_level == 1:
+                        raise excep_raise(msg)
+                    else:
+                        warnings.warn(msg, RuntimeWarning)
+
+                if cached_set is not None:
+                    cached_set.add(cached_key)
             return func(*args, **kwargs)
 
         inner.__fe_strng_mtch__ = 0
@@ -243,35 +244,25 @@ def match_typing(_func=None, *, excep_raise: Exception = TypeMisMatch, cache_siz
         return wrapper
 
 
-exclude_builtins = dir(object)
+def match_class_typing(_cls=None, *, excep_raise: Exception = TypeError, cache_size=0, severity='env', **kwargs):
 
+    def wrapper(cls):
 
-class match_class_typing:
+        severity_level = _severity_level(severity)
 
-    match_func = match_typing
+        def inner(*args, **kwargs):
+            if severity_level > 0:
+                cls.__new__ = _get_new(match_typing, excep_raise, cache_size, severity, **kwargs)
+                if hasattr(cls.__init__, '__annotations__'):
+                    cls.__init__ = match_typing(cls.__init__)
+            return cls(*args, **kwargs)
 
-    def __init__(self, cls=None, *, excep_raise: Exception = TypeMisMatch, cache_size=0):
-        self.cls = cls
-        self.excep_raise = excep_raise
-        self.cache_size = cache_size
+        return inner
 
-    def __call__(self, this_cls=None, *args, **kwargs):
-        cls = self.cls or this_cls
-
-        def new_with_match_typing(cls_):
-            x = object.__new__(cls_)
-            [setattr(x, cls_func, match_class_typing.match_func(getattr(x, cls_func),
-                                                                excep_raise=self.excep_raise,
-                                                                cache_size=self.cache_size)
-                     ) for cls_func in dir(x)
-             if callable(getattr(x, cls_func)) and cls_func not in exclude_builtins and
-             not hasattr(getattr(x, cls_func), '__fe_strng_mtch__')]
-            return x
-
-        cls.__new__ = new_with_match_typing
-        if this_cls is not None:
-            return cls
-        return cls(*args, **kwargs)
+    if _cls is not None:
+        return wrapper(_cls)
+    else:
+        return wrapper
 
 
 def action(f, frefs):
@@ -292,8 +283,13 @@ def action(f, frefs):
     return property(*(action.f[ref] if (ref != "documenter" or action.f[ref] is None)
                       else action.f[ref](0) for ref in action.f))
 
+
 action.qualname = None
 action.f = dict.fromkeys(["getter", "setter", "deleter", "documenter"], None)
+
+
+def getter(func):
+    return action(func, 'getter')
 
 
 def setter(func):
@@ -302,4 +298,3 @@ def setter(func):
 
 def getter_setter(func):
     return action(func, 'getter_setter')
-

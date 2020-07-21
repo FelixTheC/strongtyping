@@ -5,16 +5,24 @@
 @author: felix
 """
 from collections import namedtuple
+from typing import Any
 from typing import List
+from typing import Tuple
 from typing import Union
 from keyword import iskeyword
 
+from strongtyping.strong_typing import check_type
 from strongtyping.docstring_typing import check_doc_str_type
 from strongtyping.strong_typing import match_typing
 
+use_match_typing = {
+    True: check_type,
+    False: check_doc_str_type
+}
+
 
 @match_typing
-def typed_namedtuple(typename: str, field_names: Union[List[str], str], *,
+def typed_namedtuple(typename: str, field_names: Union[List[str], str, List[Tuple[str, Any]]], *,
                      rename: bool = False, defaults: Union[list, tuple] = None, module: str = None):
     # I could have just copied everything from namedtuple, but then I would have no learning effect
     """
@@ -61,11 +69,12 @@ def typed_namedtuple(typename: str, field_names: Union[List[str], str], *,
                 raise ValueError(f'Encountered duplicate field name: {name!r}')
             seen.add(name)
 
-    def contains_typing(f_name: str) -> bool:
-        return ':' in f_name
+    def contains_typing(f_name: Union[str, tuple]) -> bool:
+        return ':' in f_name or isinstance(f_name, tuple)
 
-    def check_type(_value_dict: dict):
-        failed_params = tuple(f'{k}: {v}' for k, v in _value_dict.items() if not check_doc_str_type(v, _field_types[k]))
+    def check_type(_value_dict: dict, use_mt: bool = False):
+        failed_params = tuple(f'{k}: {v}' for k, v in _value_dict.items()
+                              if not use_match_typing[use_mt](v, _field_types[k]))
         if failed_params:
             msg = f'Incorrect parameters: {failed_params}'
             raise TypeError(msg)
@@ -80,7 +89,12 @@ def typed_namedtuple(typename: str, field_names: Union[List[str], str], *,
             raise TypeError('No mixing of typing and not typing supported')
         return namedtuple(typename, field_names, rename=rename, defaults=defaults, module=module)
     else:
-        _field_types = {k: v for k, v in map(lambda x: x.split(':'), _fields)}
+        try:
+            _field_types = {k: v for k, v in map(lambda x: x.split(':'), _fields)}
+            _use_match = False
+        except AttributeError:
+            _field_types = {k: v for k, v in _fields}
+            _use_match = True
 
         if rename is True:
             _field_types = rename_fields()
@@ -97,7 +111,7 @@ def typed_namedtuple(typename: str, field_names: Union[List[str], str], *,
                 if len(_field_types) != len(defaults):
                     raise TypeError('Default values must match with field names')
                 _defaults = {k: v for k, v in zip(_field_types.keys(), defaults)}
-                check_type(_defaults)
+                check_type(_defaults, _use_match)
                 return _defaults
             else:
                 raise TypeError(f'Initialise {typename} with values or add defaults')
@@ -109,7 +123,7 @@ def typed_namedtuple(typename: str, field_names: Union[List[str], str], *,
             if _values and defaults is not None:
                 _values = _values_with_defaults()
                 _values.update(**_values_to_add(*args, **kwargs))
-            check_type(_values)
+            check_type(_values, _use_match)
             new_tuple = tuple.__new__(cls, _values.values())
             [setattr(new_tuple, k, v) for k, v in _values.items()]
             return new_tuple
@@ -159,4 +173,6 @@ def typed_namedtuple(typename: str, field_names: Union[List[str], str], *,
             '_field_defaults': _field_defaults,
         }
 
+        if _use_match:
+            namespace['__annotations__'] = _field_types
         return type(typename, (tuple,), namespace)

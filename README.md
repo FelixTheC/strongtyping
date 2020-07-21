@@ -22,6 +22,11 @@ And <b><em>raises</em> TypeMisMatch</b> if the used parameters in a function cal
 | [match_class_docstring](#match_class_docstring)   | decorator for a class                 |
 
 
+## Configuration
+|                                                   | description                           |
+| :-------------                                    | ----------:                           |
+| [severity_level](#severity_level)             | set global severity level             |
+
 ## Additional features
 | from strongtyping.type_namedtuple import          | description                           |
 | :-------------                                    | ----------:                           |
@@ -279,11 +284,16 @@ class Dummy:
 this decorator can replace your *@foo.setter* from property and check your typing
 - this is an extension of [easy_property](https://github.com/salabim/easy_property)
 ```python
+from strongtyping.strong_typing import getter
 from strongtyping.strong_typing import setter
 
 class Dummy:
     attr = 100
     val = 'foo'
+
+    @getter
+    def b(self):
+        return self.val
 
     @setter
     def b(self, val: str):
@@ -488,6 +498,21 @@ d = Dummy('Lumos', mana=5, effect=['Makes light', ])
 d._replace(effect=b'Makes light')  # will raise a TypeError
 
 ```
+
+- it is also possible to use the typing.NamedTuple way for instantiating
+```python
+from strongtyping.type_namedtuple import typed_namedtuple
+Dummy = typed_namedtuple('Dummy', [('spell', str), ('mana', int), ('effect', Union[list, tuple])])
+
+Dummy('Papyrus Reparo', 10, {1, 2, 3})  # will raise a TypeError
+
+# when using this way you will also have the __annototaions__
+
+print(Dummy.__annotations__)
+# {'spell': <class 'str'>, 'mana': <class 'int'>, 'effect': typing.Union[list, tuple]}
+
+```
+
 - the docstring will also display the types of the parameter in the reST-style
 ```python
 from strongtyping.type_namedtuple import typed_namedtuple
@@ -505,6 +530,40 @@ class Dummy(builtins.tuple)
      |  :type effect: list
     ...
 """
+```
+
+- [Back to top](#strong-typing)
+
+## severity_level
+
+- to set the project wide settings add in your .env file
+    - the options are: __'enabled', 'warning', 'disable'__
+```bash
+ST_SEVERITY='disable'
+```
+- or place this somewhere in your project
+```python
+from strongtyping.config import set_severity_level
+from strongtyping.config import SEVERITY_LEVEL
+
+set_severity_level(SEVERITY_LEVEL.WARNING)
+```
+
+- you can also override the project wide setting for particular classes or functions
+```python
+from strongtyping.config import SEVERITY_LEVEL
+from strongtyping.strong_typing import match_class_typing
+from strongtyping.strong_typing import match_typing
+
+
+@match_class_typing(severity=SEVERITY_LEVEL.WARNING)
+class OtherDummy:
+    ...
+
+
+@match_typing(severity=SEVERITY_LEVEL.ENABLED)
+def a(value: int):
+    ...
 ```
 
 - [Back to top](#strong-typing)

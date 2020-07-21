@@ -6,6 +6,7 @@
 """
 import pytest
 
+from strongtyping.config import SEVERITY_LEVEL
 from strongtyping.docstring_typing import match_class_docstring
 from strongtyping.docstring_typing import match_docstring
 from strongtyping.strong_typing import TypeMisMatch
@@ -423,7 +424,7 @@ def test_with_class_decorator_no_execption():
     assert d._my_secure_func(.5, d) == 50
     with pytest.warns(RuntimeWarning) as record:
         d.a('Hello RuntimeWarning')
-        assert str(record[0].message) == "Incorrect parameters: val: <class 'int'>"
+        assert str(record[0].message) == "Incorrect parameters: val: int"
 
 
 def test_with_class_decorator_and_function_override():
@@ -466,6 +467,45 @@ def test_with_class_decorator_and_function_override():
     with pytest.warns(RuntimeWarning) as record:
         assert d._my_secure_func(o) == 400
         assert str(record[0].message) == "Incorrect parameters: other: Other"
+
+
+def test_with_severity_param():
+
+    @match_docstring
+    def a(value):
+        """
+        :param value: foo
+        :type value: int
+        """
+        return value * 2
+
+    assert a(2) == 4
+    with pytest.raises(TypeMisMatch):
+        a('2')
+
+    @match_docstring(severity=SEVERITY_LEVEL.WARNING)
+    def a(value):
+        """
+        :param value: foo
+        :type value: int
+        """
+        return value * 2
+
+    assert a(2) == 4
+    with pytest.warns(RuntimeWarning) as record:
+        a('2')
+        assert str(record[0].message) == "Incorrect parameters: value: int"
+
+    @match_docstring(severity=SEVERITY_LEVEL.DISABLED)
+    def a(value):
+        """
+        :param value: foo
+        :type value: int
+        """
+        return value * 2
+
+    assert a(2) == 4
+    assert a('2') == '22'
 
 
 if __name__ == '__main__':

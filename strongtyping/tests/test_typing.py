@@ -6,6 +6,7 @@
 """
 import json
 import sys
+from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 from enum import IntEnum
@@ -18,12 +19,13 @@ from typing import Generator
 from typing import Iterator
 from typing import List
 
-from strongtyping.strong_typing import checkin_typing_list
-from strongtyping.strong_typing import checking_json
+from strongtyping.config import SEVERITY_LEVEL
+from strongtyping.strong_typing import checking_typing_list
+from strongtyping.strong_typing import checking_typing_json
 from strongtyping.strong_typing import checking_typing_tuple
 from strongtyping.strong_typing import checking_typing_type
 from strongtyping.strong_typing import checking_typing_set
-from strongtyping.strong_typing import check_typing_dict
+from strongtyping.strong_typing import checking_typing_dict
 from strongtyping.strong_typing import get_possible_types
 from strongtyping.strong_typing import get_origins
 from strongtyping.strong_typing import match_typing
@@ -65,33 +67,38 @@ def test_get_origins():
 
 def test_check_typing_dict_builtin():
     arg = {'spell': 'lumos'}
-    assert check_typing_dict(arg, ())
-    assert check_typing_dict({1, 2, 3}, ()) is False
+    
+    assert checking_typing_dict(arg, ())
+    assert checking_typing_dict({1, 2, 3}, ()) is False
 
 
 def test_check_typing_dict_typ():
     arg = {'spell': 'lumos'}
-    assert check_typing_dict(arg, (str, str))
-    assert check_typing_dict(arg, (str, int)) is False
-    assert check_typing_dict(arg, (int, str)) is False
-    assert check_typing_dict(arg, (Union[int, str], str))
-    assert check_typing_dict(arg, (str, Union[int, str]))
-
+    
+    assert checking_typing_dict(arg, (str, str))
+    assert checking_typing_dict(arg, (str, int)) is False
+    assert checking_typing_dict(arg, (int, str)) is False
+    assert checking_typing_dict(arg, (Union[int, str], str))
+    assert checking_typing_dict(arg, (str, Union[int, str]))
+    
 
 def test_check_typing_set_builtin():
     arg = {'avadra', 'kevadra'}
+    
     assert checking_typing_set(arg, ())
     assert checking_typing_set({'spell': 'lumos'}, ()) is False
 
 
 def test_check_typing_list_builtin():
     arg = ['avadra', 'kevadra']
-    assert checkin_typing_list(arg, (str, ))
-    assert checkin_typing_list({'spell': 'lumos'}, ()) is False
+    
+    assert checking_typing_list(arg, (str,))
+    assert checking_typing_list({'spell': 'lumos'}, ()) is False
 
 
 def test_check_typing_tuple_builtin():
     arg = ('avadra', 'kevadra')
+    
     assert checking_typing_tuple(arg, None)
     assert checking_typing_tuple(arg, (str, str))
     assert checking_typing_tuple({'spell': 'lumos'}, ()) is False
@@ -101,10 +108,11 @@ def test_check_typing_json():
     arg = {'spell': 'lumos'}
     arg_2 = [{'spell': 'lumos'}, {'spell': 'accio'}]
     arg_3 = '[{"spell": "lumos"}, {"spell": "accio"}]'
-    assert checking_json(arg, json)
-    assert checking_json(arg_2, ujson)
-    assert checking_json(arg_3, json)
-    assert checking_json({'spell', 'lumos'}, ujson) is False
+    
+    assert checking_typing_json(arg, json)
+    assert checking_typing_json(arg_2, ujson)
+    assert checking_typing_json(arg_3, json)
+    assert checking_typing_json({'spell', 'lumos'}, ujson) is False
 
 
 def test_check_typing_type():
@@ -725,10 +733,36 @@ def test_with_class_decorator():
             return val * other.attr
 
     d = Dummy()
+
+    assert d.a(8) == 2
+    assert d.b() == 'b'
+    assert d.c() == 'c'
+
     assert d._my_secure_func(.5, d) == 50
 
     with pytest.raises(Exception):
         d._my_secure_func(d, .5)
+
+
+def test_with_class_decorator_init():
+
+    @match_class_typing
+    class Dummy:
+        attr = 100
+
+        def __init__(self, a):
+            self.attr = a
+
+        def a(self, val: int):
+            return val * .25
+
+        def b(self):
+            return 'b'
+
+    d = Dummy(1)
+
+    assert d.a(8) == 2
+    assert d.b() == 'b'
 
 
 def test_with_class_decorator_no_execption():
@@ -777,11 +811,152 @@ def test_with_class_decorator_and_function_override():
 
     d = Dummy()
     assert d._my_secure_func(.5, d) == 50
+
     with pytest.warns(RuntimeWarning) as record:
         d.a('Hello RuntimeWarning')
         assert str(record[0].message) == "Incorrect parameters: val: <class 'int'>"
+
     with pytest.raises(Exception):
         d._my_secure_func(d, .5)
+
+
+def test_with_dataclass():
+
+    @dataclass
+    class Dummy:
+        attr_a: int
+        attr_b: str
+
+    assert Dummy.__annotations__ == {'attr_a': int, 'attr_b': str}
+
+    d = Dummy('10', 10)
+
+    assert d.attr_a == '10'
+    assert d.attr_b == 10
+
+    @match_class_typing
+    @dataclass
+    class Dummy:
+        attr_a: int
+        attr_b: str
+
+    with pytest.raises(TypeMisMatch):
+        Dummy('10', 10)
+
+
+def test_with_severity_param():
+
+    @match_typing
+    def a(value: int):
+        return value * 2
+
+    assert a(2) == 4
+    with pytest.raises(TypeMisMatch):
+        a('2')
+
+    @match_typing(severity=SEVERITY_LEVEL.WARNING)
+    def a(value: int):
+        return value * 2
+
+    assert a(2) == 4
+    with pytest.warns(RuntimeWarning) as record:
+        a('2')
+        assert str(record[0].message) == "Incorrect parameters: value: <class 'int'>"
+
+    @match_typing(severity=SEVERITY_LEVEL.DISABLED)
+    def a(value: int):
+        return value * 2
+
+    assert a(2) == 4
+    assert a('2') == '22'
+
+    @match_class_typing(severity=SEVERITY_LEVEL.WARNING)
+    class Dummy:
+        attr = 100
+
+        def a(self, val: int):
+            return val * 3
+
+        def b(self):
+            return 'b'
+
+    d = Dummy()
+    assert d.a(2) == 6
+
+    with pytest.warns(RuntimeWarning) as record:
+        d.a('2')
+        assert str(record[0].message) == "Incorrect parameters: val: <class 'int'>"
+
+    @match_class_typing(severity=SEVERITY_LEVEL.DISABLED)
+    class Other:
+        attr = 100
+
+        def a(self, val: int):
+            return val * 3
+
+        def b(self):
+            return 'b'
+
+    dd = Other()
+    assert dd.a(2) == 6
+    assert dd.a('2') == '222'
+
+    @match_class_typing(severity=SEVERITY_LEVEL.DISABLED)
+    class OtherDummy:
+        attr = 100
+
+        def __init__(self, val: int):
+            self.attr = val * 2
+
+        @match_typing
+        def a(self, val: int):
+            return val * self.attr
+
+    od = OtherDummy('2')
+    assert od.a(2) == '2222'
+    with pytest.raises(TypeMisMatch):
+        assert od.a('2') == '222'
+
+
+def test_with_env_severity(monkeypatch):
+
+    monkeypatch.setenv('ST_SEVERITY', 'disable')
+
+    @match_class_typing
+    class Dummy:
+        attr = 100
+
+        def a(self, val: int):
+            return val * 3
+
+    d = Dummy()
+    assert d.a('2') == '222'
+
+    @match_typing
+    def some_func(val_1: int, val_2: List[int]):
+        return [v * val_1 for v in val_2]
+
+    assert some_func(3, ['a', 'b', 'c']) == ['aaa', 'bbb', 'ccc']
+
+    monkeypatch.setenv('ST_SEVERITY', 'warning')
+
+    @match_class_typing
+    class Dummy:
+        attr = 100
+
+        def a(self, val: int):
+            return val * 3
+
+    d = Dummy()
+    with pytest.warns(RuntimeWarning):
+        assert d.a('2') == '222'
+
+    @match_typing
+    def some_func(val_1: int, val_2: List[int]):
+        return [v * val_1 for v in val_2]
+
+    with pytest.warns(RuntimeWarning):
+        assert some_func(3, ['a', 'b', 'c']) == ['aaa', 'bbb', 'ccc']
 
 
 if __name__ == '__main__':
