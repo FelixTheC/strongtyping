@@ -12,14 +12,14 @@ from itertools import zip_longest
 from functools import wraps
 import typing
 import warnings
-from keyword import iskeyword
-from types import FunctionType
-from types import MethodType
 
 from typing import Any
 from typing import TypeVar
 
+from strongtyping._utils import _get_new
 from easy_property import action
+from strongtyping._utils import _severity_level
+from strongtyping._utils import remove_subclass
 from strongtyping.cached_set import CachedSet
 
 
@@ -192,19 +192,21 @@ def check_type(argument, type_of, mro=False):
     return check_result
 
 
-def match_typing(_func=None, *, excep_raise: Exception = TypeMisMatch, cache_size=0, subclass: bool = False, **kwargs):
+def match_typing(_func=None, *, excep_raise: Exception = TypeMisMatch, cache_size=0,
+                 subclass: bool = False, severity='env', **kwargs):
     cached_set = None if cache_size == 0 else CachedSet(cache_size)
 
     def wrapper(func):
         arg_names = [name for name in inspect.signature(func).parameters]
         annotations = func.__annotations__
 
+        severity_level = _severity_level(severity)
+
         @wraps(func)
         def inner(*args, **kwargs):
-            if arg_names:
-                cls = args[0] if subclass else None
-                if cls is not None:
-                    args = args[1:]
+            if arg_names and severity_level > 0:
+
+                args = remove_subclass(args, subclass)
 
                 if cached_set is not None:
                     # check if func with args and kwargs was checked once before with positive result
@@ -223,14 +225,14 @@ def match_typing(_func=None, *, excep_raise: Exception = TypeMisMatch, cache_siz
 
                 if failed_params:
                     msg = f'Incorrect parameters: {", ".join(f"{name}: {annotations[name]}" for name in failed_params)}'
-                    if excep_raise is not None:
+
+                    if excep_raise is not None and severity_level == 1:
                         raise excep_raise(msg)
                     else:
                         warnings.warn(msg, RuntimeWarning)
 
                 if cached_set is not None:
                     cached_set.add(cached_key)
-
             return func(*args, **kwargs)
 
         inner.__fe_strng_mtch__ = 0
@@ -242,29 +244,17 @@ def match_typing(_func=None, *, excep_raise: Exception = TypeMisMatch, cache_siz
         return wrapper
 
 
-exclude_builtins = dir(object)
-
-
-def match_class_typing(_cls=None, *, excep_raise: Exception = TypeError, cache_size=0, **kwargs):
-    def new_with_match_typing(cls_, *args, **kwargs):
-        x = object.__new__(cls_)
-        [setattr(x, cls_func, MethodType(match_typing(getattr(x, cls_func),
-                                                      excep_raise=excep_raise,
-                                                      cache_size=cache_size,
-                                                      subclass=True), x)
-                 ) for cls_func in dir(x)
-         if cls_func not in exclude_builtins and
-         hasattr(getattr(x, cls_func), '__annotations__') and
-         getattr(getattr(x, cls_func), '__annotations__') and
-         not hasattr(getattr(x, cls_func), '__fe_strng_mtch__')]
-        return x
+def match_class_typing(_cls=None, *, excep_raise: Exception = TypeError, cache_size=0, severity='env', **kwargs):
 
     def wrapper(cls):
 
+        severity_level = _severity_level(severity)
+
         def inner(*args, **kwargs):
-            cls.__new__ = new_with_match_typing
-            if hasattr(cls.__init__, '__annotations__'):
-                cls.__init__ = match_typing(cls.__init__)
+            if severity_level > 0:
+                cls.__new__ = _get_new(match_typing, excep_raise, cache_size, severity, **kwargs)
+                if hasattr(cls.__init__, '__annotations__'):
+                    cls.__init__ = match_typing(cls.__init__)
             return cls(*args, **kwargs)
 
         return inner
