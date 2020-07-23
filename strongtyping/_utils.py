@@ -56,3 +56,26 @@ def _get_new(typing_func, excep_raise: Exception = TypeError, cache_size=0, seve
         return x
 
     return new_with_match_typing
+
+
+def action(f, frefs, type_function):
+    """
+    This code is original from Ruud van der Ham https://github.com/salabim/easy_property
+    """
+    if f.__qualname__ == action.qualname:
+        if any(action.f[fref] is not None for fref in frefs.split("_")):
+            raise AttributeError(f"decorator defined twice")
+    else:
+        action.f.update({}.fromkeys(action.f, None))  # reset all values to None
+        action.qualname = f.__qualname__
+    action.f.update({}.fromkeys(frefs.split('_'), f))  # set all frefs values to f
+
+    # this line was added by myself
+    action.f['setter'] = type_function(action.f['setter']) if action.f['setter'] is not None else None
+
+    return property(*(action.f[ref] if (ref != "documenter" or action.f[ref] is None)
+                      else action.f[ref](0) for ref in action.f))
+
+
+action.qualname = None
+action.f = dict.fromkeys(["getter", "setter", "deleter", "documenter"], None)
