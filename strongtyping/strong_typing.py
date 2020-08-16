@@ -16,7 +16,7 @@ import warnings
 from typing import Any
 from typing import TypeVar
 
-from _utils import action
+from strongtyping._utils import action
 from strongtyping._utils import _get_new
 from strongtyping._utils import _severity_level
 from strongtyping._utils import remove_subclass
