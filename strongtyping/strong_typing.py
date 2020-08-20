@@ -22,6 +22,16 @@ from strongtyping._utils import _severity_level
 from strongtyping._utils import remove_subclass
 from strongtyping.cached_set import CachedSet
 
+try:
+    from strongtyping_modules.strongtyping_modules import list_elements
+    from strongtyping_modules.strongtyping_modules import tuple_elements
+    from strongtyping_modules.strongtyping_modules import set_elements
+    from strongtyping_modules.strongtyping_modules import dict_elements
+except ImportError as e:
+    extension_module = False
+else:
+    extension_module = True
+
 
 class TypeMisMatch(AttributeError):
     def __init__(self, message):
@@ -42,6 +52,9 @@ def get_possible_types(typ_to_check) -> typing.Union[tuple, None]:
         - Dict[str, int] = (str, int, )
         - Tuple[Union[str, int], List[int]] = (Union[str, int], List[int], )
     """
+    if extension_module:
+        if not hasattr(typ_to_check, '__args__'):
+            return typ_to_check.__origin__
     if typ_to_check.__args__ is not None:
         return tuple(typ for typ in typ_to_check.__args__ if not isinstance(typ, TypeVar))
 
@@ -134,6 +147,22 @@ def checking_typing_list(arg: Any, possible_types: tuple, *args):
                                                                           fillvalue=possible_types[0]))
 
 
+def module_checking_typing_list(arg: Any, possible_types: Any):
+    return bool(list_elements(arg, possible_types))
+
+
+def module_checking_typing_dict(arg: Any, possible_types: Any):
+    return bool(dict_elements(arg, possible_types))
+
+
+def module_checking_typing_set(arg: Any, possible_types: Any):
+    return bool(set_elements(arg, possible_types))
+
+
+def module_checking_typing_tuple(arg: Any, possible_types: Any):
+    return bool(tuple_elements(arg, possible_types))
+
+
 def checking_typing_json(arg, possible_types, *args):
     try:
         possible_types.dumps(arg)
@@ -152,6 +181,11 @@ def checking_typing_literal(arg, possible_types, *args):
 
 
 supported_typings = vars()
+if extension_module:
+    m = [f'module_checking_typing_{t}' for t in ('list', 'dict', 'set', 'tuple')]
+    supported_modules = {k: v for k, v in vars().items() if k in m}
+else:
+    supported_modules = {}
 
 
 def check_type(argument, type_of, mro=False):
@@ -165,16 +199,21 @@ def check_type(argument, type_of, mro=False):
         if 'json' in origin_name or 'json' in str(type_of):
             return supported_typings['checking_typing_json'](argument, type_of, mro)
 
+        try:
+            return supported_modules[f'module_checking_typing_{origin_name}'](argument, type_of)
+        except KeyError:
+            pass
+
         if 'new_type' in origin_name:
             if '3.6' in sys.version:
                 return check_result
             type_of = type_of.__supertype__
             origin, origin_name = get_origins(type_of)
             origin_name = origin_name.lower()
+
         if isinstance(type_of, typing_base_class):
             try:
-                possible_types = get_possible_types(type_of)
-                return supported_typings[f'checking_typing_{origin_name}'](argument, possible_types, mro)
+                return supported_typings[f'checking_typing_{origin_name}'](argument, get_possible_types(type_of), mro)
             except AttributeError:
                 return isinstance(argument, type_of.__args__)
         elif isinstance(type_of, str):
