@@ -13,14 +13,20 @@ And <b><em>raises</em> TypeMisMatch</b> if the used parameters in a function cal
 | :-------------                                    | ----------:                           |
 | [match_typing](#getting-started)                  | decorator for a function              |
 | [match_class_typing](#match_class_typing)         | decorator for a class                 |
-| [setter](#setter)                                 | property decorator for set            |
-| [getter_setter](#getter_setter)                   | property decorator for get and set    |
+| [setter](#setter)                                 | property decorator for a setter function      |
+| [getter_setter](#getter_setter)                   | property decorator for get and setter function|
 
 | from strongtyping.docstring_typing import         | description                           |
 | :-------------                                    | ----------:                           |
 | [match_docstring](#reST-docstrings)               | decorator for a function              |
 | [match_class_docstring](#match_class_docstring)   | decorator for a class                 |
+| [setter](#docstring_typing_setter)                | property decorator for a setter function       |
+| [getter_setter](#docstring_typing_getter_setter)  | property decorator for get and setter function |
 
+## Configuration
+|                                                   | description                           |
+| :-------------                                    | ----------:                           |
+| [severity_level](#severity_level)                 | set global severity level             |
 
 ## Configuration
 |                                                   | description                           |
@@ -464,6 +470,64 @@ class Other:
         :return:
         """
         return 2 * other.attr
+```
+- [Back to top](#strong-typing)
+
+## docstring_typing_setter
+this decorator can replace your *@foo.setter* from property and check your typing
+- this is an extension of [easy_property](https://github.com/salabim/easy_property)
+```python
+from strongtyping.docstring_typing import getter
+from strongtyping.docstring_typing import setter
+
+class Dummy:
+    attr = 100
+    val = 'foo'
+
+    @getter
+    def b(self):
+        return self.val
+
+    @setter
+    def b(self, val): 
+        """
+        :parameter int val: foo
+        """
+        self.val = val
+
+d = Dummy()
+d.b == 'foo'  # will raise AttributeError 
+
+d.b = 'bar'  # works like a charm
+
+d.b = 1  # will raise TypeMisMatch
+```
+- [Back to top](#strong-typing)
+
+## docstring_typing_getter_setter
+this decorator can replace *@propery* from property and check your typing
+- this is an extension of [easy_property](https://github.com/salabim/easy_property)
+```python
+from strongtyping.docstring_typing import getter_setter
+
+class Dummy:
+    attr = 100
+
+    @getter_setter  # here you will have all in one place (DRY) 
+    def c(self, val=None):
+        """
+        :parameter int val: foo
+        """
+        if val is not None:
+            self.attr = val
+        return self.attr
+
+d = Dummy()
+d.c == 100  # works like a charm
+
+d.c = 1  # works like a charm
+
+d.c = 'foobar'  # will raise TypeMisMatch
 ```
 - [Back to top](#strong-typing)
 

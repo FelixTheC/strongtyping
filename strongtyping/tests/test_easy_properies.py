@@ -5,6 +5,8 @@
 @author: eisenmenger
 """
 import pytest
+from strongtyping.docstring_typing import setter as dt_setter
+from strongtyping.docstring_typing import getter_setter as dt_getter_setter
 from strongtyping.strong_typing import getter_setter
 from strongtyping.strong_typing import setter
 from strongtyping.strong_typing import TypeMisMatch
@@ -25,6 +27,27 @@ class Dummy:
         return self.attr
 
 
+class DummyDocStr:
+    attr = 100
+    val = 'foo'
+
+    @dt_setter
+    def b(self, val):
+        """
+        :param str val:
+        """
+        self.val = val
+
+    @dt_getter_setter
+    def c(self, val=None):
+        """
+        :type val: int
+        """
+        if val is not None:
+            self.attr = val
+        return self.attr
+
+
 def test_setter():
     d = Dummy()
     with pytest.raises(AttributeError):
@@ -36,6 +59,16 @@ def test_setter():
     with pytest.raises(TypeMisMatch):
         d.b = 1
 
+    dd = DummyDocStr()
+    with pytest.raises(AttributeError):
+        assert dd.b == 'foo'
+
+    dd.b = 'bar'
+    assert dd.val == 'bar'
+
+    with pytest.raises(TypeMisMatch):
+        dd.b = 1
+
 
 def test_getter_setter():
     d = Dummy()
@@ -44,6 +77,13 @@ def test_getter_setter():
         d.c = '10'
     d.c = 10
     assert d.c == 10
+
+    dd = DummyDocStr()
+    assert dd.c == 100
+    with pytest.raises(TypeMisMatch):
+        dd.c = '10'
+    dd.c = 10
+    assert dd.c == 10
 
 
 if __name__ == '__main__':

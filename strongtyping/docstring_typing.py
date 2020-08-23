@@ -13,6 +13,7 @@ import warnings
 from types import FunctionType
 from types import MethodType
 
+from strongtyping._utils import action
 from strongtyping._utils import _get_new
 from strongtyping._utils import _severity_level
 from strongtyping._utils import remove_subclass
@@ -224,3 +225,15 @@ def match_class_docstring(_cls=None, *, excep_raise: Exception = TypeError, cach
         return wrapper(_cls)
     else:
         return wrapper
+
+
+def getter(func):
+    return action(func, 'getter', match_docstring)
+
+
+def setter(func):
+    return action(func, 'setter', match_docstring)
+
+
+def getter_setter(func):
+    return action(func, 'getter_setter', match_docstring)
