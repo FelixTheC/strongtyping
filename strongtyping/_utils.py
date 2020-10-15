@@ -42,6 +42,15 @@ exclude_builtins = dir(object)
 def _get_new(typing_func, excep_raise: Exception = TypeError, cache_size=0, severity='env', **kwargs):
 
     def new_with_match_typing(cls_, *args, **kwargs):
+
+        def add_match_typing(obj: object, attr: str) -> bool:
+            if hasattr(getattr(cls_, attr), '__annotations__') and \
+                    getattr(cls_, attr).__class__.__name__ != 'property' and\
+                    not hasattr(getattr(x, attr), '__fe_strng_mtch__'):
+                type_annotations = getattr(getattr(cls_, attr), '__annotations__')
+                return len([i for i in type_annotations.keys() if i != 'return']) > 0
+            return False
+
         x = object.__new__(cls_)
         [setattr(x, cls_func, MethodType(typing_func(getattr(x, cls_func),
                                                      excep_raise=excep_raise,
@@ -49,10 +58,7 @@ def _get_new(typing_func, excep_raise: Exception = TypeError, cache_size=0, seve
                                                      subclass=True,
                                                      severity=severity), x)
                  ) for cls_func in dir(x)
-         if cls_func not in exclude_builtins and
-         hasattr(getattr(x, cls_func), '__annotations__') and
-         getattr(getattr(x, cls_func), '__annotations__') and
-         not hasattr(getattr(x, cls_func), '__fe_strng_mtch__')]
+         if cls_func not in exclude_builtins and add_match_typing(x, cls_func)]
         return x
 
     return new_with_match_typing
