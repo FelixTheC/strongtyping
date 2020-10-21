@@ -6,15 +6,13 @@
 """
 import inspect
 import sys
-from collections.abc import Generator
 from functools import lru_cache
 from itertools import zip_longest
 from functools import wraps
 import typing
 import warnings
 
-from typing import Any
-from typing import TypeVar
+from typing import *
 
 from strongtyping._utils import action
 from strongtyping._utils import _get_new
@@ -55,8 +53,10 @@ def get_possible_types(typ_to_check) -> typing.Union[tuple, None]:
     if extension_module:
         if not hasattr(typ_to_check, '__args__'):
             return typ_to_check.__origin__
-    if typ_to_check.__args__ is not None:
+    if hasattr(typ_to_check, '__args__') and typ_to_check.__args__ is not None:
         return tuple(typ for typ in typ_to_check.__args__ if not isinstance(typ, TypeVar))
+    else:
+        return
 
 
 def get_origins(typ_to_check: any) -> tuple:
@@ -70,7 +70,10 @@ def get_origins(typ_to_check: any) -> tuple:
     """
     origin = None
     if hasattr(typ_to_check, '__origin__') or hasattr(typ_to_check, '__orig_bases__'):
-        origin = typ_to_check.__origin__ if typ_to_check.__origin__ is not None else typ_to_check.__orig_bases__
+        if py_version >= 3.9 and hasattr(typ_to_check.__origin__, '__name__'):
+            origin = typ_to_check.__origin__.__name__
+        else:
+            origin = typ_to_check.__origin__ if typ_to_check.__origin__ is not None else typ_to_check.__orig_bases__
     if py_version == 6 and hasattr(typ_to_check, '_gorg'):
         return None, str(typ_to_check._gorg).replace('typing.', '')
     return origin, origin._name if hasattr(origin, '_name') else \
@@ -192,6 +195,9 @@ else:
 
 
 def check_type(argument, type_of, mro=False):
+    if int(py_version) >= 10 and isinstance(type_of, (str, bytes)):
+        type_of = eval(type_of, locals(), globals())
+
     check_result = True
     if type_of is not None:
         origin, origin_name = get_origins(type_of)
@@ -213,7 +219,7 @@ def check_type(argument, type_of, mro=False):
             origin, origin_name = get_origins(type_of)
             origin_name = origin_name.lower()
 
-        if isinstance(type_of, typing_base_class):
+        if isinstance(type_of, typing_base_class) or (py_version >= 3.9 and origin is not None):
             try:
                 return supported_typings[f'checking_typing_{origin_name}'](argument, get_possible_types(type_of), mro)
             except AttributeError:
@@ -238,6 +244,8 @@ def match_typing(_func=None, *, excep_raise: Exception = TypeMisMatch, cache_siz
     cached_set = None if cache_size == 0 else CachedSet(cache_size)
 
     def wrapper(func):
+        globals().update(func.__globals__)
+
         arg_names = [name for name in inspect.signature(func).parameters]
         annotations = func.__annotations__
 
