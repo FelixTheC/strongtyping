@@ -636,7 +636,7 @@ def a(value: int):
 ## Package
 
 ### Tested for Versions
-- 3.6, 3.7, 3.8, 3.9.0b4
+- 3.7, 3.8, 3.9
 
 ### Installing
 - pip install strongtyping
