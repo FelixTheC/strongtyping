@@ -13,10 +13,16 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.9
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
       - name: Install dependencies
         run: |
-          apt install python3.7
-          apt install python3.8
           python -m pip install --upgrade pip
           pip install tox pytest pytest-cov
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
