@@ -1,7 +1,8 @@
 [![PyPI version](https://badge.fury.io/py/strongtyping.svg)](https://badge.fury.io/py/strongtyping)
 ![Python application](https://github.com/FelixTheC/strongtyping/workflows/Python%20application/badge.svg)
+![Python tox](https://github.com/FelixTheC/strongtyping/workflows/Python%20tox/badge.svg)
 ![image](https://codecov.io/gh/FelixTheC/strongtyping/graph/badge.svg)
-
+[![Requirements Status](https://requires.io/github/FelixTheC/strongtyping/requirements.svg?branch=master)](https://requires.io/github/FelixTheC/strongtyping/requirements/?branch=master)
 
 # Strong Typing
 <p>Decorator which <b>checks at Runtime</b> whether the function is called with the correct type of parameters.<br> 
