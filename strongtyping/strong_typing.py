@@ -81,6 +81,9 @@ def get_origins(typ_to_check: any) -> tuple:
 
 
 def checking_typing_dict(arg: Any, possible_types: tuple, *args):
+    if not isinstance(arg, dict):
+        return False
+
     try:
         key, val = possible_types
     except (ValueError, TypeError):
@@ -209,7 +212,6 @@ def check_type(argument, type_of, mro=False):
             return supported_modules[f'module_checking_typing_{origin_name}'](argument, type_of)
         except KeyError:
             pass
-
         if 'new_type' in origin_name:
             if '3.6' in sys.version:
                 return check_result

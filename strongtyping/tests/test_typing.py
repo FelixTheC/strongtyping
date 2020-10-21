@@ -28,6 +28,7 @@ from strongtyping.strong_typing import checking_typing_set
 from strongtyping.strong_typing import checking_typing_dict
 from strongtyping.strong_typing import get_possible_types
 from strongtyping.strong_typing import get_origins
+from strongtyping.strong_typing import getter_setter
 from strongtyping.strong_typing import match_typing
 from strongtyping.strong_typing import match_class_typing
 from strongtyping.strong_typing import TypeMisMatch
@@ -985,6 +986,31 @@ def test_generic_type_hints():
 
     with pytest.raises(TypeMisMatch):
         a_dict({'foo': [1, 2, 3]})
+
+
+def test_optional_same_as_union_none():
+    AType = List[Tuple[int, str]]
+    BType = Dict[str, Union[str, int]]
+    CType = Dict[str, int]
+    KType = Dict[str, Union[AType, BType, CType, None]]
+
+    @match_typing
+    def func_a(x: Union[KType, None] = None):
+        if x is not None:
+            return 2
+        return 1
+
+    assert func_a({'a': {'foo': 2}}) == 2
+    assert func_a({'a': [(1, '2'), (3, '4')]}) == 2
+    assert func_a({'a': {'foo': 2}}) == 2
+    assert func_a(None) == 1
+
+    with pytest.raises(TypeMisMatch):
+        func_a(set([1, 2, 3]))
+
+    with pytest.raises(TypeMisMatch):
+        func_a({'a': ((1, '2'), (3, '4'))})
+
 
 
 if __name__ == '__main__':
