@@ -289,14 +289,20 @@ def match_class_typing(_cls=None, *, excep_raise: Exception = TypeError, cache_s
 
         severity_level = _severity_level(severity)
 
-        def inner(*args, **kwargs):
-            if severity_level > 0:
-                cls.__new__ = _get_new(match_typing, excep_raise, cache_size, severity, **kwargs)
-                if hasattr(cls.__init__, '__annotations__'):
-                    cls.__init__ = match_typing(cls.__init__)
-            return cls(*args, **kwargs)
+        # def inner(*args, **kwargs):
+        #     if severity_level > 0:
+        #         cls.__new__ = _get_new(match_typing, excep_raise, cache_size, severity, **kwargs)
+        #         if hasattr(cls.__init__, '__annotations__'):
+        #             cls.__init__ = match_typing(cls.__init__)
+        #     return cls(*args, **kwargs)
+        #
+        # return inner
 
-        return inner
+        if severity_level > 0:
+            cls.__new__ = _get_new(match_typing, excep_raise, cache_size, severity, **kwargs)
+            if hasattr(cls.__init__, '__annotations__'):
+                cls.__init__ = match_typing(cls.__init__)
+        return cls
 
     if _cls is not None:
         return wrapper(_cls)

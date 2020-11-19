@@ -959,5 +959,38 @@ def test_with_env_severity(monkeypatch):
         assert some_func(3, ['a', 'b', 'c']) == ['aaa', 'bbb', 'ccc']
 
 
+def test_classmethod_staticmethod(monkeypatch):
+    monkeypatch.setenv('ST_SEVERITY', 'warning')
+
+    @match_class_typing
+    class Dummy:
+        attr = 100
+
+        @classmethod
+        def b(cls):
+            return True
+
+        @staticmethod
+        def c(val: int):
+            return val * 10
+
+        @staticmethod
+        @match_typing
+        def d(val: int):
+            return val * 10
+
+    assert Dummy.b()  # classmethods must be decorated separately
+    assert Dummy.c(2) == 20
+    assert Dummy.c('2') != 20  # staticmethod can't be checked when called that way
+
+    with pytest.warns(RuntimeWarning):
+        assert Dummy.d('2')  # staticmethod must be decorated separately too, to be able to call it that way
+
+    d = Dummy()
+
+    with pytest.warns(RuntimeWarning):
+        d.c('2')
+
+
 if __name__ == '__main__':
     pytest.main(['-vv', '-s', __file__])
