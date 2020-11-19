@@ -8,9 +8,11 @@ import sys
 from typing import Union
 import pytest
 
-from strongtyping.type_namedtuple import typed_namedtuple
+if sys.version_info.minor >= 8:
+    from strongtyping.type_namedtuple import typed_namedtuple
 
 SKIP_MESSAGE = 'Some features in typed_namedtuple are only available from version 3.8'
+
 
 @pytest.fixture(scope='module')
 def dummy_obj():
