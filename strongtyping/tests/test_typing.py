@@ -20,17 +20,18 @@ from typing import Iterator
 from typing import List
 
 from strongtyping.config import SEVERITY_LEVEL
-from strongtyping.strong_typing import checking_typing_list
-from strongtyping.strong_typing import checking_typing_json
-from strongtyping.strong_typing import checking_typing_tuple
-from strongtyping.strong_typing import checking_typing_type
-from strongtyping.strong_typing import checking_typing_set
-from strongtyping.strong_typing import checking_typing_dict
-from strongtyping.strong_typing import get_possible_types
-from strongtyping.strong_typing import get_origins
 from strongtyping.strong_typing import match_typing
 from strongtyping.strong_typing import match_class_typing
-from strongtyping.strong_typing import TypeMisMatch
+from strongtyping.strong_typing_utils import checking_typing_list
+from strongtyping.strong_typing_utils import checking_typing_json
+from strongtyping.strong_typing_utils import checking_typing_tuple
+from strongtyping.strong_typing_utils import checking_typing_type
+from strongtyping.strong_typing_utils import checking_typing_set
+from strongtyping.strong_typing_utils import checking_typing_dict
+from strongtyping.strong_typing_utils import get_possible_types
+from strongtyping.strong_typing_utils import get_origins
+from strongtyping.strong_typing_utils import TypeMisMatch
+
 
 try:
     from typing import Literal
