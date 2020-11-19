@@ -5,4 +5,21 @@
 @author: felix
 """
 
-__all__ = ['strong_typing', 'docstring_typing', 'cached_set', 'cached_dict', 'type_namedtuple']
+__all__ = ['_utils',
+           'strong_typing_utils',
+           'strong_typing',
+           'docstring_typing',
+           'cached_set',
+           'cached_dict',
+           'type_namedtuple']
+
+import os
+
+try:
+    from strongtyping_modules.install import install
+except ImportError:
+    pass
+else:
+    if not bool(os.environ.get('ST_MODULES_INSTALLED', '0')):
+        install()
+        os.environ['ST_MODULES_INSTALLED'] = '1'
