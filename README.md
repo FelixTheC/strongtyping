@@ -28,11 +28,6 @@ And <b><em>raises</em> TypeMisMatch</b> if the used parameters in a function cal
 | :-------------                                    | ----------:                           |
 | [severity_level](#severity_level)                 | set global severity level             |
 
-## Configuration
-|                                                   | description                           |
-| :-------------                                    | ----------:                           |
-| [severity_level](#severity_level)                 | set global severity level             |
-
 ## Additional features
 | from strongtyping.type_namedtuple import          | description                           |
 | :-------------                                    | ----------:                           |
