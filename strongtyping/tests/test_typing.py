@@ -28,6 +28,7 @@ from strongtyping.strong_typing import checking_typing_set
 from strongtyping.strong_typing import checking_typing_dict
 from strongtyping.strong_typing import get_possible_types
 from strongtyping.strong_typing import get_origins
+from strongtyping.strong_typing import getter_setter
 from strongtyping.strong_typing import match_typing
 from strongtyping.strong_typing import match_class_typing
 from strongtyping.strong_typing import TypeMisMatch
@@ -57,7 +58,7 @@ def test_get_possible_types_from_typing():
     assert get_possible_types(Tuple[Union[str, int], List[int]]) == (Union[str, int], List[int], )
 
 
-@pytest.mark.skipif(sys.version_info.minor == 6, reason='some special cases py3.6')
+@pytest.mark.skipif(sys.version_info.minor > 6, reason='some special cases py3.6')
 def test_get_origins():
     assert get_origins(List[str]) == (list, 'List')
     assert get_origins(Tuple[str, str]) == (tuple, 'Tuple')
@@ -67,38 +68,38 @@ def test_get_origins():
 
 def test_check_typing_dict_builtin():
     arg = {'spell': 'lumos'}
-    
+
     assert checking_typing_dict(arg, ())
     assert checking_typing_dict({1, 2, 3}, ()) is False
 
 
 def test_check_typing_dict_typ():
     arg = {'spell': 'lumos'}
-    
+
     assert checking_typing_dict(arg, (str, str))
     assert checking_typing_dict(arg, (str, int)) is False
     assert checking_typing_dict(arg, (int, str)) is False
     assert checking_typing_dict(arg, (Union[int, str], str))
     assert checking_typing_dict(arg, (str, Union[int, str]))
-    
+
 
 def test_check_typing_set_builtin():
     arg = {'avadra', 'kevadra'}
-    
+
     assert checking_typing_set(arg, ())
     assert checking_typing_set({'spell': 'lumos'}, ()) is False
 
 
 def test_check_typing_list_builtin():
     arg = ['avadra', 'kevadra']
-    
+
     assert checking_typing_list(arg, (str,))
     assert checking_typing_list({'spell': 'lumos'}, ()) is False
 
 
 def test_check_typing_tuple_builtin():
     arg = ('avadra', 'kevadra')
-    
+
     assert checking_typing_tuple(arg, None)
     assert checking_typing_tuple(arg, (str, str))
     assert checking_typing_tuple({'spell': 'lumos'}, ()) is False
@@ -108,7 +109,7 @@ def test_check_typing_json():
     arg = {'spell': 'lumos'}
     arg_2 = [{'spell': 'lumos'}, {'spell': 'accio'}]
     arg_3 = '[{"spell": "lumos"}, {"spell": "accio"}]'
-    
+
     assert checking_typing_json(arg, json)
     assert checking_typing_json(arg_2, ujson)
     assert checking_typing_json(arg_3, json)
@@ -990,6 +991,58 @@ def test_classmethod_staticmethod(monkeypatch):
 
     with pytest.warns(RuntimeWarning):
         d.c('2')
+
+
+@pytest.mark.skipif(sys.version_info.minor < 9, reason='Literal first available in py3.8')
+def test_generic_type_hints():
+
+    @match_typing
+    def a_dict(val: dict[str, str]):
+        return True
+
+    @match_typing
+    def b_list(val: list[int]):
+        return len(val)
+
+    @match_typing
+    def c_tuple(val: tuple[str, str, int]):
+        return True
+
+    @match_typing
+    def d_set(val: set[str]):
+        return len(val)
+
+    assert a_dict({'foo': 'bar'})
+
+    with pytest.raises(TypeMisMatch):
+        a_dict({1: 'bar'})
+
+    with pytest.raises(TypeMisMatch):
+        a_dict({'foo': [1, 2, 3]})
+
+
+def test_optional_same_as_union_none():
+    AType = List[Tuple[int, str]]
+    BType = Dict[str, Union[str, int]]
+    CType = Dict[str, int]
+    KType = Dict[str, Union[AType, BType, CType, None]]
+
+    @match_typing
+    def func_a(x: Union[KType, None] = None):
+        if x is not None:
+            return 2
+        return 1
+
+    assert func_a({'a': {'foo': 2}}) == 2
+    assert func_a({'a': [(1, '2'), (3, '4')]}) == 2
+    assert func_a({'a': {'foo': 2}}) == 2
+    assert func_a(None) == 1
+
+    with pytest.raises(TypeMisMatch):
+        func_a(set([1, 2, 3]))
+
+    with pytest.raises(TypeMisMatch):
+        func_a({'a': ((1, '2'), (3, '4'))})
 
 
 if __name__ == '__main__':
