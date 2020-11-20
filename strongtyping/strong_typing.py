@@ -244,7 +244,8 @@ def match_typing(_func=None, *, excep_raise: Exception = TypeMisMatch, cache_siz
     cached_set = None if cache_size == 0 else CachedSet(cache_size)
 
     def wrapper(func):
-        globals().update(func.__globals__)
+        # needed in py 3.10
+        # globals().update(func.__globals__)
 
         arg_names = [name for name in inspect.signature(func).parameters]
         annotations = func.__annotations__
