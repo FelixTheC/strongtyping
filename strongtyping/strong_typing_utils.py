@@ -131,29 +131,39 @@ def checking_typing_tuple(arg: Any, possible_types: tuple, *args):
         return isinstance(arg, tuple)
     if len(possible_types) > 0 and not len(arg) == len(possible_types) or not isinstance(arg, tuple):
         return False
-    return all(check_type(argument, typ) for argument, typ in zip(arg, possible_types))
+    return all(check_type(argument, typ)
+               for argument, typ in zip(arg, possible_types))
 
 
 def checking_typing_list(arg: Any, possible_types: tuple, *args):
     if not isinstance(arg, list):
         return False
-    return all(check_type(argument, typ) for argument, typ in zip_longest(arg, possible_types,
-                                                                          fillvalue=possible_types[0]))
+    return all(check_type(argument, typ)
+               for argument, typ in zip_longest(arg, possible_types,
+                                                fillvalue=possible_types[0]))
 
 
 def module_checking_typing_list(arg: Any, possible_types: Any):
+    if not possible_types.__args__:
+        return isinstance(arg, list)
     return bool(list_elements(arg, possible_types))
 
 
 def module_checking_typing_dict(arg: Any, possible_types: Any):
+    if not possible_types.__args__:
+        return isinstance(arg, dict)
     return bool(dict_elements(arg, possible_types))
 
 
 def module_checking_typing_set(arg: Any, possible_types: Any):
+    if isinstance(possible_types.__args__[0], TypeVar):
+        return isinstance(arg, set)
     return bool(set_elements(arg, possible_types))
 
 
 def module_checking_typing_tuple(arg: Any, possible_types: Any):
+    if not possible_types.__args__:
+        return isinstance(arg, tuple)
     return bool(tuple_elements(arg, possible_types))
 
 
@@ -176,8 +186,14 @@ def checking_typing_literal(arg, possible_types, *args):
 
 supported_typings = vars()
 if extension_module:
-    m = [f'module_checking_typing_{t}' for t in ('list', 'dict', 'set', 'tuple')]
-    supported_modules = {k: v for k, v in vars().items() if k in m}
+    m = [f'module_checking_typing_{t}'
+         for t in ('list',
+                   # 'dict',
+                   'set',
+                   'tuple')]
+    supported_modules = {k: v
+                         for k, v in vars().items()
+                         if k in m}
 else:
     supported_modules = {}
 
@@ -193,17 +209,17 @@ def check_type(argument, type_of, mro=False):
         if 'json' in origin_name or 'json' in str(type_of):
             return supported_typings['checking_typing_json'](argument, type_of, mro)
 
-        try:
-            return supported_modules[f'module_checking_typing_{origin_name}'](argument, type_of)
-        except KeyError:
-            pass
-
         if 'new_type' in origin_name:
             if '3.6' in sys.version:
                 return check_result
             type_of = type_of.__supertype__
             origin, origin_name = get_origins(type_of)
             origin_name = origin_name.lower()
+
+        try:
+            return supported_modules[f'module_checking_typing_{origin_name}'](argument, type_of)
+        except KeyError:
+            pass
 
         if isinstance(type_of, typing_base_class):
             try:
