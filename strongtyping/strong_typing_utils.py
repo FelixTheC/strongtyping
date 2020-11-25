@@ -35,6 +35,7 @@ class TypeMisMatch(AttributeError):
 
 py_version = sys.version_info.minor
 typing_base_class = typing._GenericAlias if hasattr(typing, '_GenericAlias') else typing.GenericMeta
+EMPTY = object()
 
 
 @lru_cache(maxsize=1024)
@@ -62,7 +63,7 @@ def get_origins(typ_to_check: any) -> tuple:
         - Tuple[Union[str, int], List[int]] = (tuple, 'Tuple)
         - FunctionType = (None, 'None')
     """
-    origin = None
+    origin = EMPTY
     if hasattr(typ_to_check, '__origin__') or hasattr(typ_to_check, '__orig_bases__'):
         origin = typ_to_check.__origin__ if typ_to_check.__origin__ is not None else typ_to_check.__orig_bases__
     if py_version == 6 and hasattr(typ_to_check, '_gorg'):
@@ -144,25 +145,25 @@ def checking_typing_list(arg: Any, possible_types: tuple, *args):
 
 
 def module_checking_typing_list(arg: Any, possible_types: Any):
-    if not possible_types.__args__:
+    if not possible_types.__args__ or all(isinstance(pt, TypeVar) for pt in possible_types.__args__):
         return isinstance(arg, list)
     return bool(list_elements(arg, possible_types))
 
 
 def module_checking_typing_dict(arg: Any, possible_types: Any):
-    if not possible_types.__args__:
+    if not possible_types.__args__ or all(isinstance(pt, TypeVar) for pt in possible_types.__args__):
         return isinstance(arg, dict)
     return bool(dict_elements(arg, possible_types))
 
 
 def module_checking_typing_set(arg: Any, possible_types: Any):
-    if isinstance(possible_types.__args__[0], TypeVar):
+    if isinstance(possible_types.__args__[0], TypeVar) or all(isinstance(pt, TypeVar) for pt in possible_types.__args__):
         return isinstance(arg, set)
     return bool(set_elements(arg, possible_types))
 
 
 def module_checking_typing_tuple(arg: Any, possible_types: Any):
-    if not possible_types.__args__:
+    if not possible_types.__args__ or all(isinstance(pt, TypeVar) for pt in possible_types.__args__):
         return isinstance(arg, tuple)
     return bool(tuple_elements(arg, possible_types))
 
@@ -188,7 +189,7 @@ supported_typings = vars()
 if extension_module:
     m = [f'module_checking_typing_{t}'
          for t in ('list',
-                   # 'dict',
+                   'dict',
                    'set',
                    'tuple')]
     supported_modules = {k: v

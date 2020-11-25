@@ -18,6 +18,7 @@ from typing import Dict
 from typing import Generator
 from typing import Iterator
 from typing import List
+from unittest import mock
 
 from strongtyping.config import SEVERITY_LEVEL
 from strongtyping.strong_typing import match_typing
@@ -63,7 +64,6 @@ def test_get_origins():
     assert get_origins(List[str]) == (list, 'List')
     assert get_origins(Tuple[str, str]) == (tuple, 'Tuple')
     assert get_origins(Union[str, int]) == (Union, 'Union')
-    assert get_origins(FunctionType) == (None, 'None')
 
 
 def test_check_typing_dict_builtin():
@@ -714,6 +714,12 @@ def test_with_literals():
     with pytest.raises(TypeMisMatch):
         with_literals('up')
 
+    @match_typing
+    def dict_with_literals(direction: Dict[Literal['horizontal', 'vertical'], float]):
+        return direction
+
+    assert dict_with_literals({'vertical': .23}) == {'vertical': .23}
+
 
 def test_with_class_decorator():
 
@@ -991,6 +997,25 @@ def test_classmethod_staticmethod(monkeypatch):
 
     with pytest.warns(RuntimeWarning):
         d.c('2')
+
+
+def test_strongtyping_modules_integration():
+    try:
+        from strongtyping_modules.strongtyping_modules import list_elements
+        with mock.patch('strongtyping.strong_typing_utils.list_elements',
+                        side_effect=list_elements) as mocked_list_module:
+            @match_typing
+            def some_func(val_1: List[Union[Literal['alpha', 'beta'], int]]):
+                return len(val_1)
+
+            try:
+                some_func(['alpha', 23, 'beta', 2])
+            except TypeMisMatch:
+                pass
+            assert mocked_list_module.called
+
+    except ImportError:
+        pass
 
 
 if __name__ == '__main__':
