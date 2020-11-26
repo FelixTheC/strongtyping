@@ -51,8 +51,10 @@ def get_possible_types(typ_to_check) -> typing.Union[tuple, None]:
     if extension_module:
         if not hasattr(typ_to_check, '__args__'):
             return typ_to_check.__origin__
-    if typ_to_check.__args__ is not None:
+    if hasattr(typ_to_check, '__args__') and typ_to_check.__args__ is not None:
         return tuple(typ for typ in typ_to_check.__args__ if not isinstance(typ, TypeVar))
+    else:
+        return
 
 
 def get_origins(typ_to_check: any) -> tuple:
@@ -66,7 +68,10 @@ def get_origins(typ_to_check: any) -> tuple:
     """
     origin = None
     if hasattr(typ_to_check, '__origin__') or hasattr(typ_to_check, '__orig_bases__'):
-        origin = typ_to_check.__origin__ if typ_to_check.__origin__ is not None else typ_to_check.__orig_bases__
+        if py_version >= 3.9 and hasattr(typ_to_check.__origin__, '__name__'):
+            origin = typ_to_check.__origin__.__name__
+        else:
+            origin = typ_to_check.__origin__ if typ_to_check.__origin__ is not None else typ_to_check.__orig_bases__
     if py_version == 6 and hasattr(typ_to_check, '_gorg'):
         return None, str(typ_to_check._gorg).replace('typing.', '')
     return origin, origin._name if hasattr(origin, '_name') else \
