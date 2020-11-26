@@ -15,6 +15,8 @@ import typing
 from typing import Any
 from typing import TypeVar
 
+from _utils import install_st_m
+install_st_m()
 
 try:
     from strongtyping_modules.strongtyping_modules import list_elements
@@ -35,7 +37,6 @@ class TypeMisMatch(AttributeError):
 
 py_version = sys.version_info.minor
 typing_base_class = typing._GenericAlias if hasattr(typing, '_GenericAlias') else typing.GenericMeta
-EMPTY = object()
 
 
 @lru_cache(maxsize=1024)
@@ -63,7 +64,7 @@ def get_origins(typ_to_check: any) -> tuple:
         - Tuple[Union[str, int], List[int]] = (tuple, 'Tuple)
         - FunctionType = (None, 'None')
     """
-    origin = EMPTY
+    origin = None
     if hasattr(typ_to_check, '__origin__') or hasattr(typ_to_check, '__orig_bases__'):
         origin = typ_to_check.__origin__ if typ_to_check.__origin__ is not None else typ_to_check.__orig_bases__
     if py_version == 6 and hasattr(typ_to_check, '_gorg'):
@@ -73,6 +74,9 @@ def get_origins(typ_to_check: any) -> tuple:
 
 
 def checking_typing_dict(arg: Any, possible_types: tuple, *args):
+    if not isinstance(arg, dict):
+        return False
+
     try:
         key, val = possible_types
     except (ValueError, TypeError):
@@ -200,6 +204,9 @@ else:
 
 
 def check_type(argument, type_of, mro=False):
+    if int(py_version) >= 10 and isinstance(type_of, (str, bytes)):
+        type_of = eval(type_of, locals(), globals())
+
     check_result = True
     if type_of is not None:
         origin, origin_name = get_origins(type_of)
@@ -210,6 +217,11 @@ def check_type(argument, type_of, mro=False):
         if 'json' in origin_name or 'json' in str(type_of):
             return supported_typings['checking_typing_json'](argument, type_of, mro)
 
+        try:
+            return supported_modules[f'module_checking_typing_{origin_name}'](argument, type_of)
+        except KeyError:
+            pass
+
         if 'new_type' in origin_name:
             if '3.6' in sys.version:
                 return check_result
@@ -217,12 +229,7 @@ def check_type(argument, type_of, mro=False):
             origin, origin_name = get_origins(type_of)
             origin_name = origin_name.lower()
 
-        try:
-            return supported_modules[f'module_checking_typing_{origin_name}'](argument, type_of)
-        except KeyError:
-            pass
-
-        if isinstance(type_of, typing_base_class):
+        if isinstance(type_of, typing_base_class) or (py_version >= 3.9 and origin is not None):
             try:
                 return supported_typings[f'checking_typing_{origin_name}'](argument, get_possible_types(type_of), mro)
             except AttributeError:

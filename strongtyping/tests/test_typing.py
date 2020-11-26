@@ -21,15 +21,6 @@ from typing import List
 from unittest import mock
 
 from strongtyping.config import SEVERITY_LEVEL
-from strongtyping.strong_typing import checking_typing_list
-from strongtyping.strong_typing import checking_typing_json
-from strongtyping.strong_typing import checking_typing_tuple
-from strongtyping.strong_typing import checking_typing_type
-from strongtyping.strong_typing import checking_typing_set
-from strongtyping.strong_typing import checking_typing_dict
-from strongtyping.strong_typing import get_possible_types
-from strongtyping.strong_typing import get_origins
-from strongtyping.strong_typing import getter_setter
 from strongtyping.strong_typing import match_typing
 from strongtyping.strong_typing import match_class_typing
 from strongtyping.strong_typing_utils import checking_typing_list
@@ -1059,39 +1050,6 @@ def test_optional_same_as_union_none():
 
     with pytest.raises(TypeMisMatch):
         func_a({'a': ((1, '2'), (3, '4'))})
-
-
-def test_classmethod_staticmethod(monkeypatch):
-    monkeypatch.setenv('ST_SEVERITY', 'warning')
-
-    @match_class_typing
-    class Dummy:
-        attr = 100
-
-        @classmethod
-        def b(cls):
-            return True
-
-        @staticmethod
-        def c(val: int):
-            return val * 10
-
-        @staticmethod
-        @match_typing
-        def d(val: int):
-            return val * 10
-
-    assert Dummy.b()  # classmethods must be decorated separately
-    assert Dummy.c(2) == 20
-    assert Dummy.c('2') != 20  # staticmethod can't be checked when called that way
-
-    with pytest.warns(RuntimeWarning):
-        assert Dummy.d('2')  # staticmethod must be decorated separately too, to be able to call it that way
-
-    d = Dummy()
-
-    with pytest.warns(RuntimeWarning):
-        d.c('2')
 
 
 def test_strongtyping_modules_integration():
