@@ -15,7 +15,7 @@ import typing
 from typing import Any
 from typing import TypeVar
 
-from _utils import install_st_m
+from strongtyping._utils import install_st_m
 install_st_m()
 
 try:
