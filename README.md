@@ -1,5 +1,6 @@
 [![PyPI version](https://badge.fury.io/py/strongtyping.svg)](https://badge.fury.io/py/strongtyping)
 ![Python application](https://github.com/FelixTheC/strongtyping/workflows/Python%20application/badge.svg)
+![Python tox](https://github.com/FelixTheC/strongtyping/workflows/Python%20tox/badge.svg)
 ![image](https://codecov.io/gh/FelixTheC/strongtyping/graph/badge.svg)
 
 
@@ -649,7 +650,7 @@ def a(value: int):
 ## Package
 
 ### Tested for Versions
-- 3.6, 3.7, 3.8, 3.9.0b4
+- 3.7, 3.8, 3.9
 
 ### Installing
 - pip install strongtyping

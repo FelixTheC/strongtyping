@@ -139,7 +139,7 @@ def typed_namedtuple(typename: str, field_names: Union[List[str], str, List[Tupl
         def _asdict(self):
             return {k: v for k, v in zip(_field_types.keys(), self)}
 
-        def _replace(self, /, **kwargs):
+        def _replace(self, **kwargs):
             new_val = self._asdict()
             not_allowed = [k for k in kwargs.keys() if k not in self._field_types]
             if not_allowed:

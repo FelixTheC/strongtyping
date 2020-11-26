@@ -19,7 +19,7 @@ packages = find_packages(exclude=['test_*', '*.tests'])
 
 setup(
     name="strongtyping",
-    version="1.5.5",
+    version="1.6.3",
     description="Decorator which checks whether the function is called with the correct type of parameters",
     long_description=README,
     long_description_content_type="text/markdown",
@@ -32,7 +32,7 @@ setup(
         "Programming Language :: Python :: 3",
     ],
     packages=packages,
-    python_requires='>=3.6',
+    python_requires='>=3.7',
     include_package_data=True,
 )
 
