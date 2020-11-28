@@ -4,11 +4,14 @@
 @created: 20.07.20
 @author: felix
 """
+import logging
 import os
 from types import MethodType
 from typing import Union
 
 from strongtyping.config import SEVERITY_LEVEL
+
+logger = logging.getLogger(__name__)
 
 
 def remove_subclass(args, subclass):
@@ -62,6 +65,20 @@ def _get_new(typing_func, excep_raise: Exception = TypeError, cache_size=0, seve
         return x
 
     return new_with_match_typing
+
+
+def install_st_m():
+    import os
+
+    try:
+        from strongtyping_modules.install import install
+    except ImportError:
+        os.environ['ST_MODULES_INSTALLED'] = '0'
+    else:
+        if not bool(int(os.environ.get('ST_MODULES_INSTALLED', '0'))):
+            logger.info('strongtyping_modules will be installed')
+            install()
+            os.environ['ST_MODULES_INSTALLED'] = '1'
 
 
 def action(f, frefs, type_function):

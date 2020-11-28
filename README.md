@@ -29,15 +29,15 @@ And <b><em>raises</em> TypeMisMatch</b> if the used parameters in a function cal
 | :-------------                                    | ----------:                           |
 | [severity_level](#severity_level)                 | set global severity level             |
 
-## Configuration
-|                                                   | description                           |
-| :-------------                                    | ----------:                           |
-| [severity_level](#severity_level)             | set global severity level             |
-
 ## Additional features
 | from strongtyping.type_namedtuple import          | description                           |
 | :-------------                                    | ----------:                           |
 | [typed_namedtuple](#typed_namedtuple)             | an extension of the original namedtuple|
+
+| Booster feature                                   | description                           |
+| :-------------                                    | ----------:                           |
+| [strongtpying_module](#strongtpying_module)       | a Cython package to speed up the type checking |
+
 
 
 ### The problem:
@@ -535,6 +535,7 @@ d.c = 'foobar'  # will raise TypeMisMatch
 
 ## typed_namedtuple
 
+- __typed_namedtuple is only available from python >= 3.8__
 - from my side it was only logical to create an own version of namedtuple with typing support
 - for typing use the reST-style
 ```python
@@ -598,6 +599,18 @@ class Dummy(builtins.tuple)
 ```
 
 - [Back to top](#strong-typing)
+
+
+## strongtpying_module
+
+- A __package__ written by my own in __Cython__ to speed up the time for checking the parameters <br>
+  with this package you can achieve a __boost__ by the __factor 3__ and higher
+- you only need to install this package via `pip install strongtyping-modules`
+- for a detailed information please checkout the readme from [strongtyping_modules](https://github.com/FelixTheC/strongtyping_modules/blob/master/README.md)
+
+
+- [Back to top](#strong-typing)
+
 
 ## severity_level
 

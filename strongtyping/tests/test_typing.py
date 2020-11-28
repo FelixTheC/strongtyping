@@ -5,6 +5,7 @@
 @author: felix
 """
 import json
+import os
 import sys
 from dataclasses import dataclass
 from datetime import datetime
@@ -18,20 +19,21 @@ from typing import Dict
 from typing import Generator
 from typing import Iterator
 from typing import List
+from unittest import mock
 
 from strongtyping.config import SEVERITY_LEVEL
-from strongtyping.strong_typing import checking_typing_list
-from strongtyping.strong_typing import checking_typing_json
-from strongtyping.strong_typing import checking_typing_tuple
-from strongtyping.strong_typing import checking_typing_type
-from strongtyping.strong_typing import checking_typing_set
-from strongtyping.strong_typing import checking_typing_dict
-from strongtyping.strong_typing import get_possible_types
-from strongtyping.strong_typing import get_origins
-from strongtyping.strong_typing import getter_setter
 from strongtyping.strong_typing import match_typing
 from strongtyping.strong_typing import match_class_typing
-from strongtyping.strong_typing import TypeMisMatch
+from strongtyping.strong_typing_utils import checking_typing_list
+from strongtyping.strong_typing_utils import checking_typing_json
+from strongtyping.strong_typing_utils import checking_typing_tuple
+from strongtyping.strong_typing_utils import checking_typing_type
+from strongtyping.strong_typing_utils import checking_typing_set
+from strongtyping.strong_typing_utils import checking_typing_dict
+from strongtyping.strong_typing_utils import get_possible_types
+from strongtyping.strong_typing_utils import get_origins
+from strongtyping.strong_typing_utils import TypeMisMatch
+
 
 try:
     from typing import Literal
@@ -714,6 +716,12 @@ def test_with_literals():
     with pytest.raises(TypeMisMatch):
         with_literals('up')
 
+    @match_typing
+    def dict_with_literals(direction: Dict[Literal['horizontal', 'vertical'], float]):
+        return direction
+
+    assert dict_with_literals({'vertical': .23}) == {'vertical': .23}
+
 
 def test_with_class_decorator():
 
@@ -1043,6 +1051,26 @@ def test_optional_same_as_union_none():
 
     with pytest.raises(TypeMisMatch):
         func_a({'a': ((1, '2'), (3, '4'))})
+
+
+@pytest.mark.skipif(bool(int(os.environ['ST_MODULES_INSTALLED'])) is False, reason='not installed module')
+def test_strongtyping_modules_integration():
+    try:
+        from strongtyping_modules.strongtyping_modules import list_elements
+        with mock.patch('strongtyping.strong_typing_utils.list_elements',
+                        side_effect=list_elements) as mocked_list_module:
+            @match_typing
+            def some_func(val_1: List[Union[Literal['alpha', 'beta'], int]]):
+                return len(val_1)
+
+            try:
+                some_func(['alpha', 23, 'beta', 2])
+            except TypeMisMatch:
+                pass
+            assert mocked_list_module.called
+
+    except ImportError:
+        pass
 
 
 if __name__ == '__main__':
