@@ -5,6 +5,7 @@
 @author: felix
 """
 import json
+import os
 import sys
 from dataclasses import dataclass
 from datetime import datetime
@@ -1052,6 +1053,7 @@ def test_optional_same_as_union_none():
         func_a({'a': ((1, '2'), (3, '4'))})
 
 
+@pytest.mark.skipif(bool(int(os.environ['ST_MODULES_INSTALLED'])) is False, reason='not installed module')
 def test_strongtyping_modules_integration():
     try:
         from strongtyping_modules.strongtyping_modules import list_elements

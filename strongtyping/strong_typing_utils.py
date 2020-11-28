@@ -6,6 +6,7 @@
 """
 
 import inspect
+import os
 import sys
 from collections.abc import Generator
 from functools import lru_cache
@@ -26,7 +27,7 @@ try:
 except ImportError as e:
     extension_module = False
 else:
-    extension_module = True
+    extension_module = bool(int(os.environ['ST_MODULES_INSTALLED']))
 
 
 class TypeMisMatch(AttributeError):
