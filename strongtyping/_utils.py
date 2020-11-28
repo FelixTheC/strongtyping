@@ -75,7 +75,7 @@ def install_st_m():
     except ImportError:
         pass
     else:
-        if not bool(os.environ.get('ST_MODULES_INSTALLED', '0')):
+        if not bool(int(os.environ.get('ST_MODULES_INSTALLED', '0'))):
             logger.info('strongtyping_modules will be installed')
             install()
             os.environ['ST_MODULES_INSTALLED'] = '1'
