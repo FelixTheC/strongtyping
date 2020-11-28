@@ -154,25 +154,33 @@ def checking_typing_list(arg: Any, possible_types: tuple, *args):
 
 
 def module_checking_typing_list(arg: Any, possible_types: Any):
-    if not possible_types.__args__ or all(isinstance(pt, TypeVar) for pt in possible_types.__args__):
+    if not hasattr(possible_types, '__args__') or \
+            not possible_types.__args__ or \
+            all(isinstance(pt, TypeVar) for pt in possible_types.__args__):
         return isinstance(arg, list)
     return bool(list_elements(arg, possible_types))
 
 
 def module_checking_typing_dict(arg: Any, possible_types: Any):
-    if not possible_types.__args__ or all(isinstance(pt, TypeVar) for pt in possible_types.__args__):
+    if not hasattr(possible_types, '__args__') or \
+            not possible_types.__args__ or \
+            all(isinstance(pt, TypeVar) for pt in possible_types.__args__):
         return isinstance(arg, dict)
     return bool(dict_elements(arg, possible_types))
 
 
 def module_checking_typing_set(arg: Any, possible_types: Any):
-    if isinstance(possible_types.__args__[0], TypeVar) or all(isinstance(pt, TypeVar) for pt in possible_types.__args__):
+    if not hasattr(possible_types, '__args__') or \
+            isinstance(possible_types.__args__[0], TypeVar) or \
+            all(isinstance(pt, TypeVar) for pt in possible_types.__args__):
         return isinstance(arg, set)
     return bool(set_elements(arg, possible_types))
 
 
 def module_checking_typing_tuple(arg: Any, possible_types: Any):
-    if not possible_types.__args__ or all(isinstance(pt, TypeVar) for pt in possible_types.__args__):
+    if not hasattr(possible_types, '__args__') or \
+            not possible_types.__args__ or \
+            all(isinstance(pt, TypeVar) for pt in possible_types.__args__):
         return isinstance(arg, tuple)
     return bool(tuple_elements(arg, possible_types))
 
@@ -208,7 +216,7 @@ else:
     supported_modules = {}
 
 
-def check_type(argument, type_of, mro=False):
+def check_type(argument, type_of, mro=False, **kwargs):
     if int(py_version) >= 10 and isinstance(type_of, (str, bytes)):
         type_of = eval(type_of, locals(), globals())
 
