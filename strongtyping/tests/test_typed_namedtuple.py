@@ -4,6 +4,7 @@
 @created: 13.07.20
 @author: felix
 """
+from __future__ import annotations
 import sys
 from typing import Union
 
@@ -25,7 +26,7 @@ def attr_of_obj_test(obj: type):
         assert getattr(obj, attr[0]) == attr[1]
 
 
-@pytest.mark.skipif(sys.version_info.minor < 8, reason=SKIP_MESSAGE)
+@pytest.mark.skipif(skip_reason, reason=SKIP_MESSAGE)
 def test_typed_namedtuple_no_type_returns_namedtuple():
     Dummy = typed_namedtuple("Dummy", ["spell", "mana", "effect"])
     assert (
@@ -40,7 +41,7 @@ def test_typed_namedtuple_no_type_returns_namedtuple():
     )
 
 
-@pytest.mark.skipif(sys.version_info.minor < 8, reason=SKIP_MESSAGE)
+@pytest.mark.skipif(skip_reason, reason=SKIP_MESSAGE)
 def test_typed_namedtuple_with_type_returns_object():
     Dummy = typed_namedtuple("Dummy", ["spell:str", "mana:int", "effect:list"])
     assert (
@@ -55,7 +56,7 @@ def test_typed_namedtuple_with_type_returns_object():
     )
 
 
-@pytest.mark.skipif(sys.version_info.minor < 8, reason=SKIP_MESSAGE)
+@pytest.mark.skipif(skip_reason, reason=SKIP_MESSAGE)
 def test_typed_namedtuple_with_type_returns_correct_val(dummy_obj):
     d = dummy_obj(
         spell="Lumos",
@@ -76,7 +77,7 @@ def test_typed_namedtuple_with_type_returns_correct_val(dummy_obj):
     attr_of_obj_test(d)
 
 
-@pytest.mark.skipif(sys.version_info.minor < 8, reason=SKIP_MESSAGE)
+@pytest.mark.skipif(skip_reason, reason=SKIP_MESSAGE)
 def test_typed_namedtuple_instantiate_args_or_kwargs(dummy_obj):
     d = dummy_obj(
         "Lumos",
@@ -97,7 +98,7 @@ def test_typed_namedtuple_instantiate_args_or_kwargs(dummy_obj):
     attr_of_obj_test(d)
 
 
-@pytest.mark.skipif(sys.version_info.minor < 8, reason=SKIP_MESSAGE)
+@pytest.mark.skipif(skip_reason, reason=SKIP_MESSAGE)
 def test_typed_namedtuple_indexable(dummy_obj):
     d = dummy_obj(
         "Lumos",
@@ -111,7 +112,7 @@ def test_typed_namedtuple_indexable(dummy_obj):
     assert d[1] == 5
 
 
-@pytest.mark.skipif(sys.version_info.minor < 8, reason=SKIP_MESSAGE)
+@pytest.mark.skipif(skip_reason, reason=SKIP_MESSAGE)
 def test_typed_namedtuple_unpack_like_regular_tuple(dummy_obj):
     d = dummy_obj(
         "Lumos",
@@ -126,7 +127,7 @@ def test_typed_namedtuple_unpack_like_regular_tuple(dummy_obj):
     assert z == ["Makes light"]
 
 
-@pytest.mark.skipif(sys.version_info.minor < 8, reason=SKIP_MESSAGE)
+@pytest.mark.skipif(skip_reason, reason=SKIP_MESSAGE)
 def test_typed_namedtuple_asdict(dummy_obj):
     d = dummy_obj(
         "Lumos",
@@ -142,7 +143,7 @@ def test_typed_namedtuple_asdict(dummy_obj):
     assert d_dict["effect"] == ["Makes light"]
 
 
-@pytest.mark.skipif(sys.version_info.minor < 8, reason=SKIP_MESSAGE)
+@pytest.mark.skipif(skip_reason, reason=SKIP_MESSAGE)
 def test_typed_namedtuple_create_from_dict(dummy_obj):
     t = {
         "spell": "Lumos",
@@ -155,7 +156,7 @@ def test_typed_namedtuple_create_from_dict(dummy_obj):
     attr_of_obj_test(d)
 
 
-@pytest.mark.skipif(sys.version_info.minor < 8, reason=SKIP_MESSAGE)
+@pytest.mark.skipif(skip_reason, reason=SKIP_MESSAGE)
 def test_typed_namedtuple_replace(dummy_obj):
     d = dummy_obj(
         "Lumos",
@@ -169,7 +170,7 @@ def test_typed_namedtuple_replace(dummy_obj):
         attr_of_obj_test(d)
 
 
-@pytest.mark.skipif(sys.version_info.minor < 8, reason=SKIP_MESSAGE)
+@pytest.mark.skipif(skip_reason, reason=SKIP_MESSAGE)
 def test_typed_namedtuple_default_values():
     Dummy = typed_namedtuple(
         "Dummy", ["spell:str", "mana:int", "effect:list"], defaults=["", 0, []]
@@ -187,7 +188,7 @@ def test_typed_namedtuple_default_values():
         typed_namedtuple("Dummy", ["spell:str", "mana:int", "effect:list"], defaults=["", 0])
 
 
-@pytest.mark.skipif(sys.version_info.minor < 8, reason=SKIP_MESSAGE)
+@pytest.mark.skipif(skip_reason, reason=SKIP_MESSAGE)
 def test_typed_namedtuple_has_nice_docstring(dummy_obj):
     d = dummy_obj(
         "Lumos",
@@ -202,7 +203,7 @@ def test_typed_namedtuple_has_nice_docstring(dummy_obj):
     assert ":type effect: list" in d.__doc__
 
 
-@pytest.mark.skipif(sys.version_info.minor < 8, reason=SKIP_MESSAGE)
+@pytest.mark.skipif(skip_reason, reason=SKIP_MESSAGE)
 def test_typed_namedtuple_instantiate_with_incorrect_types_raises_type_error(dummy_obj):
     with pytest.raises(TypeError):
         # spell -> str
@@ -211,29 +212,29 @@ def test_typed_namedtuple_instantiate_with_incorrect_types_raises_type_error(dum
         dummy_obj(mana="Lumos", spell=5, effect="Makes light")
 
 
-@pytest.mark.skipif(sys.version_info.minor < 8, reason=SKIP_MESSAGE)
+@pytest.mark.skipif(skip_reason, reason=SKIP_MESSAGE)
 def test_typed_namedtuple_incorrect_default_types_raises_type_error():
     with pytest.raises(TypeError):
-        Dummy = typed_namedtuple(
+        typed_namedtuple(
             "Dummy", ["spell:str", "mana:int", "effect:list"], defaults=[0, "", ""]
         )
 
     with pytest.raises(TypeError):
-        Dummy = typed_namedtuple(
+        typed_namedtuple(
             "Dummy",
             ["spell:str", "mana:int or str", "effect:list"],
             defaults=["", (), []],
         )
 
     with pytest.raises(TypeError):
-        Dummy = typed_namedtuple(
+        typed_namedtuple(
             "Dummy",
             ["spell:str", "mana:int or str", "effect:list or tuple"],
             defaults=["", "5", {1, 2}],
         )
 
 
-@pytest.mark.skipif(sys.version_info.minor < 8, reason=SKIP_MESSAGE)
+@pytest.mark.skipif(skip_reason, reason=SKIP_MESSAGE)
 def test_typed_namedtuple_incorrect_replace_types_raises_type_error(dummy_obj):
     d = dummy_obj(
         "Lumos",
@@ -246,19 +247,19 @@ def test_typed_namedtuple_incorrect_replace_types_raises_type_error(dummy_obj):
         d._replace(effect=b"Makes light")
 
 
-@pytest.mark.skipif(sys.version_info.minor < 8, reason=SKIP_MESSAGE)
+@pytest.mark.skipif(skip_reason, reason=SKIP_MESSAGE)
 def test_typed_namedtuple_with_field_names_as_str():
     Dummy = typed_namedtuple("Dummy", "spell:str, mana:int or str,effect:list")
     with pytest.raises(TypeError):
         Dummy(mana="Lumos", spell=5, effect="Makes light")
 
     with pytest.raises(TypeError):
-        Dummy = typed_namedtuple(
+        typed_namedtuple(
             "Dummy", "spell:str, mana:int or str,effect:list", defaults=[0, "", ""]
         )
 
 
-@pytest.mark.skipif(sys.version_info.minor < 8, reason=SKIP_MESSAGE)
+@pytest.mark.skipif(skip_reason, reason=SKIP_MESSAGE)
 def test_typed_namedtuple_default_values_and_instantiate_with_some_values():
     Dummy = typed_namedtuple(
         "Dummy", ["spell:str", "mana:int", "effect:list or tuple"], defaults=["", 0, ()]
@@ -270,7 +271,7 @@ def test_typed_namedtuple_default_values_and_instantiate_with_some_values():
     assert d.effect == ()
 
 
-@pytest.mark.skipif(sys.version_info.minor < 8, reason=SKIP_MESSAGE)
+@pytest.mark.skipif(skip_reason, reason=SKIP_MESSAGE)
 def test_typed_namedtuple_rename():
     Dummy = typed_namedtuple(
         "Dummy", ["_spell:str", "mana:int", "effect:list or tuple"], rename=True
@@ -279,16 +280,16 @@ def test_typed_namedtuple_rename():
     assert d._0 == "1"
 
     with pytest.raises(ValueError):
-        Dummy = typed_namedtuple("Dummy", ["_spell:str", "mana:int", "effect:list or tuple"])
+        typed_namedtuple("Dummy", ["_spell:str", "mana:int", "effect:list or tuple"])
 
 
-@pytest.mark.skipif(sys.version_info.minor < 8, reason=SKIP_MESSAGE)
+@pytest.mark.skipif(skip_reason, reason=SKIP_MESSAGE)
 def test_typed_namedtuple_mixing_typ_and_no_type_not_allowed():
     with pytest.raises(TypeError):
-        Dummy = typed_namedtuple("Dummy", ["spell:str", "mana", "effect:list or tuple"])
+        typed_namedtuple("Dummy", ["spell:str", "mana", "effect:list or tuple"])
 
 
-@pytest.mark.skipif(sys.version_info.minor < 8, reason=SKIP_MESSAGE)
+@pytest.mark.skipif(skip_reason, reason=SKIP_MESSAGE)
 def test_typed_namedtuple_name_type_as_tuple():
     Dummy = typed_namedtuple(
         "Dummy", [("spell", str), ("mana", int), ("effect", Union[list, tuple])]

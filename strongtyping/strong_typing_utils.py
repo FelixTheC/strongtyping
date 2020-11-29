@@ -4,6 +4,7 @@
 @created: 19.11.20
 @author: felix
 """
+from __future__ import annotations
 import inspect
 import os
 import typing
@@ -173,9 +174,10 @@ def checking_typing_iterator(arg: Any, *args, **kwargs):
 
 def checking_typing_callable(arg: Any, possible_types: tuple, *args, **kwargs):
     insp = inspect.signature(arg)
-    return_val = insp.return_annotation == possible_types[-1]
+    return_val = insp.return_annotation in str(possible_types[-1])
     params = insp.parameters
-    return return_val and all(p.annotation == pt for p, pt in zip(params.values(), possible_types))
+    anno = [k for k in arg.__annotations__.keys() if k != 'return']
+    return return_val and all(params[k]._annotation in str(pt) for k, pt in zip(anno, possible_types))
 
 
 def checking_typing_tuple(arg: Any, possible_types: tuple, *args, **kwargs):
@@ -354,7 +356,10 @@ else:
 
 def check_type(argument, type_of, mro=False, **kwargs):
     # if int(py_version) >= 10 and isinstance(type_of, (str, bytes)):
-    #     type_of = eval(type_of, locals(), globals())
+    if isinstance(type_of, (str, bytes)):
+        _locals = kwargs.get('__locals')
+        _locals = _locals if _locals is not None else locals()
+        type_of = eval(type_of, kwargs.get('__globals', globals()), _locals)
     if checking_typing_generator(argument, type_of):
         # generator will be exhausted when we check it, so we return it without any checking
         return argument

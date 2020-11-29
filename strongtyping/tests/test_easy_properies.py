@@ -4,6 +4,7 @@
 @created: 09.07.20
 @author: eisenmenger
 """
+from __future__ import annotations
 import pytest
 
 from strongtyping.docstring_typing import getter_setter as dt_getter_setter, setter as dt_setter
