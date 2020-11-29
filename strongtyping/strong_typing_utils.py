@@ -4,7 +4,7 @@
 @created: 19.11.20
 @author: felix
 """
-
+from __future__ import annotations
 import inspect
 import os
 import sys
@@ -13,8 +13,7 @@ from functools import lru_cache
 from itertools import zip_longest
 import typing
 
-from typing import Any
-from typing import TypeVar
+from typing import *
 
 from strongtyping._utils import install_st_m
 install_st_m()
@@ -132,9 +131,10 @@ def checking_typing_iterator(arg: Any, *args):
 
 def checking_typing_callable(arg: Any, possible_types: tuple, *args):
     insp = inspect.signature(arg)
-    return_val = insp.return_annotation == possible_types[-1]
+    return_val = insp.return_annotation in str(possible_types[-1])
     params = insp.parameters
-    return return_val and all(p.annotation == pt for p, pt in zip(params.values(), possible_types))
+    anno = [k for k in arg.__annotations__.keys() if k != 'return']
+    return return_val and all(params[k]._annotation in str(pt) for k, pt in zip(anno, possible_types))
 
 
 def checking_typing_tuple(arg: Any, possible_types: tuple, *args):
@@ -218,8 +218,11 @@ else:
 
 
 def check_type(argument, type_of, mro=False, **kwargs):
-    if int(py_version) >= 10 and isinstance(type_of, (str, bytes)):
-        type_of = eval(type_of, locals(), globals())
+    # if int(py_version) >= 10 and isinstance(type_of, (str, bytes)):
+    if isinstance(type_of, (str, bytes)):
+        _locals = kwargs.get('__locals')
+        _locals = _locals if _locals is not None else locals()
+        type_of = eval(type_of, kwargs.get('__globals', globals()), _locals)
 
     check_result = True
     if type_of is not None:

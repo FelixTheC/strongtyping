@@ -4,6 +4,7 @@
 @created: 28.04.20
 @author: felix
 """
+from __future__ import annotations
 import inspect
 from functools import wraps
 import warnings
@@ -24,10 +25,13 @@ def match_typing(_func=None, *, excep_raise: Exception = TypeMisMatch, cache_siz
 
     def wrapper(func):
         # needed in py 3.10
-        # globals().update(func.__globals__)
+        # maybe pep-0558 will solve this problem with something similar to func.__globals__
+        g = func.__globals__
+        __locals = kwargs.get('locals')
+        print(__locals)
 
         arg_names = [name for name in inspect.signature(func).parameters]
-        annotations = func.__annotations__
+        _annotations = func.__annotations__
 
         severity_level = _severity_level(severity)
 
@@ -44,16 +48,21 @@ def match_typing(_func=None, *, excep_raise: Exception = TypeMisMatch, cache_siz
                         return func(*args, **kwargs)
 
                 # Thanks to Ruud van der Ham who find a better and more stable solution for check_args
-                failed_params = tuple(
-                    arg_name for arg, arg_name in zip(args, arg_names) if not check_type(arg, annotations.get(arg_name))
-                )
-                failed_params += tuple(
-                    kwarg_name for kwarg_name, kwarg in kwargs.items() if not check_type(kwarg,
-                                                                                         annotations.get(kwarg_name))
-                )
+                failed_params = tuple(arg_name
+                                      for arg, arg_name in zip(args, arg_names)
+                                      if not check_type(arg, _annotations.get(arg_name),
+                                                        __globals=g,
+                                                        __locals=__locals)
+                                      )
+                failed_params += tuple(kwarg_name
+                                       for kwarg_name, kwarg in kwargs.items()
+                                       if not check_type(kwarg, _annotations.get(kwarg_name),
+                                                         __globals=g,
+                                                         __locals=__locals)
+                                       )
 
                 if failed_params:
-                    msg = f'Incorrect parameters: {", ".join(f"{name}: {annotations[name]}" for name in failed_params)}'
+                    msg = f'Incorrect parameters: {", ".join(f"{name}: {_annotations[name]}" for name in failed_params)}'
 
                     if excep_raise is not None and severity_level == 1:
                         raise excep_raise(msg)
@@ -74,7 +83,6 @@ def match_typing(_func=None, *, excep_raise: Exception = TypeMisMatch, cache_siz
 
 
 def match_class_typing(_cls=None, *, excep_raise: Exception = TypeError, cache_size=0, severity='env', **kwargs):
-
     def wrapper(cls):
 
         severity_level = _severity_level(severity)
