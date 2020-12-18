@@ -2,6 +2,7 @@
 ![Python application](https://github.com/FelixTheC/strongtyping/workflows/Python%20application/badge.svg)
 ![Python tox](https://github.com/FelixTheC/strongtyping/workflows/Python%20tox/badge.svg)
 ![image](https://codecov.io/gh/FelixTheC/strongtyping/graph/badge.svg)
+[![](https://img.shields.io/pypi/dm/strongtyping.svg)](https://pypi.org/project/strongtyping/)
 
 
 # Strong Typing
