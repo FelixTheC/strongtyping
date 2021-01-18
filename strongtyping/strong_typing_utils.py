@@ -248,7 +248,9 @@ def check_type(argument, type_of, mro=False, **kwargs):
 
         if isinstance(type_of, typing_base_class) or (py_version >= 3.9 and origin is not None):
             try:
-                return supported_typings[f'checking_typing_{origin_name}'](argument, get_possible_types(type_of), mro)
+                return supported_typings[f'checking_typing_{origin_name}'](argument,
+                                                                           get_possible_types(type_of),
+                                                                           mro)
             except AttributeError:
                 return isinstance(argument, type_of.__args__)
         elif isinstance(type_of, str):
@@ -256,7 +258,9 @@ def check_type(argument, type_of, mro=False, **kwargs):
         elif mro:
             if origin_name == 'union':
                 possible_types = get_possible_types(type_of)
-                return supported_typings[f'checking_typing_{origin_name}'](argument, possible_types, mro)
+                return supported_typings[f'checking_typing_{origin_name}'](argument,
+                                                                           possible_types,
+                                                                           mro)
             return type_of in argument
         else:
             try:
@@ -264,3 +268,10 @@ def check_type(argument, type_of, mro=False, **kwargs):
             except TypeError:
                 return isinstance(argument, type_of._subs_tree()[1:])
     return check_result
+
+
+def save_eval(*args, **kwargs):
+    try:
+        return eval(*args, **kwargs)
+    except NameError:
+        return object
