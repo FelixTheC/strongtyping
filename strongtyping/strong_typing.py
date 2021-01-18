@@ -12,7 +12,14 @@ import warnings
 from functools import wraps
 from typing import Type
 
-from strongtyping._utils import _severity_level, action, remove_subclass
+from strong_typing_utils import save_eval
+from strongtyping.strong_typing_utils import TypeMisMatch
+from strongtyping.strong_typing_utils import check_type
+
+from strongtyping._utils import action
+from strongtyping._utils import _get_new
+from strongtyping._utils import _severity_level
+from strongtyping._utils import remove_subclass
 from strongtyping.cached_set import CachedSet
 from strongtyping.config import SEVERITY_LEVEL
 from strongtyping.strong_typing_utils import (
@@ -30,6 +37,7 @@ def match_typing(
     subclass: bool = False,
     severity="env",
     **kwargs,
+
 ):
     cached_enabled: int = kwargs.get("cache_size", 1)
     cached_set = CachedSet(cached_enabled) if cached_enabled > 0 else None
@@ -37,12 +45,14 @@ def match_typing(
     def wrapper(func):
         # needed in py 3.10
         # maybe pep-0558 will solve this problem with something similar to func.__globals__
-        g = func.__globals__
-        __locals = kwargs.get('locals')
-        print(__locals)
+        glb = func.__globals__
+        lcl = kwargs.get('locals', {})
 
         arg_names = [name for name in inspect.signature(func).parameters]
         _annotations = func.__annotations__
+        _annotations = {k:  save_eval(v, glb, lcl)
+                        for k, v in func.__annotations__.items()}
+
         severity_level = _severity_level(severity)
 
         @wraps(func)
@@ -59,16 +69,10 @@ def match_typing(
                 # Thanks to Ruud van der Ham who find a better and more stable solution for check_args
                 failed_params = tuple(arg_name
                                       for arg, arg_name in zip(args, arg_names)
-                                      if not check_type(arg, _annotations.get(arg_name),
-                                                        __globals=g,
-                                                        __locals=__locals)
-                                      )
+                                      if not check_type(arg, _annotations.get(arg_name)))
                 failed_params += tuple(kwarg_name
                                        for kwarg_name, kwarg in kwargs.items()
-                                       if not check_type(kwarg, _annotations.get(kwarg_name),
-                                                         __globals=g,
-                                                         __locals=__locals)
-                                       )if not default_return_queue.empty():
+                                       if not check_type(kwarg, _annotations.get(kwarg_name)))if not default_return_queue.empty():
                     return default_return_queue.queue.pop()
 
                 if failed_params:

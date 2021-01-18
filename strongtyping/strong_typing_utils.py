@@ -382,7 +382,9 @@ def check_type(argument, type_of, mro=False, **kwargs):
         if isinstance(type_of, typing_base_class) or origin is not None:
             try:
                 return supported_typings[f"checking_typing_{origin_name}"](
-                    argument, get_possible_types(type_of, origin_name), mro, **kwargs
+                    argument,
+                                                                           get_possible_types(type_of, origin_name),
+                                                                           mro, **kwargs
                 )
             except AttributeError:
                 return isinstance(argument, type_of.__args__)
@@ -394,7 +396,9 @@ def check_type(argument, type_of, mro=False, **kwargs):
             if origin_name == "union":
                 possible_types = get_possible_types(type_of)
                 return supported_typings[f"checking_typing_{origin_name}"](
-                    argument, possible_types, mro
+                    argument,
+                                                                           possible_types,
+                                                                           mro
                 )
             return type_of in argument
         else:
@@ -407,3 +411,10 @@ def check_type(argument, type_of, mro=False, **kwargs):
                     return False
                 return validate_object(argument, kwargs.get("validation_with"))
     return check_result
+
+
+def save_eval(*args, **kwargs):
+    try:
+        return eval(*args, **kwargs)
+    except NameError:
+        return object
