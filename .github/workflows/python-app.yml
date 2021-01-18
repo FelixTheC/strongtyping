@@ -19,8 +19,12 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install flake8 pytest pytest-cov
+          pip install flake8 pytest pytest-cov mypy
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: Run MyPy
+        continue-on-error: true
+        run: |
+          mypy ./
       - name: Test with pytest
         run: |
           pytest strongtyping --cov=strongtyping
