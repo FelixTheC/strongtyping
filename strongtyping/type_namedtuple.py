@@ -6,17 +6,20 @@
 """
 from collections import namedtuple
 from typing import Any
+from typing import Callable
 from typing import Dict
 from typing import Iterable
 from typing import List
 from typing import Tuple
+from typing import TypeVar
 from typing import Union
 from keyword import iskeyword
 
-from _utils import F
 from strongtyping.strong_typing import check_type
 from strongtyping.docstring_typing import check_doc_str_type
 from strongtyping.strong_typing import match_typing
+
+F = TypeVar('F', bound=Callable[..., Any])
 
 use_match_typing: Dict[bool, F] = {
     True: check_type,

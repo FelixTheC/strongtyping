@@ -154,6 +154,7 @@ def checking_typing_list(arg: Any, possible_types: tuple, *args):
                for argument, typ in zip_longest(arg, possible_types,
                                                 fillvalue=possible_types[0]))
 
+
 def checking_typing_iterable(arg: Any, possible_types: tuple, *args):
     if not isinstance(arg, Iterable):
         return False

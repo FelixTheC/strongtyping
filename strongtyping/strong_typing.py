@@ -16,7 +16,7 @@ from typing import Type
 from typing import TypeVar
 from typing import Union
 
-from config import SEVERITY_LEVEL
+from strongtyping.config import SEVERITY_LEVEL
 from strongtyping.strong_typing_utils import TypeMisMatch
 from strongtyping.strong_typing_utils import check_type
 
