@@ -8,6 +8,7 @@
 import inspect
 import os
 import sys
+from collections import Iterable
 from collections.abc import Generator
 from functools import lru_cache
 from itertools import zip_longest
@@ -58,7 +59,7 @@ def get_possible_types(typ_to_check) -> typing.Union[tuple, None]:
         return
 
 
-def get_origins(typ_to_check: any) -> tuple:
+def get_origins(typ_to_check: Any) -> tuple:
     """
     :param typ_to_check: typ_to_check: some typing like List[str], Dict[str, int], Tuple[Union[str, int], List[int]]
     :return: the class, alias_class and the class name
@@ -148,6 +149,13 @@ def checking_typing_tuple(arg: Any, possible_types: tuple, *args):
 
 def checking_typing_list(arg: Any, possible_types: tuple, *args):
     if not isinstance(arg, list):
+        return False
+    return all(check_type(argument, typ)
+               for argument, typ in zip_longest(arg, possible_types,
+                                                fillvalue=possible_types[0]))
+
+def checking_typing_iterable(arg: Any, possible_types: tuple, *args):
+    if not isinstance(arg, Iterable):
         return False
     return all(check_type(argument, typ)
                for argument, typ in zip_longest(arg, possible_types,

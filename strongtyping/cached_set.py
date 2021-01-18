@@ -5,6 +5,7 @@
 @author: felix
 """
 import sys
+from typing import Any
 from typing import Union
 
 
@@ -20,7 +21,7 @@ class CachedSet(set):
         self.memory_limit = memory_limit * 1000000
         super(CachedSet, self).__init__(*args, **kwargs)
 
-    def add(self, element: any) -> None:
+    def add(self, element: Any) -> None:
         if sys.getsizeof(self) > self.memory_limit:
             self.clear()
         super().add(element)

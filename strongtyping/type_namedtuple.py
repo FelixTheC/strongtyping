@@ -6,24 +6,31 @@
 """
 from collections import namedtuple
 from typing import Any
+from typing import Dict
+from typing import Iterable
 from typing import List
 from typing import Tuple
 from typing import Union
 from keyword import iskeyword
 
+from _utils import F
 from strongtyping.strong_typing import check_type
 from strongtyping.docstring_typing import check_doc_str_type
 from strongtyping.strong_typing import match_typing
 
-use_match_typing = {
+use_match_typing: Dict[bool, F] = {
     True: check_type,
     False: check_doc_str_type
 }
 
 
 @match_typing
-def typed_namedtuple(typename: str, field_names: Union[List[str], str, List[Tuple[str, Any]]], *,
-                     rename: bool = False, defaults: Union[list, tuple] = None, module: str = None):
+def typed_namedtuple(typename: str,
+                     field_names: Union[str, Iterable[str], List[Tuple[str, Any]]],
+                     *,
+                     rename: bool = False,
+                     defaults: Union[list, tuple] = None,
+                     module: str = None) -> type:
     # I could have just copied everything from namedtuple, but then I would have no learning effect
     """
     :param typename: the name of the new class same as in the original namedtuple
@@ -38,6 +45,8 @@ def typed_namedtuple(typename: str, field_names: Union[List[str], str, List[Tupl
     :param module: the module of the class same as in the original namedtuple
     :return:
     """
+
+    _fields: Union[str, Iterable[str], List[Tuple[str, Any]]]
 
     def rename_fields():
         knowing = set()
@@ -79,21 +88,27 @@ def typed_namedtuple(typename: str, field_names: Union[List[str], str, List[Tupl
             msg = f'Incorrect parameters: {failed_params}'
             raise TypeError(msg)
 
-    _fields = [name.strip() for name in field_names.split(',')] if isinstance(field_names, (str,)) else field_names
+    if isinstance(field_names, (str,)):
+        _fields = [name.strip() for name in field_names.split(',')]
+    elif isinstance(field_names, Iterable):
+        _fields = field_names
 
-    typing_true, typing_false = all(contains_typing(fn) for fn in _fields), \
-                                not all(contains_typing(fn) for fn in _fields)
+    typing_true, typing_false = (all(contains_typing(fn) for fn in _fields),
+                                 not all(contains_typing(fn) for fn in _fields))
 
     if typing_false and not typing_true:
         if any(contains_typing(fn) for fn in _fields):
             raise TypeError('No mixing of typing and not typing supported')
-        return namedtuple(typename, field_names, rename=rename, defaults=defaults, module=module)
+        return namedtuple(typename, field_names,  # type: ignore
+                          rename=rename,
+                          defaults=defaults,
+                          module=module)
     else:
         try:
-            _field_types = {k: v for k, v in map(lambda x: x.split(':'), _fields)}
-            _use_match = False
+            _field_types: Dict[str, str] = {k: v for k, v in map(lambda x: x.split(':'), _fields)}
+            _use_match: bool = False
         except AttributeError:
-            _field_types = {k: v for k, v in _fields}
+            _field_types = {k: v for k, v in _fields}  # type: ignore
             _use_match = True
 
         if rename is True:
@@ -125,7 +140,7 @@ def typed_namedtuple(typename: str, field_names: Union[List[str], str, List[Tupl
                 _values.update(**_values_to_add(*args, **kwargs))
             check_type(_values, _use_match)
             new_tuple = tuple.__new__(cls, _values.values())
-            [setattr(new_tuple, k, v) for k, v in _values.items()]
+            [setattr(new_tuple, k, v) for k, v in _values.items()]  # type: ignore
             return new_tuple
 
         __new__.__doc__ = f'Create new instance of {typename}({_field_types.keys()})'

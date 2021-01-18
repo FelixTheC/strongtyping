@@ -7,11 +7,17 @@
 import logging
 import os
 from types import MethodType
+from typing import Any
+from typing import Callable
+from typing import Dict
+from typing import Type
+from typing import TypeVar
 from typing import Union
 
 from strongtyping.config import SEVERITY_LEVEL
 
 logger = logging.getLogger(__name__)
+F = TypeVar('F', bound=Callable[..., Any])
 
 
 def remove_subclass(args, subclass):
@@ -21,7 +27,7 @@ def remove_subclass(args, subclass):
     return args
 
 
-SEVERITY_CONFIG = {
+SEVERITY_CONFIG: Dict[str, SEVERITY_LEVEL] = {
     'warning': SEVERITY_LEVEL.WARNING,
     'disable': SEVERITY_LEVEL.DISABLED,
     'enable': SEVERITY_LEVEL.ENABLED
@@ -30,25 +36,23 @@ SEVERITY_CONFIG = {
 
 def _severity_level(severity_: Union[str, SEVERITY_LEVEL]):
     if severity_ == 'env':
-        _level = os.environ.get('ST_SEVERITY', 1)
+        _level: str = os.environ.get('ST_SEVERITY', '1')
         try:
             return int(_level)
         except (TypeError, ValueError):
             return SEVERITY_CONFIG[_level].value
-    else:
+    elif isinstance(severity_, SEVERITY_LEVEL):
         return severity_.value
 
 
 exclude_builtins = dir(object)
 
 
-def _get_new(typing_func, excep_raise: Exception = TypeError, cache_size=0, severity='env', **kwargs):
-
+def _get_new(typing_func, excep_raise: Type[Exception] = TypeError, cache_size=0, severity='env', **kwargs):
     def new_with_match_typing(cls_, *args, **kwargs):
-
         def add_match_typing(obj: object, attr: str) -> bool:
             if hasattr(getattr(cls_, attr), '__annotations__') and \
-                    getattr(cls_, attr).__class__.__name__ != 'property' and\
+                    getattr(cls_, attr).__class__.__name__ != 'property' and \
                     not hasattr(getattr(x, attr), '__fe_strng_mtch__'):
                 type_annotations = getattr(getattr(cls_, attr), '__annotations__')
                 return len([i for i in type_annotations.keys() if i != 'return']) > 0
@@ -71,7 +75,7 @@ def install_st_m():
     import os
 
     try:
-        from strongtyping_modules.install import install
+        from strongtyping_modules.install import install  # type: ignore
     except ImportError:
         os.environ['ST_MODULES_INSTALLED'] = '0'
     else:
@@ -81,7 +85,7 @@ def install_st_m():
             os.environ['ST_MODULES_INSTALLED'] = '1'
 
 
-def action(f, frefs, type_function):
+def action(f: Any, frefs: str, type_function: F) -> property:
     """
     This code is original from Ruud van der Ham https://github.com/salabim/easy_property
     """
@@ -100,5 +104,5 @@ def action(f, frefs, type_function):
                       else action.f[ref](0) for ref in action.f))
 
 
-action.qualname = None
-action.f = dict.fromkeys(["getter", "setter", "deleter", "documenter"], None)
+action.qualname = None  # type: ignore
+action.f = dict.fromkeys(["getter", "setter", "deleter", "documenter"], None)  # type: ignore
