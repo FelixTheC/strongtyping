@@ -1,6 +1,8 @@
 [![PyPI version](https://badge.fury.io/py/strongtyping.svg)](https://badge.fury.io/py/strongtyping)
 ![Python application](https://github.com/FelixTheC/strongtyping/workflows/Python%20application/badge.svg)
+![Python tox](https://github.com/FelixTheC/strongtyping/workflows/Python%20tox/badge.svg)
 ![image](https://codecov.io/gh/FelixTheC/strongtyping/graph/badge.svg)
+[![](https://img.shields.io/pypi/dm/strongtyping.svg)](https://pypi.org/project/strongtyping/)
 
 
 # Strong Typing
@@ -32,6 +34,11 @@ And <b><em>raises</em> TypeMisMatch</b> if the used parameters in a function cal
 | from strongtyping.type_namedtuple import          | description                           |
 | :-------------                                    | ----------:                           |
 | [typed_namedtuple](#typed_namedtuple)             | an extension of the original namedtuple|
+
+| Booster feature                                   | description                           |
+| :-------------                                    | ----------:                           |
+| [strongtpying_module](#strongtpying_module)       | a Cython package to speed up the type checking |
+
 
 
 ### The problem:
@@ -529,6 +536,7 @@ d.c = 'foobar'  # will raise TypeMisMatch
 
 ## typed_namedtuple
 
+- __typed_namedtuple is only available from python >= 3.8__
 - from my side it was only logical to create an own version of namedtuple with typing support
 - for typing use the reST-style
 ```python
@@ -593,6 +601,18 @@ class Dummy(builtins.tuple)
 
 - [Back to top](#strong-typing)
 
+
+## strongtpying_module
+
+- A __package__ written by my own in __Cython__ to speed up the time for checking the parameters <br>
+  with this package you can achieve a __boost__ by the __factor 3__ and higher
+- you only need to install this package via `pip install strongtyping-modules`
+- for a detailed information please checkout the readme from [strongtyping_modules](https://github.com/FelixTheC/strongtyping_modules/blob/master/README.md)
+
+
+- [Back to top](#strong-typing)
+
+
 ## severity_level
 
 - to set the project wide settings add in your .env file
@@ -631,7 +651,7 @@ def a(value: int):
 ## Package
 
 ### Tested for Versions
-- 3.6, 3.7, 3.8, 3.9.0b4
+- 3.7, 3.8, 3.9
 
 ### Installing
 - pip install strongtyping
