@@ -12,7 +12,6 @@ from strongtyping.strong_typing_utils import TypeMisMatch
 from strongtyping.strong_typing_utils import check_type
 
 from strongtyping._utils import action
-from strongtyping._utils import _get_new
 from strongtyping._utils import _severity_level
 from strongtyping._utils import remove_subclass
 from strongtyping.cached_set import CachedSet
@@ -73,21 +72,72 @@ def match_typing(_func=None, *, excep_raise: Exception = TypeMisMatch, cache_siz
         return wrapper
 
 
-def match_class_typing(_cls=None, *, excep_raise: Exception = TypeError, cache_size=0, severity='env', **kwargs):
+# def match_class_typing(_cls=None, *, excep_raise: Exception = TypeError, cache_size=0, severity='env', **kwargs):
+#
+#     def wrapper(cls):
+#
+#         severity_level = _severity_level(severity)
+#         if severity_level > 0:
+#             cls.__new__ = _get_new(match_typing, excep_raise, cache_size, severity, **kwargs)
+#             if hasattr(cls.__init__, '__annotations__'):
+#                 cls.__init__ = match_typing(cls.__init__)
+#         return cls
+#
+#     if _cls is not None:
+#         return wrapper(_cls)
+#     else:
+#         return wrapper
 
-    def wrapper(cls):
 
-        severity_level = _severity_level(severity)
+class match_class_typing:
+
+    def __new__(cls, instance=None, *args, **kwargs):
+        cls.cls = instance
+        return super().__new__(cls)
+
+    def __init__(self, cls=None, *args, **kwargs):
+        self.excep_raise = kwargs.pop('excep_raise', TypeMisMatch)
+        self.cache_size = kwargs.pop('cache_size', 0)
+        self.severity = kwargs.pop('severity', 'env')
+        self.cls = cls
+
+    def __getattr__(self, item):
+        return getattr(self.cls, item)
+
+    @staticmethod
+    def __has_annotations__(obj):
+        return hasattr(obj, '__annotations__')
+
+    def __find_methods(self, cls):
+        return [func for func in dir(cls)
+                if callable(getattr(cls, func)) and
+                self.__has_annotations__(getattr(cls, func)) and not
+                hasattr(getattr(cls, func), '__fe_strng_mtch__') and not
+                isinstance(getattr(cls, func), classmethod)
+                ]
+
+    def __add_decorator(self, cls):
+        severity_level = _severity_level(self.severity)
         if severity_level > 0:
-            cls.__new__ = _get_new(match_typing, excep_raise, cache_size, severity, **kwargs)
-            if hasattr(cls.__init__, '__annotations__'):
-                cls.__init__ = match_typing(cls.__init__)
-        return cls
+            for method in self.__find_methods(cls):
+                try:
+                    setattr(cls, method, match_typing(getattr(cls, method),
+                                                      severity=self.severity,
+                                                      cache_size=self.cache_size,
+                                                      excep_raise=self.excep_raise))
+                except TypeError:
+                    pass
 
-    if _cls is not None:
-        return wrapper(_cls)
-    else:
-        return wrapper
+    def __call__(self, *args, **kwargs):
+        if self.cls:
+            if self.__has_annotations__(self.cls.__init__):
+                self.cls.__init__ = match_typing(self.cls.__init__)
+            cls = self.cls(*args, **kwargs)
+            self.__add_decorator(cls)
+        else:
+            cls = args[0]
+            self.__add_decorator(cls)
+        return cls
 
 
 def getter(func):
