@@ -112,7 +112,7 @@ def checking_typing_type(arg: Any, possible_types: tuple, *args):
     try:
         arguments = arg.__mro__
     except AttributeError:
-        return False
+        return any(check_type(arg, possible_type, mro=False) for possible_type in possible_types)
     else:
         return any(check_type(arguments, possible_type, mro=True) for possible_type in possible_types)
 
@@ -140,6 +140,8 @@ def checking_typing_callable(arg: Any, possible_types: tuple, *args):
 def checking_typing_tuple(arg: Any, possible_types: tuple, *args):
     if possible_types is None:
         return isinstance(arg, tuple)
+    if Ellipsis in possible_types:
+        return checking_ellipsis(arg, possible_types)
     if len(possible_types) > 0 and not len(arg) == len(possible_types) or not isinstance(arg, tuple):
         return False
     return all(check_type(argument, typ)
@@ -152,6 +154,13 @@ def checking_typing_list(arg: Any, possible_types: tuple, *args):
     return all(check_type(argument, typ)
                for argument, typ in zip_longest(arg, possible_types,
                                                 fillvalue=possible_types[0]))
+
+
+def checking_ellipsis(arg, possible_types):
+    possible_types = [pt for pt in possible_types if pt is not Ellipsis]
+    return all(check_type(argument, typ)
+               for argument, typ in zip_longest(arg, possible_types, fillvalue=possible_types[0])
+               )
 
 
 def module_checking_typing_list(arg: Any, possible_types: Any):

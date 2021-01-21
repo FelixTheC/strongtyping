@@ -1073,5 +1073,25 @@ def test_strongtyping_modules_integration():
         pass
 
 
+def test_with_ellipsis():
+
+    class Dummy:
+
+        @match_typing
+        def a(self, val: Tuple[int, ...]):
+            return True
+
+    d = Dummy()
+
+    assert d.a((1, ))
+    assert d.a((1, 2, ))
+    assert d.a(tuple(range(100)))
+
+    data = list(range(20)) + list('hello world')
+
+    with pytest.raises(TypeMisMatch):
+        d.a(data)
+
+
 if __name__ == '__main__':
     pytest.main(['-vv', '-s', __file__])
