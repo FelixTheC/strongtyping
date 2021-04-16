@@ -239,7 +239,7 @@ def test_func_with_own_union_type():
 
     MyType = Tuple[Union[str, int], Union[list, tuple], Union[A, B]]
 
-    @match_typing(locals=locals())
+    @match_typing
     def func_a(a: MyType):
         return True
 
@@ -255,7 +255,7 @@ def test_func_with_own_union_type():
 
     MyType = Tuple[Union[str, int], Union[list, tuple], Union[A, B]]
 
-    @match_typing(locals=locals())
+    @match_typing
     def func_a(a: MyType):
         return True
 
@@ -489,12 +489,12 @@ def test_with_type():
     class TeamUser(BasicUser, ProUser):
         pass
 
-    @match_typing(locals=locals())
+    @match_typing
     def func_a(a: Type[User]):
         _a = a()
         return repr(_a)
 
-    @match_typing(locals=locals())
+    @match_typing
     def func_b(a: Type[User], b: Type[Union[BasicUser, ProUser]]):
         _a, _b = a(), b()
         return repr(_a), repr(_b)
@@ -653,7 +653,7 @@ def test_with_enum():
 
     House = IntEnum("House", "GRIFFINDOR, SLITHERIN, HUFFELPUFF, RAVENCLAW")
 
-    @match_typing(locals=locals())
+    @match_typing
     def func_a(a: Enum, b: Shake):
         return f"{a.value}-{b.value}"
 
@@ -1073,7 +1073,7 @@ def test_optional_same_as_union_none():
     CType = Dict[str, int]
     KType = Dict[str, Union[AType, BType, CType, None]]
 
-    @match_typing(locals=locals())
+    @match_typing
     def func_a(x: Union[KType, None] = None):
         if x is not None:
             return 2
