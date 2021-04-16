@@ -5,11 +5,10 @@
 @author: felix
 """
 from __future__ import annotations
-import inspect
 from functools import wraps
 import warnings
 
-from strong_typing_utils import save_eval
+from strongtyping.utils import get_type_hints
 from strongtyping.strong_typing_utils import TypeMisMatch
 from strongtyping.strong_typing_utils import check_type
 
@@ -28,14 +27,7 @@ def match_typing(_func=None, *, excep_raise: Exception = TypeMisMatch, cache_siz
     def wrapper(func):
         # needed in py 3.10
         # maybe pep-0558 will solve this problem with something similar to func.__globals__
-        glb = func.__globals__
-        lcl = kwargs.get('locals', {})
-
-        arg_names = [name for name in inspect.signature(func).parameters]
-        _annotations = func.__annotations__
-        _annotations = {k:  save_eval(v, glb, lcl)
-                        for k, v in func.__annotations__.items()}
-
+        arg_names, _annotations = get_type_hints(func)
         severity_level = _severity_level(severity)
 
         @wraps(func)
@@ -81,6 +73,7 @@ def match_typing(_func=None, *, excep_raise: Exception = TypeMisMatch, cache_siz
 
 
 def match_class_typing(_cls=None, *, excep_raise: Exception = TypeError, cache_size=0, severity='env', **kwargs):
+    @wraps(_cls)
     def wrapper(cls):
 
         severity_level = _severity_level(severity)

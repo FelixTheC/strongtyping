@@ -8,7 +8,6 @@ from __future__ import annotations
 import inspect
 import os
 import sys
-from collections.abc import Generator
 from functools import lru_cache
 from itertools import zip_longest
 import typing
@@ -268,10 +267,3 @@ def check_type(argument, type_of, mro=False, **kwargs):
             except TypeError:
                 return isinstance(argument, type_of._subs_tree()[1:])
     return check_result
-
-
-def save_eval(*args, **kwargs):
-    try:
-        return eval(*args, **kwargs)
-    except NameError:
-        return object
