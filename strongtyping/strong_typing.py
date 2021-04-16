@@ -12,7 +12,7 @@ import warnings
 from functools import wraps
 from typing import Type
 
-from strong_typing_utils import save_eval
+from strongtyping.utils import get_type_hints
 from strongtyping.strong_typing_utils import TypeMisMatch
 from strongtyping.strong_typing_utils import check_type
 
@@ -45,14 +45,7 @@ def match_typing(
     def wrapper(func):
         # needed in py 3.10
         # maybe pep-0558 will solve this problem with something similar to func.__globals__
-        glb = func.__globals__
-        lcl = kwargs.get('locals', {})
-
-        arg_names = [name for name in inspect.signature(func).parameters]
-        _annotations = func.__annotations__
-        _annotations = {k:  save_eval(v, glb, lcl)
-                        for k, v in func.__annotations__.items()}
-
+        arg_names, _annotations = get_type_hints(func)
         severity_level = _severity_level(severity)
 
         @wraps(func)
@@ -138,6 +131,7 @@ class MatchTypedDict:
             f"Incorrect parameter: `{pprint.pformat(args, width=20, depth=2)}`"
             f"\n\trequired: {self.__annotations__}"
         )
+    @wraps(_cls)
     def __call__(self, *args, **kwargs):
         if self.is_typed_dict:
             arguments = kwargs if kwargs else args[0]

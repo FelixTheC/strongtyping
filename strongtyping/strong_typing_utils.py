@@ -7,6 +7,9 @@
 from __future__ import annotations
 import inspect
 import os
+import sys
+from functools import lru_cache
+from itertools import zip_longest
 import typing
 from functools import lru_cache, partial
 from queue import Queue
@@ -411,10 +414,3 @@ def check_type(argument, type_of, mro=False, **kwargs):
                     return False
                 return validate_object(argument, kwargs.get("validation_with"))
     return check_result
-
-
-def save_eval(*args, **kwargs):
-    try:
-        return eval(*args, **kwargs)
-    except NameError:
-        return object
