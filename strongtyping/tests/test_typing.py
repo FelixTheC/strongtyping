@@ -326,7 +326,7 @@ def test_use_str_repr_as_type():
         b.func_a(Foo())
 
     b = A()
-    assert b.func_a(A())
+    assert b.func_a(A)
 
 
 def test_second_pos_arg_hinted():

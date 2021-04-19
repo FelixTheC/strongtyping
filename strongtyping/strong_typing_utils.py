@@ -63,6 +63,8 @@ def get_possible_types(typ_to_check, origin_name: str = "") -> typing.Union[tupl
         # we can ensure now that we use a python version which has typing.TypedDict
         return typ_to_check
 
+    if hasattr(typ_to_check, '__forward_arg__'):
+        return typ_to_check.__forward_arg__
     if extension_module:
         if not hasattr(typ_to_check, "__args__"):
             try:
@@ -151,6 +153,10 @@ def checking_typing_type(arg: Any, possible_types: tuple, *args, **kwargs):
             check_type(arguments, possible_type, mro=True, **kwargs)
             for possible_type in possible_types
         )
+
+
+def checking_typing_forward_ref(arg: Any, possible_types: tuple, *args):
+    return possible_types == arg[0].__name__
 
 
 def checking_typing_union(arg: Any, possible_types: tuple, mro, **kwargs):
@@ -360,9 +366,7 @@ else:
 def check_type(argument, type_of, mro=False, **kwargs):
     # if int(py_version) >= 10 and isinstance(type_of, (str, bytes)):
     if isinstance(type_of, (str, bytes)):
-        _locals = kwargs.get('__locals')
-        _locals = _locals if _locals is not None else locals()
-        type_of = eval(type_of, kwargs.get('__globals', globals()), _locals)
+        type_of = get_type_hint(type_of, inspect.currentframe())
     if checking_typing_generator(argument, type_of):
         # generator will be exhausted when we check it, so we return it without any checking
         return argument
@@ -389,7 +393,7 @@ def check_type(argument, type_of, mro=False, **kwargs):
                                                                            get_possible_types(type_of, origin_name),
                                                                            mro, **kwargs
                 )
-            except AttributeError:
+            except AttributeError as err:
                 return isinstance(argument, type_of.__args__)
         elif isinstance(type_of, str):
             return argument.__class__.__name__ == type_of
