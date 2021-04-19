@@ -15,6 +15,8 @@ import typing
 from typing import *
 
 from strongtyping._utils import install_st_m
+from strongtyping.utils import get_type_hint
+
 install_st_m()
 
 try:
@@ -47,6 +49,8 @@ def get_possible_types(typ_to_check) -> typing.Union[tuple, None]:
         - Dict[str, int] = (str, int, )
         - Tuple[Union[str, int], List[int]] = (Union[str, int], List[int], )
     """
+    if hasattr(typ_to_check, '__forward_arg__'):
+        return typ_to_check.__forward_arg__
     if extension_module:
         if not hasattr(typ_to_check, '__args__'):
             return typ_to_check.__origin__
@@ -66,6 +70,8 @@ def get_origins(typ_to_check: any) -> tuple:
         - FunctionType = (None, 'None')
     """
     origin = None
+    if hasattr(typ_to_check, '__forward_arg__'):
+        return typ_to_check, "forward_ref"
     if hasattr(typ_to_check, '__origin__') or hasattr(typ_to_check, '__orig_bases__'):
         if py_version >= 3.9 and hasattr(typ_to_check.__origin__, '__name__'):
             origin = typ_to_check.__origin__.__name__
@@ -113,6 +119,10 @@ def checking_typing_type(arg: Any, possible_types: tuple, *args):
         return False
     else:
         return any(check_type(arguments, possible_type, mro=True) for possible_type in possible_types)
+
+
+def checking_typing_forward_ref(arg: Any, possible_types: tuple, *args):
+    return possible_types == arg[0].__name__
 
 
 def checking_typing_union(arg: Any, possible_types: tuple, mro):
@@ -219,9 +229,7 @@ else:
 def check_type(argument, type_of, mro=False, **kwargs):
     # if int(py_version) >= 10 and isinstance(type_of, (str, bytes)):
     if isinstance(type_of, (str, bytes)):
-        _locals = kwargs.get('__locals')
-        _locals = _locals if _locals is not None else locals()
-        type_of = eval(type_of, kwargs.get('__globals', globals()), _locals)
+        type_of = get_type_hint(type_of, inspect.currentframe())
 
     check_result = True
     if type_of is not None:
@@ -237,7 +245,6 @@ def check_type(argument, type_of, mro=False, **kwargs):
             return supported_modules[f'module_checking_typing_{origin_name}'](argument, type_of)
         except KeyError:
             pass
-
         if 'new_type' in origin_name:
             if '3.6' in sys.version:
                 return check_result
@@ -250,7 +257,7 @@ def check_type(argument, type_of, mro=False, **kwargs):
                 return supported_typings[f'checking_typing_{origin_name}'](argument,
                                                                            get_possible_types(type_of),
                                                                            mro)
-            except AttributeError:
+            except AttributeError as err:
                 return isinstance(argument, type_of.__args__)
         elif isinstance(type_of, str):
             return argument.__class__.__name__ == type_of

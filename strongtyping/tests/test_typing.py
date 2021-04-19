@@ -283,7 +283,7 @@ def test_use_own_exception():
 def test_use_str_repr_as_type():
     class A:
         @match_typing
-        def func_a(self, a: 'A'):
+        def func_a(self, a: Type['A']):
             return True
 
     class Foo:
@@ -294,7 +294,7 @@ def test_use_str_repr_as_type():
         b.func_a(Foo())
 
     b = A()
-    assert b.func_a(A())
+    assert b.func_a(A)
 
 
 def test_second_pos_arg_hinted():
@@ -704,7 +704,7 @@ def test_exception_none():
 
     with pytest.warns(RuntimeWarning) as record:
         assert multipler('hello', 3) == 'hellohellohello'
-        assert str(record[0].message) == "Incorrect parameters: a: int"
+        assert str(record[0].message) == "Incorrect parameters: a: <class 'int'>"
 
 
 @pytest.mark.skipif(sys.version_info.minor < 8, reason='Literal first available in py3.8')
@@ -797,7 +797,7 @@ def test_with_class_decorator_no_execption():
     assert d._my_secure_func(.5, d) == 50
     with pytest.warns(RuntimeWarning) as record:
         d.a('Hello RuntimeWarning')
-        assert str(record[0].message) == "Incorrect parameters: val: int"
+        assert str(record[0].message) == "Incorrect parameters: val: <class 'int'>"
 
 
 def test_with_class_decorator_and_function_override():
@@ -824,7 +824,7 @@ def test_with_class_decorator_and_function_override():
 
     with pytest.warns(RuntimeWarning) as record:
         d.a('Hello RuntimeWarning')
-        assert str(record[0].message) == "Incorrect parameters: val: int"
+        assert str(record[0].message) == "Incorrect parameters: val: <class 'int'>"
 
     with pytest.raises(Exception):
         d._my_secure_func(d, .5)
@@ -871,7 +871,7 @@ def test_with_severity_param():
     assert a(2) == 4
     with pytest.warns(RuntimeWarning) as record:
         a('2')
-        assert str(record[0].message) == "Incorrect parameters: value: int"
+        assert str(record[0].message) == "Incorrect parameters: value: <class 'int'>"
 
     @match_typing(severity=SEVERITY_LEVEL.DISABLED)
     def a(value: int):
@@ -895,7 +895,7 @@ def test_with_severity_param():
 
     with pytest.warns(RuntimeWarning) as record:
         d.a('2')
-        assert str(record[0].message) == "Incorrect parameters: val: int"
+        assert str(record[0].message) == "Incorrect parameters: val: <class 'int'>"
 
     @match_class_typing(severity=SEVERITY_LEVEL.DISABLED)
     class Other:
