@@ -6,7 +6,7 @@
 """
 import decimal
 import sys
-from typing import Tuple, List, Union
+from typing import Tuple, List, Union, Literal
 
 import pytest
 
@@ -77,3 +77,23 @@ def test_numpy_docstring_from_typing_2():
 
     assert foo.__doc__
     assert Foo.foo.__doc__
+
+
+@pytest.mark.skipif(sys.version_info.minor < 8, reason='Literal first available in py3.8')
+def test_rest_docstring_from_typing_literal():
+
+    @rest_docs_from_typing
+    def foo(val_a: Literal['jon', 'doe']):
+        pass
+
+    assert foo.__doc__
+
+
+@pytest.mark.skipif(sys.version_info.minor < 8, reason='Literal first available in py3.8')
+def test_numpy_docstring_from_typing_literal():
+
+    @numpy_docs_from_typing
+    def foo(val_a: Literal['jon', 'doe']):
+        pass
+
+    assert foo.__doc__

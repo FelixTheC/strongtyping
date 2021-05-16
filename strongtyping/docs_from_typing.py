@@ -7,11 +7,6 @@
 import re
 import textwrap
 from functools import wraps
-from typing import Dict
-from typing import List
-from typing import Literal
-from typing import Optional
-from typing import Union
 import inspect
 
 from strongtyping.strong_typing_utils import get_possible_types, get_origins
@@ -72,6 +67,7 @@ ARGUMENT_TYPE = {
 
 def get_type_info(val, type_origins):
     origins = get_origins(type_origins)
+    val_origins = get_origins(val)
     if get_origins(val)[1] == 'Union':
         try:
             return ' or '.join([type_origin.__name__ for type_origin in type_origins])
@@ -94,6 +90,9 @@ def get_type_info(val, type_origins):
     elif origins[1] in ('List', 'Tuple', 'Set'):
         text = ', '.join([get_type_info(val, type_origin) for type_origin in get_possible_types(type_origins)])
         return f'{get_origins(val)[1]}({text})'
+    elif val_origins[1] == 'Literal':
+        text = ' or '.join([f'`{elem}`' for elem in type_origins])
+        return f'`{type(type_origins[0]).__name__}` allowed values are {text}'
     else:
         if type_origins:
             try:
@@ -167,7 +166,7 @@ def docs_from_typing_reST_format(annotations, additional_infos, func_params, rem
     return lb + '\n'.join(doc_infos + type_infos), func_info
 
 
-def docs_from_typing(func, remove_linebreak, style: Literal['rest', 'numpy']):
+def docs_from_typing(func, remove_linebreak, style):
     annotations = func.__annotations__
     func_params = inspect.signature(func).parameters
     if func.__doc__:
