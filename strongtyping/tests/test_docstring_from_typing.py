@@ -56,7 +56,7 @@ def test_rest_docstring_from_typing_2():
     class Foo:
 
         @rest_docs_from_typing
-        def foo(self, val_a: int, val_b: list[str]):
+        def foo(self, val_a: int, val_b: Tuple[str, ...]):
             pass
 
     assert foo.__doc__
@@ -72,7 +72,7 @@ def test_numpy_docstring_from_typing_2():
     class Foo:
 
         @numpy_docs_from_typing
-        def foo(self, val_a: int, val_b: list[str]):
+        def foo(self, val_a: int, val_b: Tuple[str, ...]):
             pass
 
     assert foo.__doc__
