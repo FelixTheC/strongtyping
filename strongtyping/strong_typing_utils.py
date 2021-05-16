@@ -15,7 +15,6 @@ import typing
 
 from typing import Any
 from typing import TypeVar
-from typing import _SpecialGenericAlias
 
 from strongtyping._utils import install_st_m
 install_st_m()
@@ -283,5 +282,10 @@ class _ValidType:
     def __getitem__(self, item):
         pass
 
-
-ValidType = _SpecialGenericAlias(_ValidType, 2, inst=False, name='ValidType')
+try:
+    from typing import _SpecialGenericAlias
+except ImportError:
+    from typing import _GenericAlias, KT, VT, _alias
+    ValidType = _alias(_ValidType, (KT, VT), inst=False)
+else:
+    ValidType = _SpecialGenericAlias(_ValidType, 2, inst=False, name='ValidType')
