@@ -6,7 +6,11 @@
 """
 import decimal
 import sys
-from typing import Tuple, List, Union, Literal
+from typing import Tuple, List, Union
+try:
+    from typing import Literal
+except ImportError:
+    print('python version < 3.8')
 
 import pytest
 
