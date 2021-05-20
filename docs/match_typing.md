@@ -20,7 +20,9 @@ class Foo:
         ...
 ```
 
-#### use a mix of typed and untyped parameters but then only the typed parameters are checked on runtime
+### mix typed and untyped parameters 
+- only the typed parameters are checked on runtime
+- with this your able to also add only a type hint to the parameter you want to "secure"
 ```python
 from strongtyping.strong_typing import match_typing
 
@@ -35,7 +37,8 @@ foo_bar('hello', 'world', [1, 2, 3], ('a', 'b'))
 foo_bar(123, 'world', [1, 2, 3], ('a', 'b'))
 ```
 
-#### add your own exception
+### add your own exception
+- with `excep_raise`
 ```python
 from strongtyping.strong_typing import match_typing
 
@@ -47,7 +50,8 @@ def foo_bar(with_type_a: str, without_type_a, with_type_b: list, without_type_b)
     ...
 ```
 
-#### enable internal cache with cache_size = 1
+### enable internal cache
+- with `cache_size` = 1
 ```python
 from strongtyping.strong_typing import match_typing
 
@@ -59,7 +63,7 @@ def foo_bar(a: tuple, b: MyClass):
     ...
 ```
 
-#### disable Exception
+### disable Exception
   - You can also __disable__ the raise of an __Exception__ and get a __warning instead__ this means your function will <br>
   execute even when the parameters are wrong <b>use only when you know what you're doing</b>
 ```python
@@ -77,7 +81,7 @@ HelloHelloHelloHello
 """
 ```
 
-#### At the current state, it will work with
+### At the current state, it will work with
 
 - builtin types like: str, int, tuple etc
 - from typing: 
