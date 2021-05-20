@@ -3,6 +3,14 @@
 And <b><em>raises</em> TypeMisMatch</b> if the used parameters in a function call where invalid.</p>
 
 ### The problem
+> > I love python and his freedom but with the new option of adding type hints I wanted to get rid of writing `if isinstance(value, whatever)` in my programs. 
+> 
+>> In a bigger project, it happened that some developers used a tiny IDE and others a more advanced one which highlighted 
+ typing issues. And there the trouble began, we had a bug and after a long debugging session we found out that the issue 
+ was a wrong type of an argument, it doesn't crash the program but the output was not what anyone of us had expected.  
+> 
+> And that only encouraged me even more to tackle this problem.
+
 - Highlighting
     - __Some__ IDE's will/can highlight that one of the parameters in a function call doesn't match but you can execute the function.
 - Exception??
@@ -38,7 +46,34 @@ And why should we then use typing in our parameters??
 
 ### The solution
 I created a decorator called <b>@match_typing</b> which will check at runtime if the parameters which will be used when <br>
-calling this function is from the same type as you have defined.<br><br>
+calling this function is from the same type as you have defined.<br>
+
+Here are some examples from my tests
+```python
+from typing import List, Union
+import datetime
+from strongtyping.strong_typing import match_typing
+
+@match_typing
+def func_a(a: str, b: int, c: list):
+    ...
+
+func_a('1', 2, [i for i in range(5)])
+# >>> True
+
+func_a(1, 2, [i for i in range(5)])
+# >>> will raise a TypeMismatch Exception
+
+@match_typing
+def func_e(a: List[Union[str, int]], b: List[Union[str, int, tuple]]):
+    return f'{len(a)}-{len(b)}'
+
+func_e([1, '2', 3, '4'], [5, ('a', 'b'), '10'])
+# >>> '4-3'
+
+func_e([5, ('a', 'b'), '10'], [1, '2', 3, datetime.date])
+# >>> will raise a TypeMismatch Exception
+```
 
 ## Requirements
 <b>Python 3.7 > <=3.9</b>

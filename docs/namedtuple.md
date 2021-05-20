@@ -2,7 +2,8 @@
 
 - __typed_namedtuple is only available from python >= 3.8__
 - from my side it was only logical to create an own version of namedtuple with typing support
-- for typing use the reST-style
+
+Here are some examples of how you can use it.
 ```python
 from strongtyping.type_namedtuple import typed_namedtuple
 
