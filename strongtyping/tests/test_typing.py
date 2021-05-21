@@ -1073,6 +1073,8 @@ def test_strongtyping_modules_integration():
         pass
 
 
+@pytest.mark.skipif(bool(int(os.environ['ST_MODULES_INSTALLED'])) is True,
+                    reason='module does not support ellipsis at the moment')
 def test_with_ellipsis():
 
     class Dummy:

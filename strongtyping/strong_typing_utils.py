@@ -51,7 +51,10 @@ def get_possible_types(typ_to_check) -> typing.Union[tuple, None]:
     """
     if extension_module:
         if not hasattr(typ_to_check, '__args__'):
-            return typ_to_check.__origin__
+            try:
+                return typ_to_check.__origin__
+            except AttributeError:
+                return
     if hasattr(typ_to_check, '__args__') and typ_to_check.__args__ is not None:
         return tuple(typ for typ in typ_to_check.__args__ if not isinstance(typ, TypeVar))
     else:
@@ -212,6 +215,11 @@ def checking_typing_literal(arg, possible_types, *args):
     return arg in possible_types
 
 
+def checking_typing_validtype(arg, possible_types, *args):
+    required_type, validation = possible_types
+    return isinstance(arg, required_type) and validation(arg) is not False
+
+
 supported_typings = vars()
 if extension_module:
     m = [f'module_checking_typing_{t}'
@@ -270,3 +278,17 @@ def check_type(argument, type_of, mro=False, **kwargs):
             except TypeError:
                 return isinstance(argument, type_of._subs_tree()[1:])
     return check_result
+
+
+class _ValidType:
+
+    def __getitem__(self, item):
+        pass
+
+try:
+    from typing import _SpecialGenericAlias
+except ImportError:
+    from typing import _GenericAlias, KT, VT, _alias
+    ValidType = _alias(_ValidType, (KT, VT), inst=False)
+else:
+    ValidType = _SpecialGenericAlias(_ValidType, 2, inst=False, name='ValidType')

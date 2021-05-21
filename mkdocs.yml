@@ -1,0 +1,18 @@
+site_name: strongtyping
+nav:
+    - Home: 'index.md'
+    - User's guide:
+        - 'Installation': 'install.md'
+    - Reference:
+        - 'match_typing': 'match_typing.md'
+        - 'match_class_typing': 'match_class_typing.md'
+        - 'severity_level': 'severity_level.md'
+        - 'typed_namedtuple': 'namedtuple.md'
+        - 'getter / setter': 'setter.md'
+        - 'getter_setter': 'getter_setter.md'
+        - 'rest_docs_from_typing': 'rest_docs_from_typing.md'
+        - 'numpy_docs_from_typing': 'numpy_docs_from_typing.md'
+    - About:
+        - 'License': 'license.md'
+        - 'Release Notes': 'release-notes.md'
+theme: readthedocs
