@@ -1,3 +1,5 @@
+# Release Notes
+
 ## v2.0.0
 - Added two new decorators which can create docstrings from type informations.
     - rest_docs_from_typing
