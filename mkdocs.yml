@@ -15,4 +15,6 @@ nav:
     - About:
         - 'License': 'license.md'
         - 'Release Notes': 'release-notes.md'
+        - 'Authors': 'authors.md'
+        - 'Special thanks': 'special_thanks.md'
 theme: readthedocs
