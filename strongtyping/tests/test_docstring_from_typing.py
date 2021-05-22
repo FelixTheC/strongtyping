@@ -21,7 +21,7 @@ from strongtyping.docs_from_typing import rest_docs_from_typing, numpy_docs_from
 def test_rest_docstring_from_typing():
 
     @rest_docs_from_typing
-    def foo(val_a: int, val_b: list[str], val_c: Tuple[str, ...], *args, **kwargs):
+    def foo(val_a: int, val_b: list[str], val_c: Tuple[str, ...], *args, **kwargs) -> None:
         pass
 
     class Foo:
@@ -38,13 +38,13 @@ def test_rest_docstring_from_typing():
 def test_numpy_docstring_from_typing():
 
     @numpy_docs_from_typing
-    def foo(val_a: int, val_b: list[str], val_c: Tuple[str, ...], *args, **kwargs):
+    def foo(val_a: int, val_b: list[str], val_c: Tuple[str, ...], *args, **kwargs) -> Union[int, float]:
         pass
 
     class Foo:
 
         @numpy_docs_from_typing
-        def foo(self, val_a: int, val_b: list[str]):
+        def foo(self, val_a: int, val_b: list[str]) -> Tuple[str, ...]:
             pass
 
     assert foo.__doc__

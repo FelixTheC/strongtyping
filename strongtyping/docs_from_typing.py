@@ -81,14 +81,16 @@ def get_type_info(val, type_origins):
             except AttributeError:
                 types.append(get_type_info(val, type_origin))
         return ' or '.join(types)
-    elif origins[1] == 'Dict':
+    elif origins[1].lower() == 'dict':
         try:
             return f'{get_origins(val)[1]}({get_type_info(val, type_origins[0])}, {get_type_info(val, type_origins[1])})'
         except TypeError:
             text = ', '.join([get_type_info(val, type_origin) for type_origin in get_possible_types(type_origins)])
             return f'{get_origins(val)[1]}({text})'
-    elif origins[1] in ('List', 'Tuple', 'Set'):
+    elif origins[1].lower() in ('list', 'tuple', 'set'):
         text = ', '.join([get_type_info(val, type_origin) for type_origin in get_possible_types(type_origins)])
+        if origins[1] != 'None' and get_origins(val)[1] != origins[1]:
+            return f'{origins[1]}({text})'
         return f'{get_origins(val)[1]}({text})'
     elif val_origins[1] == 'Literal':
         text = ' or '.join([f'`{elem}`' for elem in type_origins])
@@ -111,7 +113,9 @@ def get_type_info(val, type_origins):
             else:
                 return f'{get_origins(val)[1]}({origins})'
         else:
-            return val.__name__
+            if hasattr(val, '__name__'):
+                return val.__name__
+            return str(val)
 
 
 def docs_from_typing_numpy_format(annotations, additional_infos, func_params, remove_linebreak, func_info):
@@ -133,7 +137,7 @@ def docs_from_typing_numpy_format(annotations, additional_infos, func_params, re
             doc_infos.append(info_str)
     if 'return' in annotations:
         doc_infos.append('')
-        type_infos.append(f'{annotations["return"].__name__}')
+        type_infos.append(get_type_info(annotations["return"], annotations["return"]))
     else:
         type_infos = []
 
@@ -160,7 +164,7 @@ def docs_from_typing_reST_format(annotations, additional_infos, func_params, rem
             type_infos.append(f':type {key}: {get_type_info(val, type_origins)}')
 
     if 'return' in annotations:
-        type_infos.append(f':returns: {annotations["return"].__name__}')
+        type_infos.append(f':returns: {get_type_info(annotations["return"], annotations["return"])}')
 
     lb = '' if remove_linebreak else '\n'
     return lb + '\n'.join(doc_infos + type_infos), func_info
