@@ -65,6 +65,16 @@ ARGUMENT_TYPE = {
 }
 
 
+def union_types(val, type_origins):
+    types = []
+    for type_origin in get_possible_types(type_origins):
+        try:
+            types.append(type_origin.__name__)
+        except AttributeError:
+            types.append(get_type_info(val, type_origin))
+    return ' or '.join(types)
+
+
 def get_type_info(val, type_origins):
     origins = get_origins(type_origins)
     val_origins = get_origins(val)
@@ -73,14 +83,10 @@ def get_type_info(val, type_origins):
             return ' or '.join([type_origin.__name__ for type_origin in type_origins])
         except AttributeError:
             return get_type_info(val, type_origins)
+        except TypeError:
+            return union_types(val, type_origins)
     elif origins[1] == 'Union':
-        types = []
-        for type_origin in get_possible_types(type_origins):
-            try:
-                types.append(type_origin.__name__)
-            except AttributeError:
-                types.append(get_type_info(val, type_origin))
-        return ' or '.join(types)
+        return union_types(val, type_origins)
     elif origins[1].lower() == 'dict':
         try:
             return f'{get_origins(val)[1]}({get_type_info(val, type_origins[0])}, {get_type_info(val, type_origins[1])})'
