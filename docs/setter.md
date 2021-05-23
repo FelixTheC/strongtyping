@@ -1,6 +1,6 @@
 ## setter
-this decorator can replace your *@foo.setter* from property and check your typing
-- this is an extension of [easy_property](https://github.com/salabim/easy_property)
+This decorator can replace your `@foo.setter` and check your typing at the same time.
+- It's an extension of [easy_property](https://github.com/salabim/easy_property)
 ```python
 from strongtyping.strong_typing import getter
 from strongtyping.strong_typing import setter
