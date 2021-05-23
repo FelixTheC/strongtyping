@@ -41,7 +41,7 @@ class Dummy:
         return val * other.attr
 
 ```
-- Single class methods inside of a previously decorated class can be overwritten with the `@match_typing` decorator
+- Single class methods inside of a previously decorated class can be overwritten with the `@match_typing` decorator:
 ```python
 from strongtyping.strong_typing import match_class_typing
 from strongtyping.strong_typing import match_typing
