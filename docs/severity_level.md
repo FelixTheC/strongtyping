@@ -1,17 +1,16 @@
 ## SEVERITY_LEVEL
 
-- with the argument `severity` you're able to control the 
-  behavior of the `match_typing` and `match_class_typing
+- With the argument `severity` you can control the behavior of `match_typing` and `match_class_typing`
   
-- you have three different kind of levels which are
+- There are three different levels:
 
 | from strongtyping.config import SEVERITY_LEVEL | description|
 | :-------------                                 | :----------|
 | SEVERITY_LEVEL.ENABLED | the default value, runtime type checking is enabled |
 | SEVERITY_LEVEL.WARNING | runtime type checking is enabled but no exception will be raised |
-| SEVERITY_LEVEL.DISABLED | the type checking will be ignored |
+| SEVERITY_LEVEL.DISABLED | type checking will be ignored |
 
-- the default behavior `SEVERITY_LEVEL.ENABLED`
+- The default level is `SEVERITY_LEVEL.ENABLED`
 ```python
 from strongtyping.config import SEVERITY_LEVEL
 from strongtyping.strong_typing import match_typing
@@ -49,7 +48,7 @@ a(2)  # 4
 a('2')  # '22'
 ```
 
-- the same behavior works also with the `match_class_typing` decorator
+- The `match_class_typing` decorator works in exactly the same way:
 ```python
 from strongtyping.config import SEVERITY_LEVEL
 from strongtyping.strong_typing import match_class_typing
@@ -84,9 +83,9 @@ d.a('2')  # '222'
 
 ### SEVERITY_LEVEL as environment variable
 
-- to make your life as a developer easier it is possible to set the `SEVERITY_LEVEL` as enviroment variable 
+- To make things easier you can set the `SEVERITY_LEVEL` as an enviroment variable.
   
-- with the help of a helper function `set_severity_level`
+- Just use the helper function `set_severity_level`:
 ```python
 # call this somewhere in your code
 from strongtyping.config import SEVERITY_LEVEL, set_severity_level
@@ -96,7 +95,7 @@ set_severity_level(SEVERITY_LEVEL.WARNING)
 set_severity_level(SEVERITY_LEVEL.DISABLED)
 ```
 
-- set the environment value `ST_SEVERITY` directly
+- Or you can set the environment value `ST_SEVERITY` directly:
 ```python
 environ['ST_SEVERITY'] = 1  # enabled
 environ['ST_SEVERITY'] = 2  # warning
