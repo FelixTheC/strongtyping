@@ -7,7 +7,7 @@
 [![](https://img.shields.io/pypi/dm/strongtyping.svg)](https://pypi.org/project/strongtyping/)
 
 
-<p><b><em>strongtyping</em></b> provides you with a decorator which <b>checks at Runtime</b> whether a function is called with the correct parameter types.<br> 
+<p><b><em>strongtyping</em></b> gives you  a decorator which checks <b>at runtime</b> whether a function is called with the correct parameter types.<br> 
 It raises <b><em>TypeMisMatch</em></b> if the parameters used in a function call are invalid.</p>
 
 ### The Problem
