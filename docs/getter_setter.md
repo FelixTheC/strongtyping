@@ -7,7 +7,7 @@ from strongtyping.strong_typing import getter_setter
 class Dummy:
     attr = 100
 
-    @getter_setter  # here you will have all in one place (DRY) 
+    @getter_setter  # here you will have everything in one place (DRY) 
     def c(self, val: int = None):
         if val is not None:
             self.attr = val
