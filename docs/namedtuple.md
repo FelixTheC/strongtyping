@@ -1,7 +1,7 @@
 ## typed_namedtuple
 
 - __typed_namedtuple is only available from python >= 3.8__
-- from my side it was only logical to create an own version of namedtuple with typing support
+- So I thought an obvious enhancement would be to create a custom version of `namedtuple` with typing support.
 
 Here are some examples of how you can use it.
 ```python
@@ -13,7 +13,7 @@ Dummy(mana='Lumos', spell=5, effect='Makes light')  # will raise a TypeError
 Dummy(spell='Lumos', mana=5, effect=['Makes light', ])  # works like a charm
 
 ```
-- the same happens also with wrong default values (the typed_namedtuple needs the exact same length)
+- The same thing happens with incorrect default values (the typed_namedtuple needs the exact same length)
 ```python
 from strongtyping.type_namedtuple import typed_namedtuple
 
@@ -21,7 +21,7 @@ from strongtyping.type_namedtuple import typed_namedtuple
 Dummy = typed_namedtuple('Dummy', ['spell:str', 'mana:int', 'effect:list'],  defaults=[0, '', ''])
 
 ```
-- and also when you try to replace an attribute with a wrong type
+- It also happens when you try to replace an attribute with an invalid type:
 ```python
 from strongtyping.type_namedtuple import typed_namedtuple
 Dummy = typed_namedtuple('Dummy', ['spell:str', 'mana:int', 'effect:list'])
@@ -31,7 +31,7 @@ d._replace(effect=b'Makes light')  # will raise a TypeError
 
 ```
 
-- it is also possible to use the typing.NamedTuple way for instantiating
+- You can instantiate an object using typing.NamedTuple:
 ```python
 from strongtyping.type_namedtuple import typed_namedtuple
 Dummy = typed_namedtuple('Dummy', [('spell', str), ('mana', int), ('effect', Union[list, tuple])])
@@ -45,7 +45,7 @@ print(Dummy.__annotations__)
 
 ```
 
-- the docstring will also display the types of the parameter in the reST-style
+- The docstring will also display the types of the parameter in the reST-style
 ```python
 from strongtyping.type_namedtuple import typed_namedtuple
 Dummy = typed_namedtuple('Dummy', 'spell:str, mana:int or str,effect:list')
