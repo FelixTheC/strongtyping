@@ -1,4 +1,5 @@
 # Welcome to `strongtyping`
+
 [![PyPI version](https://badge.fury.io/py/strongtyping.svg)](https://badge.fury.io/py/strongtyping)
 ![Python application](https://github.com/FelixTheC/strongtyping/workflows/Python%20application/badge.svg)
 ![Python tox](https://github.com/FelixTheC/strongtyping/workflows/Python%20tox/badge.svg)
@@ -12,7 +13,7 @@ It raises <b><em>TypeMisMatch</em></b> if the parameters used in a function call
 
 ### The Problem
 
-> Even if you use an advanced IDE which can highlight typing issues, in bigger projects you'll probably find yourself struggling through long debugging sessions before realising the issue was due to the _wrong type of argument_.  These bugs are tricky to spot because they don't necessarily crash the program, but the output is still unexpected or just plain wrong.  For example:
+Even if you use an advanced IDE which can highlight typing issues, in bigger projects you'll probably find yourself struggling through long debugging sessions before realising the issue was due to the _wrong type of argument_.  These bugs are tricky to spot because they don't necessarily crash the program, but the output is still unexpected or just plain wrong.  For example:
 
 ```python
 >>> def multiplier(a: int, b: int):
@@ -42,10 +43,12 @@ ___
 
 ### The Solution
 
-> I love Python and its freedom, but with the new option of adding _type hints_ I wanted to get rid of writing `if isinstance(value, whatever)` repeatedly in my programs, so I decided to create `strongtyping`...
+![](https://media.giphy.com/media/L0Z4qwdwv62cn4haFp/giphy.gif)
 
-> My solution is a simple decorator called `@match_typing` which will check <b>at runtime</b> whether the parameters you provide to a function are valid, based on type hints you've already defined in the `def` line.  Here are some examples:
-> 
+I love Python and its freedom, but with the new option of adding _type hints_ I wanted to get rid of writing `if isinstance(value, whatever)` repeatedly in my programs, so I decided to create `strongtyping`...
+
+My solution is a simple decorator called `@match_typing` which will check <b>at runtime</b> whether the parameters you provide to a function are valid, based on type hints you've already defined in the `def` line.  Here are some examples:
+ 
 ```python
 from typing import List, Union
 import datetime
@@ -73,7 +76,7 @@ func_e([5, ('a', 'b'), '10'], [1, '2', 3, datetime.date])
 ```
 
 ## Requirements
-<b>Python 3.7 > <=3.9</b>
+<b>Python 3.7, 3.8, 3.9</b>
 
 - ujson
 - pytest
@@ -99,7 +102,7 @@ func_e([5, ('a', 'b'), '10'], [1, '2', 3, datetime.date])
 ## Extension
 #### strongtpying_module
 
-- A __package__ I worte in __Cython__ to speed up parameter checking.  This package provides a __boost__ of over 300%.
+- A __package__ I wrote in __Cython__ to speed up parameter checking.  This package provides a speed boost of __over 300%__.
 - you can simply install this package with `pip install strongtyping-modules`
-- for more detailed information please check out the readme from [strongtyping_modules](https://github.com/FelixTheC/strongtyping_modules/blob/master/README.md)
+- for more detailed information please check out the [README](https://github.com/FelixTheC/strongtyping_modules/blob/master/README.md)
 
