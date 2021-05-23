@@ -1,5 +1,8 @@
 # Release Notes
 
+## v2.0.2
+- correct handling for empty containers and empty type-hints like List instead of list
+
 ## v2.0.1
 - Better return type value formatting in rest_docs_from_typing, numpy_docs_from_typing
 

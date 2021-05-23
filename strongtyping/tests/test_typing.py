@@ -1101,9 +1101,7 @@ def test_empty_containers_are_valid_if_the_share_same_type():
     def foo(val_a: List[str], val_b: Dict[str, str], val_c: Set[int]):
         return True
 
-    assert foo([],
-               {},
-               set())
+    assert foo([], {}, set())
 
     @match_typing
     def foo(val_a: Tuple[str], val_b: Tuple[str, str], val_c: Tuple[str, ...]):
@@ -1114,6 +1112,12 @@ def test_empty_containers_are_valid_if_the_share_same_type():
 
     assert foo(('Hello', ), ('Jon', 'Doe'), ())
 
+    @match_typing
+    def foo(val_a: list[str], val_b: dict[str, str], val_c: set[int]):
+        return True
+
+    assert foo([], {}, set())
+
 
 def test_empty_typeing_parameter():
 
@@ -1121,10 +1125,7 @@ def test_empty_typeing_parameter():
     def foo(val_a: List, val_b: Dict, val_c: Set, val_d: Tuple):
         return True
 
-    assert foo([],
-               {},
-               set(),
-               ())
+    assert foo([], {}, set(), ())
 
     assert foo([1, 2, 'foo'],
                {'foo': 'bar', 2: [2, 3]},
