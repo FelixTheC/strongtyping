@@ -7,31 +7,30 @@
 [![](https://img.shields.io/pypi/dm/strongtyping.svg)](https://pypi.org/project/strongtyping/)
 
 
-<p><b><em>strongtyping</em></b> gives you  a decorator which checks <b>at runtime</b> whether a function has been called with the correct parameter types.<br> 
+<p><b><em>strongtyping</em></b> gives you a handy decorator which checks <b>at runtime</b> whether a function has been called with the correct parameter types.<br> 
 It raises <b><em>TypeMisMatch</em></b> if the parameters used in a function call are invalid.</p>
 
 ### The Problem
 
->> Even if you use an advanced IDE which can highlight typing issues, in bigger projects you'll probably find yourself struggling through long debugging sessions before you even realise the issue was due to a wrong type of argument.  These bugs are tricky because they don't necessarily crash the program, but the output is still unexpected.  For example:
-> 
+> Even if you use an advanced IDE which can highlight typing issues, in bigger projects you'll probably find yourself struggling through long debugging sessions before realising the issue was due to the _wrong type of argument_.  These bugs are tricky to spot because they don't necessarily crash the program, but the output is still unexpected or just plain wrong.  For example:
 
 ```python
->>> def multipler(a: int, b: int):
+>>> def multiplier(a: int, b: int):
 ...     return a * b
 
 
->>> product = multipler(3, 4)
+>>> product = multiplier(3, 4)
 12
 
->>> product_2 = multipler('Hello', 'World') # Will be highlighted in some IDE's
+>>> product_2 = multiplier('Hello', 'World') # Will be highlighted in some IDE's
 TypeError
 
->>> product_3 = multipler('Hello', 4)
+>>> product_3 = multiplier('Hello', 4)
 'HelloHelloHelloHello'
 # No Exception but the result isn’t really what we expect
 ```
 ___
-My approach before `strongtyping` was to a check for every valid type of every parameter for every function, which creates a lot of noisy/bloated code and begs the questions "Why use type hinting at all?":
+Without `strongtyping` you have to check for every valid type of every parameter in every function, which creates a lot of noisy/bloated code and begs the questions "Why use Python type hinting at all?":
 ___
 
 ```python
@@ -43,9 +42,9 @@ ___
 
 ### The Solution
 
-> I love Python and its freedom, but with the new option of adding type hints I wanted to get rid of writing `if isinstance(value, whatever)` repeatedly in my programs, so I decided to tackle the problem, and `strongtyping` was born...
+> I love Python and its freedom, but with the new option of adding _type hints_ I wanted to get rid of writing `if isinstance(value, whatever)` repeatedly in my programs, so I decided to create `strongtyping`...
 
-> I created a decorator called `@match_typing` which will check <b>at runtime</b> whether the parameters you provide to a function are valid, based on what you've defined in the `def` line.  Here are some examples:
+> My solution is a simple decorator called `@match_typing` which will check <b>at runtime</b> whether the parameters you provide to a function are valid, based on type hints you've already defined in the `def` line.  Here are some examples:
 > 
 ```python
 from typing import List, Union
