@@ -1112,6 +1112,9 @@ def test_empty_containers_are_valid_if_the_share_same_type():
 
     assert foo(('Hello', ), ('Jon', 'Doe'), ())
 
+
+@pytest.mark.skipif(sys.version_info.minor < 9, reason='Generics only available since 3.9')
+def test_empty_containers_are_valid_if_the_share_same_type_py39():
     @match_typing
     def foo(val_a: list[str], val_b: dict[str, str], val_c: set[int]):
         return True
@@ -1119,7 +1122,7 @@ def test_empty_containers_are_valid_if_the_share_same_type():
     assert foo([], {}, set())
 
 
-def test_empty_typeing_parameter():
+def test_empty_typing_parameter():
 
     @match_typing
     def foo(val_a: List, val_b: Dict, val_c: Set, val_d: Tuple):
