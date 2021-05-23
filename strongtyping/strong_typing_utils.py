@@ -85,7 +85,8 @@ def get_origins(typ_to_check: any) -> tuple:
 def checking_typing_dict(arg: Any, possible_types: tuple, *args):
     if not isinstance(arg, dict):
         return False
-
+    if isinstance(arg, dict) and len(arg) == 0:
+        return True
     try:
         key, val = possible_types
     except (ValueError, TypeError):
@@ -144,6 +145,8 @@ def checking_typing_tuple(arg: Any, possible_types: tuple, *args):
     if possible_types is None:
         return isinstance(arg, tuple)
     if Ellipsis in possible_types:
+        if len(arg) == 0:
+            return True
         return checking_ellipsis(arg, possible_types)
     if len(possible_types) > 0 and not len(arg) == len(possible_types) or not isinstance(arg, tuple):
         return False
@@ -154,6 +157,8 @@ def checking_typing_tuple(arg: Any, possible_types: tuple, *args):
 def checking_typing_list(arg: Any, possible_types: tuple, *args):
     if not isinstance(arg, list):
         return False
+    if isinstance(arg, list) and (len(arg) == 0 or not possible_types):
+        return True
     return all(check_type(argument, typ)
                for argument, typ in zip_longest(arg, possible_types,
                                                 fillvalue=possible_types[0]))

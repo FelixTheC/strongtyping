@@ -1095,5 +1095,42 @@ def test_with_ellipsis():
         d.a(data)
 
 
+def test_empty_containers_are_valid_if_the_share_same_type():
+
+    @match_typing
+    def foo(val_a: List[str], val_b: Dict[str, str], val_c: Set[int]):
+        return True
+
+    assert foo([],
+               {},
+               set())
+
+    @match_typing
+    def foo(val_a: Tuple[str], val_b: Tuple[str, str], val_c: Tuple[str, ...]):
+        return True
+
+    with pytest.raises(TypeMisMatch):
+        foo((), (), ())
+
+    assert foo(('Hello', ), ('Jon', 'Doe'), ())
+
+
+def test_empty_typeing_parameter():
+
+    @match_typing
+    def foo(val_a: List, val_b: Dict, val_c: Set, val_d: Tuple):
+        return True
+
+    assert foo([],
+               {},
+               set(),
+               ())
+
+    assert foo([1, 2, 'foo'],
+               {'foo': 'bar', 2: [2, 3]},
+               set([1, 2, 3]),
+               (1, '2'))
+
+
 if __name__ == '__main__':
     pytest.main(['-vv', '-s', __file__])
