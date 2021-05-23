@@ -1095,5 +1095,48 @@ def test_with_ellipsis():
         d.a(data)
 
 
+@pytest.mark.skipif(bool(int(os.environ['ST_MODULES_INSTALLED'])) is True,
+                    reason='module does not support ellipsis at the moment')
+def test_empty_containers_are_valid_if_the_share_same_type():
+
+    @match_typing
+    def foo(val_a: List[str], val_b: Dict[str, str], val_c: Set[int]):
+        return True
+
+    assert foo([], {}, set())
+
+    @match_typing
+    def foo(val_a: Tuple[str], val_b: Tuple[str, str], val_c: Tuple[str, ...]):
+        return True
+
+    with pytest.raises(TypeMisMatch):
+        foo((), (), ())
+
+    assert foo(('Hello', ), ('Jon', 'Doe'), ())
+
+
+@pytest.mark.skipif(sys.version_info.minor < 9, reason='Generics only available since 3.9')
+def test_empty_containers_are_valid_if_the_share_same_type_py39():
+    @match_typing
+    def foo(val_a: list[str], val_b: dict[str, str], val_c: set[int]):
+        return True
+
+    assert foo([], {}, set())
+
+
+def test_empty_typing_parameter():
+
+    @match_typing
+    def foo(val_a: List, val_b: Dict, val_c: Set, val_d: Tuple):
+        return True
+
+    assert foo([], {}, set(), ())
+
+    assert foo([1, 2, 'foo'],
+               {'foo': 'bar', 2: [2, 3]},
+               set([1, 2, 3]),
+               (1, '2'))
+
+
 if __name__ == '__main__':
     pytest.main(['-vv', '-s', __file__])
