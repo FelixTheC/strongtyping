@@ -63,7 +63,7 @@ def test_valid_type():
                 'hello': (2, 3, 4, 5)})
 
 
-@pytest.mark.skipif(sys.version_info.minor < 8, reason='Generics only available since 3.9')
+@pytest.mark.skipif(sys.version_info.minor < 9, reason='Generics only available since 3.9')
 def test_with_type_generics():
 
     def min_length(val):
