@@ -1,5 +1,8 @@
 # Release Notes
 
+## v2.1.0
+- new type hint type `Validator` like `Union` you join a type-hint and a validation function
+
 ## v2.0.2
 - correct handling for empty containers and empty type-hints like List instead of list
 
