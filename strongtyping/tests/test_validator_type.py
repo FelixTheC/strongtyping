@@ -13,7 +13,7 @@ from typing import Union
 
 import pytest
 
-from strong_typing import match_class_typing
+from strongtyping.strong_typing import match_class_typing
 from strongtyping.strong_typing_utils import Validator
 from strongtyping.strong_typing_utils import ValidationError
 from strongtyping.strong_typing import TypeMisMatch
