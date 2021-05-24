@@ -184,6 +184,13 @@ def checking_typing_literal(arg, possible_types, *args):
     return arg in possible_types
 
 
+def checking_typing__validator(arg, possible_types, *args):
+    """
+    required to support python versions 3.7, 3.8
+    """
+    return checking_typing_validator(arg, possible_types, *args)
+
+
 def checking_typing_validator(arg, possible_types, *args):
     required_type, validation = possible_types
     try:
