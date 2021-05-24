@@ -11,6 +11,7 @@ import sys
 from collections.abc import Generator
 from functools import lru_cache
 import typing
+from functools import partial
 
 from typing import Any
 from typing import TypeVar
@@ -31,6 +32,12 @@ else:
 
 
 class TypeMisMatch(AttributeError):
+    def __init__(self, message):
+        super().__init__()
+        print(message)
+
+
+class ValidationError(Exception):
     def __init__(self, message):
         super().__init__()
         print(message)
@@ -76,8 +83,6 @@ def get_origins(typ_to_check: any) -> tuple:
             origin = typ_to_check.__origin__.__name__
         else:
             origin = typ_to_check.__origin__ if typ_to_check.__origin__ is not None else typ_to_check.__orig_bases__
-    if py_version == 6 and hasattr(typ_to_check, '_gorg'):
-        return None, str(typ_to_check._gorg).replace('typing.', '')
     return origin, origin._name if hasattr(origin, '_name') else \
         typ_to_check._name if hasattr(typ_to_check, '_name') else str(origin).replace('typing.', '')
 
@@ -193,11 +198,19 @@ def checking_typing__validator(arg, possible_types, *args):
 
 def checking_typing_validator(arg, possible_types, *args):
     required_type, validation = possible_types
+    if validation(arg) is False:
+        if isinstance(validation, partial):
+            validation = validation.func
+        validation_function_file = inspect.getfile(validation)
+        validation_body, validation_line = inspect.getsourcelines(validation)
+        validation_lines = validation_line + len(validation_body)
+        raise ValidationError(f'Argument: `{arg}` did not passed the validation defined here '
+                              f'\n\tFile: {validation_function_file}\n\tName: {validation.__name__}'
+                              f'\n\tLine: {validation_line} - {validation_lines}')
     try:
-        return isinstance(arg, required_type) and validation(arg) is not False
+        return isinstance(arg, required_type)
     except TypeError:
-        possible_type = get_possible_types(required_type)[0]
-        return all(check_type(argument, possible_type) for argument in arg) and validation(arg) is not False
+        return check_type(arg, required_type)
 
 
 def module_checking_typing_list(arg: Any, possible_types: Any):
@@ -247,8 +260,8 @@ else:
 
 
 def check_type(argument, type_of, mro=False, **kwargs):
-    if int(py_version) >= 10 and isinstance(type_of, (str, bytes)):
-        type_of = eval(type_of, locals(), globals())
+    # if int(py_version) >= 10 and isinstance(type_of, (str, bytes)):
+    #     type_of = eval(type_of, locals(), globals())
 
     check_result = True
     if type_of is not None:
@@ -266,8 +279,6 @@ def check_type(argument, type_of, mro=False, **kwargs):
             pass
 
         if 'new_type' in origin_name:
-            if '3.6' in sys.version:
-                return check_result
             type_of = type_of.__supertype__
             origin, origin_name = get_origins(type_of)
             origin_name = origin_name.lower()
