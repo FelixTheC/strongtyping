@@ -16,6 +16,7 @@ from typing import Any
 from typing import TypeVar
 
 from strongtyping._utils import install_st_m
+
 install_st_m()
 
 try:
@@ -183,9 +184,13 @@ def checking_typing_literal(arg, possible_types, *args):
     return arg in possible_types
 
 
-def checking_typing_validtype(arg, possible_types, *args):
+def checking_typing_validator(arg, possible_types, *args):
     required_type, validation = possible_types
-    return isinstance(arg, required_type) and validation(arg) is not False
+    try:
+        return isinstance(arg, required_type) and validation(arg) is not False
+    except TypeError:
+        possible_type = get_possible_types(required_type)[0]
+        return all(check_type(argument, possible_type) for argument in arg) and validation(arg) is not False
 
 
 def module_checking_typing_list(arg: Any, possible_types: Any):
@@ -280,15 +285,17 @@ def check_type(argument, type_of, mro=False, **kwargs):
     return check_result
 
 
-class _ValidType:
+class _Validator:
 
     def __getitem__(self, item):
         pass
+
 
 try:
     from typing import _SpecialGenericAlias
 except ImportError:
     from typing import _GenericAlias, KT, VT, _alias
-    ValidType = _alias(_ValidType, (KT, VT), inst=False)
+
+    Validator = _alias(_Validator, (KT, VT), inst=False)
 else:
-    ValidType = _SpecialGenericAlias(_ValidType, 2, inst=False, name='ValidType')
+    Validator = _SpecialGenericAlias(_Validator, 2, inst=False, name='Validator')
