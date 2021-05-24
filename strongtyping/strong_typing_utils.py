@@ -157,18 +157,14 @@ def checking_typing_tuple(arg: Any, possible_types: tuple, *args):
 def checking_typing_list(arg: Any, possible_types: tuple, *args):
     if not isinstance(arg, list):
         return False
-    if isinstance(arg, list) and (len(arg) == 0 or not possible_types):
+    if isinstance(arg, list) and not possible_types:
         return True
-    return all(check_type(argument, typ)
-               for argument, typ in zip_longest(arg, possible_types,
-                                                fillvalue=possible_types[0]))
+    return all(check_type(argument, possible_types[0]) for argument in arg)
 
 
 def checking_ellipsis(arg, possible_types):
     possible_types = [pt for pt in possible_types if pt is not Ellipsis]
-    return all(check_type(argument, typ)
-               for argument, typ in zip_longest(arg, possible_types, fillvalue=possible_types[0])
-               )
+    return all(check_type(argument, possible_types[0]) for argument in arg)
 
 
 def module_checking_typing_list(arg: Any, possible_types: Any):
