@@ -11,12 +11,12 @@ from typing import Union
 import pytest
 from strongtyping.strong_typing import TypeMisMatch
 
-from strong_typing import match_typing
+from strongtyping.strong_typing import match_typing
 
 
 # @pytest.mark.skipif(sys.version_info.minor < 8, reason='Generics only available since 3.9')
 def test_valid_type():
-    from strong_typing_utils import Validator
+    from strongtyping.strong_typing_utils import Validator
 
     @match_typing
     def foo(val_a: Validator[list, lambda x: len(x) > 2]):
