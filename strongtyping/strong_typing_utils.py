@@ -10,7 +10,6 @@ import os
 import sys
 from collections.abc import Generator
 from functools import lru_cache
-from itertools import zip_longest
 import typing
 
 from typing import Any
@@ -85,7 +84,7 @@ def get_origins(typ_to_check: any) -> tuple:
 def checking_typing_dict(arg: Any, possible_types: tuple, *args):
     if not isinstance(arg, dict):
         return False
-    if isinstance(arg, dict) and len(arg) == 0:
+    if isinstance(arg, dict) and not possible_types:
         return True
     try:
         key, val = possible_types
@@ -104,12 +103,10 @@ def checking_typing_dict(arg: Any, possible_types: tuple, *args):
 
 
 def checking_typing_set(arg: Any, possible_types: tuple, *args):
-    try:
-        pssble_type = possible_types[0]
-    except (TypeError, IndexError):
+    if not possible_types:
         return isinstance(arg, set)
-    else:
-        return isinstance(arg, set) and all(check_type(argument, pssble_type) for argument in arg)
+    possible_type = possible_types[0]
+    return isinstance(arg, set) and all(check_type(argument, possible_type) for argument in arg)
 
 
 def checking_typing_type(arg: Any, possible_types: tuple, *args):
@@ -142,13 +139,13 @@ def checking_typing_callable(arg: Any, possible_types: tuple, *args):
 
 
 def checking_typing_tuple(arg: Any, possible_types: tuple, *args):
-    if possible_types is None:
+    if not possible_types:
         return isinstance(arg, tuple)
     if Ellipsis in possible_types:
-        if len(arg) == 0:
+        if not arg:
             return True
         return checking_ellipsis(arg, possible_types)
-    if len(possible_types) > 0 and not len(arg) == len(possible_types) or not isinstance(arg, tuple):
+    if not isinstance(arg, tuple) or not (len(arg) == len(possible_types)):
         return False
     return all(check_type(argument, typ)
                for argument, typ in zip(arg, possible_types))
@@ -159,12 +156,36 @@ def checking_typing_list(arg: Any, possible_types: tuple, *args):
         return False
     if isinstance(arg, list) and not possible_types:
         return True
-    return all(check_type(argument, possible_types[0]) for argument in arg)
+    possible_type = possible_types[0]
+    return all(check_type(argument, possible_type) for argument in arg)
 
 
 def checking_ellipsis(arg, possible_types):
     possible_types = [pt for pt in possible_types if pt is not Ellipsis]
-    return all(check_type(argument, possible_types[0]) for argument in arg)
+    possible_type = possible_types[0]
+    return all(check_type(argument, possible_type) for argument in arg)
+
+
+def checking_typing_json(arg, possible_types, *args):
+    try:
+        possible_types.dumps(arg)
+    except TypeError:
+        return isinstance(arg, str)
+    else:
+        return True
+
+
+def checking_typing_generator(arg, possible_types, *args):
+    return isinstance(arg, Generator)
+
+
+def checking_typing_literal(arg, possible_types, *args):
+    return arg in possible_types
+
+
+def checking_typing_validtype(arg, possible_types, *args):
+    required_type, validation = possible_types
+    return isinstance(arg, required_type) and validation(arg) is not False
 
 
 def module_checking_typing_list(arg: Any, possible_types: Any):
@@ -197,28 +218,6 @@ def module_checking_typing_tuple(arg: Any, possible_types: Any):
             all(isinstance(pt, TypeVar) for pt in possible_types.__args__):
         return isinstance(arg, tuple)
     return bool(tuple_elements(arg, possible_types))
-
-
-def checking_typing_json(arg, possible_types, *args):
-    try:
-        possible_types.dumps(arg)
-    except TypeError:
-        return isinstance(arg, str)
-    else:
-        return True
-
-
-def checking_typing_generator(arg, possible_types, *args):
-    return isinstance(arg, Generator)
-
-
-def checking_typing_literal(arg, possible_types, *args):
-    return arg in possible_types
-
-
-def checking_typing_validtype(arg, possible_types, *args):
-    required_type, validation = possible_types
-    return isinstance(arg, required_type) and validation(arg) is not False
 
 
 supported_typings = vars()

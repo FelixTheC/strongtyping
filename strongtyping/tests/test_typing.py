@@ -176,7 +176,31 @@ def test_func_with_tuple_typing():
     def func_a(a: Tuple[str, str, str]):
         return True
 
+    @match_typing
+    def func_b(a: Tuple[Union[str, int], List[int]]):
+        return True
+
+    @match_typing
+    def func_c(a: Tuple):
+        return True
+
     assert func_a(('Harmonia', 'Nectere', 'Passus'))
+
+    assert func_b((2, [1, 2, 3]))
+
+    assert func_c((2, '2', '2', 2))
+
+    with pytest.raises(TypeMisMatch):
+        func_b(('2', 'Hello'.split()))
+
+    with pytest.raises(TypeMisMatch):
+        assert func_a(('Harmonia', 'Nectere'))
+
+    with pytest.raises(TypeMisMatch):
+        assert func_a(('Harmonia', 'Nectere', 'Passus', 'Passus'))
+
+    with pytest.raises(TypeMisMatch):
+        assert func_c(['Harmonia', 'Nectere', 'Passus', 'Passus'])
 
 
 def test_func_raise_error_incorrect_parameters_less():
@@ -1027,6 +1051,12 @@ def test_generic_type_hints():
 
     with pytest.raises(TypeMisMatch):
         a_dict({'foo': [1, 2, 3]})
+
+    with pytest.raises(TypeMisMatch):
+        c_tuple(('hello', 'world', '2'))
+
+    with pytest.raises(TypeMisMatch):
+        c_tuple((2, 'world', 2))
 
 
 def test_optional_same_as_union_none():
