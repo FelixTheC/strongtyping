@@ -74,7 +74,8 @@ def multipler(a: int, b: int):
 
 print(multipler('Hello', 4))
 """
-/StrongTyping/strongtyping/docs.py:208: RuntimeWarning: Incorrect parameters: a: <class 'int'>
+/StrongTyping/strongtyping/docs.py:208: RuntimeWarning: Incorrect parameter: [a] `'Hello'`
+	required: <class 'int'>
   warnings.warn(msg, RuntimeWarning)
 HelloHelloHelloHello
 """

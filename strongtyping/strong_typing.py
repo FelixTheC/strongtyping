@@ -5,6 +5,7 @@
 @author: felix
 """
 import inspect
+import pprint
 from functools import wraps
 import warnings
 
@@ -27,7 +28,6 @@ def match_typing(_func=None, *, excep_raise: Exception = TypeMisMatch, cache_siz
 
         arg_names = [name for name in inspect.signature(func).parameters]
         annotations = func.__annotations__
-
         severity_level = _severity_level(severity)
 
         @wraps(func)
@@ -35,7 +35,6 @@ def match_typing(_func=None, *, excep_raise: Exception = TypeMisMatch, cache_siz
             if arg_names and severity_level > 0:
 
                 args = remove_subclass(args, subclass)
-
                 if cached_set is not None:
                     # check if func with args and kwargs was checked once before with positive result
                     cached_key = (func, args.__str__(), kwargs.__str__())
@@ -52,7 +51,15 @@ def match_typing(_func=None, *, excep_raise: Exception = TypeMisMatch, cache_siz
                 )
 
                 if failed_params:
-                    msg = f'Incorrect parameters: {", ".join(f"{name}: {annotations[name]}" for name in failed_params)}'
+                    annotated_values = {arg_name: arg for arg, arg_name in zip(args, arg_names)}
+                    for kwarg_name, kwarg in kwargs.items():
+                        annotated_values[kwarg_name] = kwarg
+
+                    msg_list = "\nIncorrect parameter: ".join(
+                        f"[{name}] `{pprint.pformat(annotated_values[name], width=20, depth=2)}`"
+                        f"\n\trequired: {annotations[name]}" for name in failed_params
+                    )
+                    msg = f'Incorrect parameter: {msg_list}'
 
                     if excep_raise is not None and severity_level == 1:
                         raise excep_raise(msg)
@@ -70,23 +77,6 @@ def match_typing(_func=None, *, excep_raise: Exception = TypeMisMatch, cache_siz
         return wrapper(_func)
     else:
         return wrapper
-
-
-# def match_class_typing(_cls=None, *, excep_raise: Exception = TypeError, cache_size=0, severity='env', **kwargs):
-#
-#     def wrapper(cls):
-#
-#         severity_level = _severity_level(severity)
-#         if severity_level > 0:
-#             cls.__new__ = _get_new(match_typing, excep_raise, cache_size, severity, **kwargs)
-#             if hasattr(cls.__init__, '__annotations__'):
-#                 cls.__init__ = match_typing(cls.__init__)
-#         return cls
-#
-#     if _cls is not None:
-#         return wrapper(_cls)
-#     else:
-#         return wrapper
 
 
 class match_class_typing:

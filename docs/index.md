@@ -98,6 +98,9 @@ func_e([5, ('a', 'b'), '10'], [1, '2', 3, datetime.date])
 * `@rest_docs_from_typing`
 * `@numpy_docs_from_typing`
 
+#### from strongtyping.strong_typing_utils import 
+* `Validator`
+
 
 ## Extension
 #### strongtpying_module

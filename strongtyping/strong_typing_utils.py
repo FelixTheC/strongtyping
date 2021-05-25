@@ -4,19 +4,20 @@
 @created: 19.11.20
 @author: felix
 """
-
+import builtins
 import inspect
 import os
 import sys
 from collections.abc import Generator
 from functools import lru_cache
-from itertools import zip_longest
 import typing
+from functools import partial
 
-from typing import Any
+from typing import Any, _SpecialForm, _GenericAlias, _type_repr
 from typing import TypeVar
 
 from strongtyping._utils import install_st_m
+
 install_st_m()
 
 try:
@@ -31,6 +32,12 @@ else:
 
 
 class TypeMisMatch(AttributeError):
+    def __init__(self, message):
+        super().__init__()
+        print(message)
+
+
+class ValidationError(Exception):
     def __init__(self, message):
         super().__init__()
         print(message)
@@ -76,8 +83,6 @@ def get_origins(typ_to_check: any) -> tuple:
             origin = typ_to_check.__origin__.__name__
         else:
             origin = typ_to_check.__origin__ if typ_to_check.__origin__ is not None else typ_to_check.__orig_bases__
-    if py_version == 6 and hasattr(typ_to_check, '_gorg'):
-        return None, str(typ_to_check._gorg).replace('typing.', '')
     return origin, origin._name if hasattr(origin, '_name') else \
         typ_to_check._name if hasattr(typ_to_check, '_name') else str(origin).replace('typing.', '')
 
@@ -85,7 +90,7 @@ def get_origins(typ_to_check: any) -> tuple:
 def checking_typing_dict(arg: Any, possible_types: tuple, *args):
     if not isinstance(arg, dict):
         return False
-    if isinstance(arg, dict) and len(arg) == 0:
+    if isinstance(arg, dict) and not possible_types:
         return True
     try:
         key, val = possible_types
@@ -104,12 +109,10 @@ def checking_typing_dict(arg: Any, possible_types: tuple, *args):
 
 
 def checking_typing_set(arg: Any, possible_types: tuple, *args):
-    try:
-        pssble_type = possible_types[0]
-    except (TypeError, IndexError):
+    if not possible_types:
         return isinstance(arg, set)
-    else:
-        return isinstance(arg, set) and all(check_type(argument, pssble_type) for argument in arg)
+    possible_type = possible_types[0]
+    return isinstance(arg, set) and all(check_type(argument, possible_type) for argument in arg)
 
 
 def checking_typing_type(arg: Any, possible_types: tuple, *args):
@@ -142,13 +145,13 @@ def checking_typing_callable(arg: Any, possible_types: tuple, *args):
 
 
 def checking_typing_tuple(arg: Any, possible_types: tuple, *args):
-    if possible_types is None:
+    if not possible_types:
         return isinstance(arg, tuple)
     if Ellipsis in possible_types:
-        if len(arg) == 0:
+        if not arg:
             return True
         return checking_ellipsis(arg, possible_types)
-    if len(possible_types) > 0 and not len(arg) == len(possible_types) or not isinstance(arg, tuple):
+    if not isinstance(arg, tuple) or not (len(arg) == len(possible_types)):
         return False
     return all(check_type(argument, typ)
                for argument, typ in zip(arg, possible_types))
@@ -157,18 +160,56 @@ def checking_typing_tuple(arg: Any, possible_types: tuple, *args):
 def checking_typing_list(arg: Any, possible_types: tuple, *args):
     if not isinstance(arg, list):
         return False
-    if isinstance(arg, list) and (len(arg) == 0 or not possible_types):
+    if isinstance(arg, list) and not possible_types:
         return True
-    return all(check_type(argument, typ)
-               for argument, typ in zip_longest(arg, possible_types,
-                                                fillvalue=possible_types[0]))
+    possible_type = possible_types[0]
+    return all(check_type(argument, possible_type) for argument in arg)
 
 
 def checking_ellipsis(arg, possible_types):
     possible_types = [pt for pt in possible_types if pt is not Ellipsis]
-    return all(check_type(argument, typ)
-               for argument, typ in zip_longest(arg, possible_types, fillvalue=possible_types[0])
-               )
+    possible_type = possible_types[0]
+    return all(check_type(argument, possible_type) for argument in arg)
+
+
+def checking_typing_json(arg, possible_types, *args):
+    try:
+        possible_types.dumps(arg)
+    except TypeError:
+        return isinstance(arg, str)
+    else:
+        return True
+
+
+def checking_typing_generator(arg, possible_types, *args):
+    return isinstance(arg, Generator)
+
+
+def checking_typing_literal(arg, possible_types, *args):
+    return arg in possible_types
+
+
+def checking_typing__validator(arg, possible_types, *args):
+    """
+    required to support python versions 3.7, 3.8
+    """
+    return checking_typing_validator(arg, possible_types, *args)
+
+
+def checking_typing_validator(arg, possible_types, *args):
+    required_type, validation = possible_types
+    if validation(arg) is False:
+        if isinstance(validation, partial):
+            validation = validation.func
+        validation_function_file = inspect.getfile(validation)
+        validation_body, validation_line = inspect.getsourcelines(validation)
+        raise ValidationError(f'Argument: `{arg}` did not pass the validation defined here '
+                              f'\n\tFile: "{validation_function_file}", line {validation_line}'
+                              f'\n\tName: {validation.__name__}')
+    try:
+        return isinstance(arg, required_type)
+    except TypeError:
+        return check_type(arg, required_type)
 
 
 def module_checking_typing_list(arg: Any, possible_types: Any):
@@ -203,28 +244,6 @@ def module_checking_typing_tuple(arg: Any, possible_types: Any):
     return bool(tuple_elements(arg, possible_types))
 
 
-def checking_typing_json(arg, possible_types, *args):
-    try:
-        possible_types.dumps(arg)
-    except TypeError:
-        return isinstance(arg, str)
-    else:
-        return True
-
-
-def checking_typing_generator(arg, possible_types, *args):
-    return isinstance(arg, Generator)
-
-
-def checking_typing_literal(arg, possible_types, *args):
-    return arg in possible_types
-
-
-def checking_typing_validtype(arg, possible_types, *args):
-    required_type, validation = possible_types
-    return isinstance(arg, required_type) and validation(arg) is not False
-
-
 supported_typings = vars()
 if extension_module:
     m = [f'module_checking_typing_{t}'
@@ -240,8 +259,8 @@ else:
 
 
 def check_type(argument, type_of, mro=False, **kwargs):
-    if int(py_version) >= 10 and isinstance(type_of, (str, bytes)):
-        type_of = eval(type_of, locals(), globals())
+    # if int(py_version) >= 10 and isinstance(type_of, (str, bytes)):
+    #     type_of = eval(type_of, locals(), globals())
 
     check_result = True
     if type_of is not None:
@@ -259,8 +278,6 @@ def check_type(argument, type_of, mro=False, **kwargs):
             pass
 
         if 'new_type' in origin_name:
-            if '3.6' in sys.version:
-                return check_result
             type_of = type_of.__supertype__
             origin, origin_name = get_origins(type_of)
             origin_name = origin_name.lower()
@@ -285,15 +302,44 @@ def check_type(argument, type_of, mro=False, **kwargs):
     return check_result
 
 
-class _ValidType:
+class _Validator(_GenericAlias, _root=True):
 
     def __getitem__(self, item):
         pass
 
-try:
-    from typing import _SpecialGenericAlias
-except ImportError:
-    from typing import _GenericAlias, KT, VT, _alias
-    ValidType = _alias(_ValidType, (KT, VT), inst=False)
+    def __hash__(self):
+        return hash(frozenset(self.__args__))
+
+    def __repr__(self):
+        args = self.__args__
+        validator = args[1].func if isinstance(args[1], partial) else args[1]
+        func_name = validator.__name__
+        validation_function_file = inspect.getfile(validator)
+        validation_body, validation_line = inspect.getsourcelines(validator)
+        validation_lines = validation_line + len(validation_body)
+        func_info = f'{func_name}(<{validation_function_file}>, ' \
+                    f'lines={validation_line}-{validation_lines})'
+        return f'strong_typing_utils.Validator[{_type_repr(args[0])}, {func_info}]'
+
+
+if py_version >= 9:
+    @_SpecialForm
+    def Validator(self, parameters, *args, **kwargs):
+        if not parameters:
+            raise TypeError("Cannot take a Validator of no type/function.")
+        if len(parameters) > 2:
+            raise TypeError("Validator takes only 2 values.")
+        if not inspect.isfunction(parameters[1]) and not isinstance(parameters[1], partial):
+            raise TypeError("Validator[..., arg]: arg should be a function.")
+        return _Validator(self, parameters)
 else:
-    ValidType = _SpecialGenericAlias(_ValidType, 2, inst=False, name='ValidType')
+    from typing import _GenericAlias, KT, VT, _alias
+    Validator = _alias(_Validator, (KT, VT), inst=False)
+# try:
+#     from typing import _SpecialGenericAlias
+# except ImportError:
+#     from typing import _GenericAlias, KT, VT, _alias
+#
+#     Validator = _alias(_Validator, (KT, VT), inst=False)
+# else:
+#     Validator = _SpecialGenericAlias(_Validator, 2, inst=False, name='Validator')
