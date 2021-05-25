@@ -4,7 +4,7 @@
 @created: 19.11.20
 @author: felix
 """
-
+import builtins
 import inspect
 import os
 import sys
@@ -13,7 +13,7 @@ from functools import lru_cache
 import typing
 from functools import partial
 
-from typing import Any
+from typing import Any, _SpecialForm, _GenericAlias, _type_repr
 from typing import TypeVar
 
 from strongtyping._utils import install_st_m
@@ -303,17 +303,32 @@ def check_type(argument, type_of, mro=False, **kwargs):
     return check_result
 
 
-class _Validator:
+class _Validator(_GenericAlias, _root=True):
 
     def __getitem__(self, item):
         pass
 
+    def __hash__(self):
+        return hash(frozenset(self.__args__))
 
-try:
-    from typing import _SpecialGenericAlias
-except ImportError:
-    from typing import _GenericAlias, KT, VT, _alias
+    def __repr__(self):
+        args = self.__args__
+        validator = args[1].func if isinstance(args[1], partial) else args[1]
+        func_name = validator.__name__
+        validation_function_file = inspect.getfile(validator)
+        validation_body, validation_line = inspect.getsourcelines(validator)
+        validation_lines = validation_line + len(validation_body)
+        func_info = f'{func_name}(<{validation_function_file}>, ' \
+                    f'lines={validation_line}-{validation_lines})'
+        return f'strong_typing_utils.Validator[{_type_repr(args[0])}, {func_info}]'
 
-    Validator = _alias(_Validator, (KT, VT), inst=False)
-else:
-    Validator = _SpecialGenericAlias(_Validator, 2, inst=False, name='Validator')
+
+@_SpecialForm
+def Validator(self, parameters):
+    if not parameters:
+        raise TypeError("Cannot take a Validator of no type/function.")
+    if len(parameters) > 2:
+        raise TypeError("Validator takes only 2 values.")
+    if not inspect.isfunction(parameters[1]) and not isinstance(parameters[1], partial):
+        raise TypeError("Validator[..., arg]: arg should be a function.")
+    return _Validator(self, parameters)
