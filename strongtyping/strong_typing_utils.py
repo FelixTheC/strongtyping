@@ -323,7 +323,7 @@ class _Validator(_GenericAlias, _root=True):
 
 
 @_SpecialForm
-def Validator(self, parameters):
+def Validator(self, parameters, *args):
     if not parameters:
         raise TypeError("Cannot take a Validator of no type/function.")
     if len(parameters) > 2:
