@@ -56,7 +56,7 @@ def match_typing(_func=None, *, excep_raise: Exception = TypeMisMatch, cache_siz
                         annotated_values[kwarg_name] = kwarg
 
                     msg_list = "\nIncorrect parameter: ".join(
-                        f"[{name}] `{pprint.pformat(annotated_values[name], width=4)}`"
+                        f"[{name}] `{pprint.pformat(annotated_values[name], width=20, depth=2)}`"
                         f"\n\trequired: {annotations[name]}" for name in failed_params
                     )
                     msg = f'Incorrect parameter: {msg_list}'

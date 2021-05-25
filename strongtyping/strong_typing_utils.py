@@ -203,7 +203,7 @@ def checking_typing_validator(arg, possible_types, *args):
             validation = validation.func
         validation_function_file = inspect.getfile(validation)
         validation_body, validation_line = inspect.getsourcelines(validation)
-        raise ValidationError(f'Argument: `{arg}` did not passed the validation defined here '
+        raise ValidationError(f'Argument: `{arg}` did not pass the validation defined here '
                               f'\n\tFile: "{validation_function_file}", line {validation_line}'
                               f'\n\tName: {validation.__name__}')
     try:
@@ -322,12 +322,24 @@ class _Validator(_GenericAlias, _root=True):
         return f'strong_typing_utils.Validator[{_type_repr(args[0])}, {func_info}]'
 
 
-@_SpecialForm
-def Validator(self, parameters, *args):
-    if not parameters:
-        raise TypeError("Cannot take a Validator of no type/function.")
-    if len(parameters) > 2:
-        raise TypeError("Validator takes only 2 values.")
-    if not inspect.isfunction(parameters[1]) and not isinstance(parameters[1], partial):
-        raise TypeError("Validator[..., arg]: arg should be a function.")
-    return _Validator(self, parameters)
+if py_version >= 9:
+    @_SpecialForm
+    def Validator(self, parameters, *args, **kwargs):
+        if not parameters:
+            raise TypeError("Cannot take a Validator of no type/function.")
+        if len(parameters) > 2:
+            raise TypeError("Validator takes only 2 values.")
+        if not inspect.isfunction(parameters[1]) and not isinstance(parameters[1], partial):
+            raise TypeError("Validator[..., arg]: arg should be a function.")
+        return _Validator(self, parameters)
+else:
+    from typing import _GenericAlias, KT, VT, _alias
+    Validator = _alias(_Validator, (KT, VT), inst=False)
+# try:
+#     from typing import _SpecialGenericAlias
+# except ImportError:
+#     from typing import _GenericAlias, KT, VT, _alias
+#
+#     Validator = _alias(_Validator, (KT, VT), inst=False)
+# else:
+#     Validator = _SpecialGenericAlias(_Validator, 2, inst=False, name='Validator')
