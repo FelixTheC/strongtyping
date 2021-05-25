@@ -203,10 +203,9 @@ def checking_typing_validator(arg, possible_types, *args):
             validation = validation.func
         validation_function_file = inspect.getfile(validation)
         validation_body, validation_line = inspect.getsourcelines(validation)
-        validation_lines = validation_line + len(validation_body)
         raise ValidationError(f'Argument: `{arg}` did not passed the validation defined here '
-                              f'\n\tFile: {validation_function_file}\n\tName: {validation.__name__}'
-                              f'\n\tLine: {validation_line} - {validation_lines}')
+                              f'\n\tFile: "{validation_function_file}", line {validation_line}'
+                              f'\n\tName: {validation.__name__}')
     try:
         return isinstance(arg, required_type)
     except TypeError:

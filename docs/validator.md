@@ -3,7 +3,16 @@
 - These works only when using with `match_typing`.
 - If the Validation fails then you will receive a `ValidationError` if the type doesn't match 
   then you will receive a `TypeMisMatch`
-  
+
+### Usage
+- The first parameter of the `Validator` must be the `type` you're requiring
+- The second parameter of the `Validator` must be a `function`
+```
+Validator[<type>, <function>]
+```
+- A `TypeError` will be raised if the parameters are not in the correct order
+---
+
 #### lambda expression
 ```python
 from strongtyping.strong_typing_utils import Validator
@@ -69,7 +78,8 @@ assert foo(((1, 2), (3, 4)))  # TypeMisMatch
 - A traceback for the `Validator` can look similar to this
 ```
 Argument: `{2: [2, 4]}` did not passed the validation defined here 
-	File: /strongtyping/tests/test_validator_type.py
+	File: "/home/eisenmenger/PycharmProjects/strongtyping/strongtyping/tmp.py", line: 13
 	Name: min_length
-	Line: 56 - 58
 ```
+- `File:` describes where the validation function is defined
+- `Name:` the name of the validation function
