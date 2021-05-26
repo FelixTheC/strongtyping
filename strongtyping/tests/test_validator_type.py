@@ -160,5 +160,59 @@ def test_inside_of_a_class():
         assert foo.method_a(())
 
 
+@pytest.mark.skipif(
+    bool(int(os.environ["ST_MODULES_INSTALLED"])) is True,
+    reason="module does not support Validator at the moment",
+    )
+def test_validator_type_with_default():
+
+    @match_typing
+    def foo(val_a: Validator[list, lambda x: len(x) > 2, []]):
+        return True
+
+    assert foo([1, 2, 3])
+
+    assert foo([1, 2]) == []
+
+    assert foo([1, ]) == []
+
+    with pytest.raises(TypeMisMatch):
+        foo({1, 2, 3})
+
+    def min_length(val):
+        return len(val) > 2
+
+    @match_typing
+    def foo(val_a: Validator[List[int], min_length, None]):
+        return True
+
+    assert foo([1, 2, 3])
+    assert foo([1, 2]) is None
+    assert foo([1, ]) is None
+
+    with pytest.raises(TypeMisMatch):
+        foo(["1", "2", "3"])
+
+    with pytest.raises(TypeMisMatch):
+        foo((1, 2, 3))
+
+    def min_length(val, *, size):
+        return len(val) >= size
+
+    @match_typing
+    def foo(
+            val_a: Validator[
+                Dict[Union[str, int], Union[List[int], Tuple[int, ...]]],
+                partial(min_length, size=2),
+            ]
+    ):
+        return True
+
+    assert foo({2: [2, 4], "hello": (2, 3, 4, 5)})
+
+    with pytest.raises(ValidationError):
+        foo({2: [2, 4]})
+
+
 if __name__ == "__main__":
     pytest.main(["-vv", "-s", __file__])

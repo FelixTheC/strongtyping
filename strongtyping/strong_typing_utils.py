@@ -5,11 +5,13 @@
 @author: felix
 """
 import inspect
+import json
 import os
 import sys
 import typing
 from collections.abc import Generator
 from functools import lru_cache, partial
+from queue import Queue
 from typing import Any, TypeVar, _GenericAlias, _SpecialForm, _type_repr  # type: ignore
 
 from strongtyping._utils import install_st_m
@@ -25,6 +27,10 @@ except ImportError as e:
     extension_module: bool = False
 else:
     extension_module = bool(int(os.environ["ST_MODULES_INSTALLED"]))
+
+
+empty = object()
+default_return_queue = Queue()
 
 
 class TypeMisMatch(AttributeError):
@@ -207,8 +213,15 @@ def checking_typing__validator(arg, possible_types, *args):
 
 
 def checking_typing_validator(arg, possible_types, *args):
-    required_type, validation = possible_types
+    if len(possible_types) == 2:
+        default_return = empty
+        required_type, validation = possible_types
+    else:
+        required_type, validation, default_return = possible_types
     if validation(arg) is False:
+        if default_return is not empty:
+            default_return_queue.put(default_return)
+            return None
         if isinstance(validation, partial):
             validation = validation.func
         validation_function_file = inspect.getfile(validation)
@@ -325,6 +338,8 @@ class _Validator(_GenericAlias, _root=True):  # type: ignore
         pass
 
     def __hash__(self):
+        if len(self.__args__) > 2:
+            return hash(frozenset([self.__args__[:-1], json.dumps(self.__args__[-1])]))
         return hash(frozenset(self.__args__))
 
     def __repr__(self):
@@ -347,8 +362,8 @@ if py_version >= 9:
     def Validator(self, parameters, *args, **kwargs):
         if not parameters:
             raise TypeError("Cannot take a Validator of no type/function.")
-        if len(parameters) > 2:
-            raise TypeError("Validator takes only 2 values.")
+        if len(parameters) > 3:
+            raise TypeError("Validator takes only 3 values.")
         if not inspect.isfunction(parameters[1]) and not isinstance(parameters[1], partial):
             raise TypeError("Validator[..., arg]: arg should be a function.")
         return _Validator(self, parameters)
@@ -356,7 +371,6 @@ if py_version >= 9:
 
 else:
     from typing import KT, VT, _alias, _GenericAlias  # type: ignore
-
     Validator = _alias(_Validator, (KT, VT), inst=False)
 # try:
 #     from typing import _SpecialGenericAlias

@@ -10,6 +10,7 @@ import warnings
 from functools import wraps
 from typing import Type
 
+from strongtyping.strong_typing_utils import default_return_queue
 from strongtyping._utils import _severity_level, action, remove_subclass
 from strongtyping.cached_set import CachedSet
 from strongtyping.strong_typing_utils import TypeMisMatch, check_type
@@ -56,6 +57,9 @@ def match_typing(
                     for kwarg_name, kwarg in kwargs.items()
                     if not check_type(kwarg, annotations.get(kwarg_name))
                 )
+
+                if not default_return_queue.empty():
+                    return default_return_queue.queue.pop()
 
                 if failed_params:
                     annotated_values = {arg_name: arg for arg, arg_name in zip(args, arg_names)}
