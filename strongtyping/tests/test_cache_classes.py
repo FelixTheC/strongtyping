@@ -10,12 +10,12 @@ from strongtyping.cached_dict import CachedDict
 from strongtyping.cached_set import CachedSet
 
 
-@pytest.mark.parametrize('cls', [CachedDict, CachedSet])
+@pytest.mark.parametrize("cls", [CachedDict, CachedSet])
 def test_max_size(cls):
     def _add(memory_limit, max_items: int = 10):
         cached_dict = cls(memory_limit=memory_limit)
         for i in range(max_items):
-            val = ('helloworld' * i).split()
+            val = ("helloworld" * i).split()
             try:
                 cached_dict[str(i)] = val
             except TypeError:

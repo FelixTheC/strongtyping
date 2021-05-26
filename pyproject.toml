@@ -1,0 +1,21 @@
+[tool.black]
+line-length = 100
+target-version = ['py39']
+
+#[tool.bumpver]
+#current_version = "1970.1.1"
+#version_pattern = "YYYY.MM.INC1"
+#commit_message = "Bump version {old_version} -> {new_version}"
+#commit = true
+#tag = false
+#push = false
+#
+#[tool.bumpver.file_patterns]
+#"pyproject.toml" = ['current_version = "{version}"']
+#"setup.py" = ['version="{pep440_version}"']
+#"README.md" = ['**Last release:** {version}']
+
+[tool.isort]
+combine_as_imports = true
+line_length = 100
+profile = "black"

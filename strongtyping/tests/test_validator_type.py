@@ -11,13 +11,14 @@ from typing import Dict, List, Tuple, Union
 
 import pytest
 
-from strongtyping.strong_typing import (TypeMisMatch, match_class_typing,
-                                        match_typing)
+from strongtyping.strong_typing import TypeMisMatch, match_class_typing, match_typing
 from strongtyping.strong_typing_utils import ValidationError, Validator
 
 
-@pytest.mark.skipif(bool(int(os.environ['ST_MODULES_INSTALLED'])) is True,
-                    reason='module does not support Validator at the moment')
+@pytest.mark.skipif(
+    bool(int(os.environ["ST_MODULES_INSTALLED"])) is True,
+    reason="module does not support Validator at the moment",
+)
 def test_valid_type():
     @match_typing
     def foo(val_a: Validator[list, lambda x: len(x) > 2]):
@@ -29,7 +30,11 @@ def test_valid_type():
         foo([1, 2])
 
     with pytest.raises(ValidationError):
-        foo([1, ])
+        foo(
+            [
+                1,
+            ]
+        )
 
     with pytest.raises(TypeMisMatch):
         foo({1, 2, 3})
@@ -47,10 +52,14 @@ def test_valid_type():
         foo([1, 2])
 
     with pytest.raises(ValidationError):
-        foo([1, ])
+        foo(
+            [
+                1,
+            ]
+        )
 
     with pytest.raises(TypeMisMatch):
-        foo(['1', '2', '3'])
+        foo(["1", "2", "3"])
 
     with pytest.raises(TypeMisMatch):
         foo((1, 2, 3))
@@ -59,21 +68,26 @@ def test_valid_type():
         return len(val) >= size
 
     @match_typing
-    def foo(val_a: Validator[Dict[Union[str, int], Union[List[int], Tuple[int, ...]]], partial(min_length, size=2)]):
+    def foo(
+        val_a: Validator[
+            Dict[Union[str, int], Union[List[int], Tuple[int, ...]]],
+            partial(min_length, size=2),
+        ]
+    ):
         return True
 
-    assert foo({2: [2, 4],
-                'hello': (2, 3, 4, 5)})
+    assert foo({2: [2, 4], "hello": (2, 3, 4, 5)})
 
     with pytest.raises(ValidationError):
         foo({2: [2, 4]})
 
 
-@pytest.mark.skipif(bool(int(os.environ['ST_MODULES_INSTALLED'])) is True,
-                    reason='module does not support Validator at the moment')
-@pytest.mark.skipif(sys.version_info.minor < 9, reason='Generics only available since 3.9')
+@pytest.mark.skipif(
+    bool(int(os.environ["ST_MODULES_INSTALLED"])) is True,
+    reason="module does not support Validator at the moment",
+)
+@pytest.mark.skipif(sys.version_info.minor < 9, reason="Generics only available since 3.9")
 def test_with_type_generics():
-
     def min_length(val):
         return len(val) > 2
 
@@ -87,10 +101,14 @@ def test_with_type_generics():
         foo([1, 2])
 
     with pytest.raises(ValidationError):
-        foo([1, ])
+        foo(
+            [
+                1,
+            ]
+        )
 
     with pytest.raises(TypeMisMatch):
-        foo(['1', '2', '3'])
+        foo(["1", "2", "3"])
 
     with pytest.raises(TypeMisMatch):
         foo((1, 2, 3))
@@ -99,11 +117,15 @@ def test_with_type_generics():
         return len(val) >= size
 
     @match_typing
-    def foo(val_a: Validator[dict[Union[str, int], Union[list[int], tuple[int, ...]]], partial(min_length, size=2)]):
+    def foo(
+        val_a: Validator[
+            dict[Union[str, int], Union[list[int], tuple[int, ...]]],
+            partial(min_length, size=2),
+        ]
+    ):
         return True
 
-    assert foo({2: [2, 4],
-                'hello': (2, 3, 4, 5)})
+    assert foo({2: [2, 4], "hello": (2, 3, 4, 5)})
 
     with pytest.raises(ValidationError):
         foo({2: [2, 4]})
@@ -112,31 +134,31 @@ def test_with_type_generics():
         foo(((1, 2), (3, 4)))
 
 
-@pytest.mark.skipif(bool(int(os.environ['ST_MODULES_INSTALLED'])) is True,
-                    reason='module does not support Validator at the moment')
+@pytest.mark.skipif(
+    bool(int(os.environ["ST_MODULES_INSTALLED"])) is True,
+    reason="module does not support Validator at the moment",
+)
 def test_inside_of_a_class():
-
     def min_length(val):
         return all(len(data) >= 5 for data in val)
 
     @match_class_typing
     class Foo:
-
         def method_a(self, bar: Validator[Tuple[str, str], min_length]):
             return True
 
     foo = Foo()
 
-    assert foo.method_a(('Hello', 'World'))
+    assert foo.method_a(("Hello", "World"))
     with pytest.raises(ValidationError):
-        assert foo.method_a(('Hello', 'Char'))
+        assert foo.method_a(("Hello", "Char"))
 
     with pytest.raises(ValidationError):
-        assert foo.method_a(('Hi', 'Hi'))
+        assert foo.method_a(("Hi", "Hi"))
 
     with pytest.raises(TypeMisMatch):
         assert foo.method_a(())
 
 
-if __name__ == '__main__':
-    pytest.main(['-vv', '-s', __file__])
+if __name__ == "__main__":
+    pytest.main(["-vv", "-s", __file__])

@@ -7,13 +7,11 @@
 import pytest
 
 from strongtyping.config import SEVERITY_LEVEL
-from strongtyping.docstring_typing import (match_class_docstring,
-                                           match_docstring)
+from strongtyping.docstring_typing import match_class_docstring, match_docstring
 from strongtyping.strong_typing import TypeMisMatch
 
 
 def test_with_docstring_list():
-
     @match_docstring
     def func_a(a):
         """
@@ -57,7 +55,6 @@ def test_with_docstring_list():
 
 
 def test_with_docstring_tuple():
-
     @match_docstring
     def func_a(a, b):
         """
@@ -84,17 +81,16 @@ def test_with_docstring_tuple():
         """
         return len(a) + len(b)
 
-    assert func_a(('foo', 'bar'), (1, 2)) == 4
+    assert func_a(("foo", "bar"), (1, 2)) == 4
     with pytest.raises(TypeMisMatch):
-        func_a((1, 2), ('foo', 'bar'))
+        func_a((1, 2), ("foo", "bar"))
     with pytest.raises(TypeMisMatch):
-        func_a((1, 2, 3), ('foo', 'bar'))
+        func_a((1, 2, 3), ("foo", "bar"))
     with pytest.raises(TypeMisMatch):
-        func_a((1, 2), ('foo', 'bar', 'foobar'))
+        func_a((1, 2), ("foo", "bar", "foobar"))
 
 
 def test_with_docstring_set():
-
     @match_docstring
     def func_a(a, b, c):
         """
@@ -125,9 +121,9 @@ def test_with_docstring_dict():
         """
         return len(a) + len(c)
 
-    assert func_a({'a': 'foo', 'b': 'bar'},  set(range(10))) == 12
+    assert func_a({"a": "foo", "b": "bar"}, set(range(10))) == 12
     with pytest.raises(TypeMisMatch):
-        func_a(set(range(10)), {'a': 'foo', 'b': 'bar'})
+        func_a(set(range(10)), {"a": "foo", "b": "bar"})
 
     @match_docstring
     def func_a(a, b):
@@ -137,15 +133,14 @@ def test_with_docstring_dict():
         """
         return len(a) + len(b)
 
-    assert func_a({'foo': 1, 'bar': 2}, b={'jon': 42, 'doe': 72}) == 4
+    assert func_a({"foo": 1, "bar": 2}, b={"jon": 42, "doe": 72}) == 4
     with pytest.raises(TypeMisMatch):
-        func_a({'foo': '1', 'bar': 2}, b={'jon': 42, 'doe': 72})
+        func_a({"foo": "1", "bar": 2}, b={"jon": 42, "doe": 72})
     with pytest.raises(TypeMisMatch):
-        func_a({'foo': 1, 'bar': 2}, b={'jon': 42, 'doe': '72'})
+        func_a({"foo": 1, "bar": 2}, b={"jon": 42, "doe": "72"})
 
 
 def test_with_docstring_int_str_bool_float():
-
     @match_docstring
     def func_a(a, b, c, d):
         """
@@ -159,15 +154,14 @@ def test_with_docstring_int_str_bool_float():
         :type d: float
         :return:
         """
-        return f'{a} + {b} + {d} = {c}'
+        return f"{a} + {b} + {d} = {c}"
 
-    assert func_a(a=1, b='3', c=False, d=.5) == '1 + 3 + 0.5 = False'
+    assert func_a(a=1, b="3", c=False, d=0.5) == "1 + 3 + 0.5 = False"
     with pytest.raises(TypeMisMatch):
-        func_a(set(range(10)), {'a': 'foo', 'b': 'bar'}, list(range(3)), '10')
+        func_a(set(range(10)), {"a": "foo", "b": "bar"}, list(range(3)), "10")
 
 
 def test_with_docstring_or():
-
     @match_docstring
     def func_a(a, b):
         """
@@ -178,15 +172,14 @@ def test_with_docstring_or():
         """
         return True
 
-    assert func_a(1, 'jon doe')
-    assert func_a(.25, list('jane doe'))
+    assert func_a(1, "jon doe")
+    assert func_a(0.25, list("jane doe"))
     with pytest.raises(TypeMisMatch):
-        func_a('1', 42)
+        func_a("1", 42)
         func_a([1, 2, 3], {1, 2, 3})
 
 
 def test_with_docstring_type_in_param():
-
     @match_docstring
     def func_a(a, b):
         """
@@ -195,20 +188,18 @@ def test_with_docstring_type_in_param():
         """
         return b * a
 
-    assert func_a(3, 'hello') == 'hellohellohello'
+    assert func_a(3, "hello") == "hellohellohello"
     with pytest.raises(TypeMisMatch):
-        func_a('hello', 3)
+        func_a("hello", 3)
 
 
 def test_with_docstring_function_method_type():
-
     class D:
-
         def some_func(self) -> str:
-            return 'Hello'
+            return "Hello"
 
     def dummy() -> str:
-        return 'World'
+        return "World"
 
     @match_docstring
     def func_a(a, b):
@@ -218,20 +209,18 @@ def test_with_docstring_function_method_type():
         """
         return b(), a()
 
-    assert func_a(D().some_func, dummy) == ('World', 'Hello')
+    assert func_a(D().some_func, dummy) == ("World", "Hello")
     with pytest.raises(TypeMisMatch):
         func_a(dummy, D().some_func)
 
 
 def test_with_docstring_callable():
-
     class D:
-
         def some_func(self) -> str:
-            return 'Hello'
+            return "Hello"
 
     def dummy() -> str:
-        return 'World'
+        return "World"
 
     @match_docstring
     def func_a(a, b):
@@ -241,13 +230,12 @@ def test_with_docstring_callable():
         """
         return b(), a()
 
-    assert func_a(D().some_func, dummy) == ('World', 'Hello')
+    assert func_a(D().some_func, dummy) == ("World", "Hello")
     with pytest.raises(TypeMisMatch):
         func_a(dummy, [1, 2, 3])
 
 
 def test_with_docstring_iterator():
-
     @match_docstring
     def func_a(a, b):
         """
@@ -264,7 +252,6 @@ def test_with_docstring_iterator():
 
 
 def test_with_docstring_mix_param_type():
-
     @match_docstring
     def func_a(a, b):
         """
@@ -274,13 +261,12 @@ def test_with_docstring_mix_param_type():
         """
         return b * a
 
-    assert func_a(3, 'ni') == 'ninini'
+    assert func_a(3, "ni") == "ninini"
     with pytest.raises(TypeMisMatch):
-        func_a('ni', 3)
+        func_a("ni", 3)
 
 
 def test_with_docstring_diff_naming():
-
     @match_docstring
     def func_a(a, b):
         """
@@ -289,9 +275,9 @@ def test_with_docstring_diff_naming():
         """
         return b * a
 
-    assert func_a(3, 'ni') == 'ninini'
+    assert func_a(3, "ni") == "ninini"
     with pytest.raises(TypeMisMatch):
-        func_a('ni', 3)
+        func_a("ni", 3)
 
     @match_docstring
     def func_a(a, b):
@@ -301,9 +287,9 @@ def test_with_docstring_diff_naming():
         """
         return b * a
 
-    assert func_a(3, 'ni') == 'ninini'
+    assert func_a(3, "ni") == "ninini"
     with pytest.raises(TypeMisMatch):
-        func_a('ni', 3)
+        func_a("ni", 3)
 
     @match_docstring
     def func_a(a, b):
@@ -313,15 +299,13 @@ def test_with_docstring_diff_naming():
         """
         return b * a
 
-    assert func_a(3, 'ni') == 'ninini'
+    assert func_a(3, "ni") == "ninini"
     with pytest.raises(TypeMisMatch):
-        func_a('ni', 3)
+        func_a("ni", 3)
 
 
 def test_with_docstring_custom_class():
-
     class MyClass:
-
         def __mul__(self, other):
             return 3 * other
 
@@ -339,13 +323,12 @@ def test_with_docstring_custom_class():
 
     assert func_a(MyClass()) == 9
     with pytest.raises(TypeMisMatch):
-        func_a('MyClass')
+        func_a("MyClass")
     with pytest.raises(TypeMisMatch):
         func_a(Other())
 
 
 def test_exception_none():
-
     @match_docstring(excep_raise=None)
     def multipler(a, b):
         """
@@ -355,11 +338,10 @@ def test_exception_none():
         return a * b
 
     with pytest.warns(RuntimeWarning):
-        assert multipler('hello', 3) == 'hellohellohello'
+        assert multipler("hello", 3) == "hellohellohello"
 
 
 def test_with_class_decorator():
-
     @match_class_docstring
     class Dummy:
         attr = 100
@@ -368,13 +350,13 @@ def test_with_class_decorator():
             """
             :param int val: foo
             """
-            return val * .25
+            return val * 0.25
 
         def b(self):
-            return 'b'
+            return "b"
 
         def c(self):
-            return 'c'
+            return "c"
 
         def _my_secure_func(self, val, other):
             """
@@ -386,14 +368,13 @@ def test_with_class_decorator():
             return val * other.attr
 
     d = Dummy()
-    assert d._my_secure_func(.5, d) == 50
+    assert d._my_secure_func(0.5, d) == 50
 
     with pytest.raises(Exception):
-        d._my_secure_func(d, .5)
+        d._my_secure_func(d, 0.5)
 
 
 def test_with_class_decorator_no_execption():
-
     @match_class_docstring(excep_raise=None)
     class Dummy:
         attr = 100
@@ -405,10 +386,10 @@ def test_with_class_decorator_no_execption():
             return val * 5
 
         def b(self):
-            return 'b'
+            return "b"
 
         def c(self):
-            return 'c'
+            return "c"
 
         def _my_secure_func(self, val, other):
             """
@@ -421,14 +402,13 @@ def test_with_class_decorator_no_execption():
             return val * other.attr
 
     d = Dummy()
-    assert d._my_secure_func(.5, d) == 50
+    assert d._my_secure_func(0.5, d) == 50
     with pytest.warns(RuntimeWarning) as record:
-        d.a('Hello RuntimeWarning')
+        d.a("Hello RuntimeWarning")
         assert str(record[0].message) == "Incorrect parameters: val: int"
 
 
 def test_with_class_decorator_and_function_override():
-
     @match_class_docstring
     class Other:
         attr = 100
@@ -440,10 +420,10 @@ def test_with_class_decorator_and_function_override():
             return val * 2
 
         def b(self):
-            return 'b'
+            return "b"
 
         def c(self):
-            return 'c'
+            return "c"
 
         @match_docstring(excep_raise=None)
         def _my_secure_func(self, other):
@@ -458,7 +438,7 @@ def test_with_class_decorator_and_function_override():
     assert d._my_secure_func(d) == 200
 
     with pytest.raises(Exception):
-        d.a('Hello RuntimeWarning')
+        d.a("Hello RuntimeWarning")
 
     class Dummy:
         attr = 200
@@ -470,7 +450,6 @@ def test_with_class_decorator_and_function_override():
 
 
 def test_with_severity_param():
-
     @match_docstring
     def a(value):
         """
@@ -481,7 +460,7 @@ def test_with_severity_param():
 
     assert a(2) == 4
     with pytest.raises(TypeMisMatch):
-        a('2')
+        a("2")
 
     @match_docstring(severity=SEVERITY_LEVEL.WARNING)
     def a(value):
@@ -493,7 +472,7 @@ def test_with_severity_param():
 
     assert a(2) == 4
     with pytest.warns(RuntimeWarning) as record:
-        a('2')
+        a("2")
         assert str(record[0].message) == "Incorrect parameters: value: int"
 
     @match_docstring(severity=SEVERITY_LEVEL.DISABLED)
@@ -505,8 +484,8 @@ def test_with_severity_param():
         return value * 2
 
     assert a(2) == 4
-    assert a('2') == '22'
+    assert a("2") == "22"
 
 
-if __name__ == '__main__':
-    pytest.main(['-vv', '-s', __file__])
+if __name__ == "__main__":
+    pytest.main(["-vv", "-s", __file__])
