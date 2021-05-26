@@ -7,8 +7,8 @@
 import pytest
 
 from strongtyping.config import SEVERITY_LEVEL
-from strongtyping.docstring_typing import match_class_docstring
-from strongtyping.docstring_typing import match_docstring
+from strongtyping.docstring_typing import (match_class_docstring,
+                                           match_docstring)
 from strongtyping.strong_typing import TypeMisMatch
 
 

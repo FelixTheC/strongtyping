@@ -9,41 +9,27 @@ import os
 import sys
 from dataclasses import dataclass
 from datetime import datetime
-from enum import Enum
-from enum import IntEnum
-from types import FunctionType
-from types import MethodType
-from typing import Any
-from typing import Callable
-from typing import Dict
-from typing import Generator
-from typing import Iterator
-from typing import List
+from enum import Enum, IntEnum
+from types import FunctionType, MethodType
+from typing import Any, Callable, Dict, Generator, Iterator, List
 from unittest import mock
 
 from strongtyping.config import SEVERITY_LEVEL
-from strongtyping.strong_typing import match_typing
-from strongtyping.strong_typing import match_class_typing
-from strongtyping.strong_typing_utils import checking_typing_list
-from strongtyping.strong_typing_utils import checking_typing_json
-from strongtyping.strong_typing_utils import checking_typing_tuple
-from strongtyping.strong_typing_utils import checking_typing_type
-from strongtyping.strong_typing_utils import checking_typing_set
-from strongtyping.strong_typing_utils import checking_typing_dict
-from strongtyping.strong_typing_utils import get_possible_types
-from strongtyping.strong_typing_utils import get_origins
-from strongtyping.strong_typing_utils import TypeMisMatch
-
+from strongtyping.strong_typing import match_class_typing, match_typing
+from strongtyping.strong_typing_utils import (TypeMisMatch,
+                                              checking_typing_dict,
+                                              checking_typing_json,
+                                              checking_typing_list,
+                                              checking_typing_set,
+                                              checking_typing_tuple,
+                                              checking_typing_type,
+                                              get_origins, get_possible_types)
 
 try:
     from typing import Literal
 except ImportError:
     print('python version < 3.8')
-from typing import NewType
-from typing import Optional
-from typing import Set
-from typing import Type
-from typing import Union, Tuple
+from typing import NewType, Optional, Set, Tuple, Type, Union
 
 import pytest
 import ujson as ujson

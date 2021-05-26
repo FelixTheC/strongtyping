@@ -6,17 +6,13 @@
 """
 import inspect
 import pprint
-from functools import wraps
 import warnings
+from functools import wraps
 from typing import Type
 
-from strongtyping.strong_typing_utils import TypeMisMatch
-from strongtyping.strong_typing_utils import check_type
-
-from strongtyping._utils import action
-from strongtyping._utils import _severity_level
-from strongtyping._utils import remove_subclass
+from strongtyping._utils import _severity_level, action, remove_subclass
 from strongtyping.cached_set import CachedSet
+from strongtyping.strong_typing_utils import TypeMisMatch, check_type
 
 
 def match_typing(_func=None, *, excep_raise: Type[Exception] = TypeMisMatch, cache_size=0,

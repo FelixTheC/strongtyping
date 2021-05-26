@@ -6,7 +6,8 @@
 """
 import decimal
 import sys
-from typing import Tuple, List, Union
+from typing import List, Tuple, Union
+
 try:
     from typing import Literal
 except ImportError:
@@ -14,7 +15,8 @@ except ImportError:
 
 import pytest
 
-from strongtyping.docs_from_typing import rest_docs_from_typing, numpy_docs_from_typing
+from strongtyping.docs_from_typing import (numpy_docs_from_typing,
+                                           rest_docs_from_typing)
 
 
 @pytest.mark.skipif(sys.version_info.minor < 9, reason='"type" object subscribable available in py3.9')

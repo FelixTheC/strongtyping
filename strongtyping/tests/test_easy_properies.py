@@ -5,11 +5,10 @@
 @author: eisenmenger
 """
 import pytest
-from strongtyping.docstring_typing import setter as dt_setter
+
 from strongtyping.docstring_typing import getter_setter as dt_getter_setter
-from strongtyping.strong_typing import getter_setter
-from strongtyping.strong_typing import setter
-from strongtyping.strong_typing import TypeMisMatch
+from strongtyping.docstring_typing import setter as dt_setter
+from strongtyping.strong_typing import TypeMisMatch, getter_setter, setter
 
 
 class Dummy:

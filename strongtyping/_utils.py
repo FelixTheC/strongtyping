@@ -7,7 +7,7 @@
 import logging
 import os
 from types import MethodType
-from typing import Union, Type, Any
+from typing import Any, Type, Union
 
 from strongtyping.config import SEVERITY_LEVEL
 

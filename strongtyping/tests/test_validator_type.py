@@ -7,18 +7,13 @@
 import os
 import sys
 from functools import partial
-from typing import Dict
-from typing import List
-from typing import Tuple
-from typing import Union
+from typing import Dict, List, Tuple, Union
 
 import pytest
 
-from strongtyping.strong_typing import match_class_typing
-from strongtyping.strong_typing_utils import Validator
-from strongtyping.strong_typing_utils import ValidationError
-from strongtyping.strong_typing import TypeMisMatch
-from strongtyping.strong_typing import match_typing
+from strongtyping.strong_typing import (TypeMisMatch, match_class_typing,
+                                        match_typing)
+from strongtyping.strong_typing_utils import ValidationError, Validator
 
 
 @pytest.mark.skipif(bool(int(os.environ['ST_MODULES_INSTALLED'])) is True,

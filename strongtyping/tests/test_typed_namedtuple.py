@@ -6,6 +6,7 @@
 """
 import sys
 from typing import Union
+
 import pytest
 
 if sys.version_info.minor >= 8:

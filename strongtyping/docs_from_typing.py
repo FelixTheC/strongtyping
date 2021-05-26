@@ -4,12 +4,12 @@
 @created: 12.05.21
 @author: eisenmenger
 """
+import inspect
 import re
 import textwrap
 from functools import wraps
-import inspect
 
-from strongtyping.strong_typing_utils import get_possible_types, get_origins
+from strongtyping.strong_typing_utils import get_origins, get_possible_types
 
 Pattern = re.compile(r'(\$\d[a-zA-Z0-9, ()\n]+)')
 

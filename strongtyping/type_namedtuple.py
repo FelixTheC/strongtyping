@@ -5,15 +5,11 @@
 @author: felix
 """
 from collections import namedtuple
-from typing import Any
-from typing import List
-from typing import Tuple
-from typing import Union
 from keyword import iskeyword
+from typing import Any, List, Tuple, Union
 
-from strongtyping.strong_typing import check_type
 from strongtyping.docstring_typing import check_doc_str_type
-from strongtyping.strong_typing import match_typing
+from strongtyping.strong_typing import check_type, match_typing
 
 use_match_typing = {
     True: check_type,

@@ -5,7 +5,7 @@
 @author: felix
 """
 import sys
-from typing import Union, Any
+from typing import Any, Union
 
 
 class CachedDict(dict):

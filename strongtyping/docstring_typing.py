@@ -4,19 +4,16 @@
 @created: 11.06.20
 @author: felix
 """
+import builtins
 import functools
 import inspect
-import typing
-import builtins
 import re
+import typing
 import warnings
-from types import FunctionType
-from types import MethodType
+from types import FunctionType, MethodType
 
-from strongtyping._utils import action
-from strongtyping._utils import _get_new
-from strongtyping._utils import _severity_level
-from strongtyping._utils import remove_subclass
+from strongtyping._utils import (_get_new, _severity_level, action,
+                                 remove_subclass)
 from strongtyping.cached_set import CachedSet
 from strongtyping.strong_typing import TypeMisMatch
 

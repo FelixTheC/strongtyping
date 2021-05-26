@@ -7,23 +7,25 @@
 import inspect
 import os
 import sys
-from collections.abc import Generator
-from functools import lru_cache
 import typing
-from functools import partial
-
-from typing import Any, _SpecialForm, _GenericAlias, _type_repr  # type: ignore
-from typing import TypeVar
+from collections.abc import Generator
+from functools import lru_cache, partial
+from typing import (Any, TypeVar, _GenericAlias, _SpecialForm,  # type: ignore
+                    _type_repr)
 
 from strongtyping._utils import install_st_m
 
 install_st_m()
 
 try:
-    from strongtyping_modules.strongtyping_modules import list_elements  # type: ignore
-    from strongtyping_modules.strongtyping_modules import tuple_elements  # type: ignore
-    from strongtyping_modules.strongtyping_modules import set_elements  # type: ignore
-    from strongtyping_modules.strongtyping_modules import dict_elements  # type: ignore
+    from strongtyping_modules.strongtyping_modules import \
+        dict_elements  # type: ignore
+    from strongtyping_modules.strongtyping_modules import \
+        list_elements  # type: ignore
+    from strongtyping_modules.strongtyping_modules import \
+        set_elements  # type: ignore
+    from strongtyping_modules.strongtyping_modules import \
+        tuple_elements  # type: ignore
 except ImportError as e:
     extension_module: bool = False
 else:
@@ -345,7 +347,7 @@ if py_version >= 9:
             raise TypeError("Validator[..., arg]: arg should be a function.")
         return _Validator(self, parameters)
 else:
-    from typing import _GenericAlias, KT, VT, _alias   # type: ignore
+    from typing import KT, VT, _alias, _GenericAlias  # type: ignore
     Validator = _alias(_Validator, (KT, VT), inst=False)
 # try:
 #     from typing import _SpecialGenericAlias
