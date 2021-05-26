@@ -4,7 +4,6 @@
 @created: 19.11.20
 @author: felix
 """
-import builtins
 import inspect
 import os
 import sys
@@ -13,7 +12,7 @@ from functools import lru_cache
 import typing
 from functools import partial
 
-from typing import Any, _SpecialForm, _GenericAlias, _type_repr
+from typing import Any, _SpecialForm, _GenericAlias, _type_repr  # type: ignore
 from typing import TypeVar
 
 from strongtyping._utils import install_st_m
@@ -21,12 +20,12 @@ from strongtyping._utils import install_st_m
 install_st_m()
 
 try:
-    from strongtyping_modules.strongtyping_modules import list_elements
-    from strongtyping_modules.strongtyping_modules import tuple_elements
-    from strongtyping_modules.strongtyping_modules import set_elements
-    from strongtyping_modules.strongtyping_modules import dict_elements
+    from strongtyping_modules.strongtyping_modules import list_elements  # type: ignore
+    from strongtyping_modules.strongtyping_modules import tuple_elements  # type: ignore
+    from strongtyping_modules.strongtyping_modules import set_elements  # type: ignore
+    from strongtyping_modules.strongtyping_modules import dict_elements  # type: ignore
 except ImportError as e:
-    extension_module = False
+    extension_module: bool = False
 else:
     extension_module = bool(int(os.environ['ST_MODULES_INSTALLED']))
 
@@ -44,7 +43,10 @@ class ValidationError(Exception):
 
 
 py_version = sys.version_info.minor
-typing_base_class = typing._GenericAlias if hasattr(typing, '_GenericAlias') else typing.GenericMeta
+if hasattr(typing, '_GenericAlias'):
+    typing_base_class = typing._GenericAlias  # type: ignore
+else:
+    typing_base_class = typing.GenericMeta  # type: ignore
 
 
 @lru_cache(maxsize=1024)
@@ -61,14 +63,14 @@ def get_possible_types(typ_to_check) -> typing.Union[tuple, None]:
             try:
                 return typ_to_check.__origin__
             except AttributeError:
-                return
+                return None
     if hasattr(typ_to_check, '__args__') and typ_to_check.__args__ is not None:
         return tuple(typ for typ in typ_to_check.__args__ if not isinstance(typ, TypeVar))
     else:
-        return
+        return None
 
 
-def get_origins(typ_to_check: any) -> tuple:
+def get_origins(typ_to_check: Any) -> tuple:
     """
     :param typ_to_check: typ_to_check: some typing like List[str], Dict[str, int], Tuple[Union[str, int], List[int]]
     :return: the class, alias_class and the class name
@@ -82,9 +84,19 @@ def get_origins(typ_to_check: any) -> tuple:
         if py_version >= 3.9 and hasattr(typ_to_check.__origin__, '__name__'):
             origin = typ_to_check.__origin__.__name__
         else:
-            origin = typ_to_check.__origin__ if typ_to_check.__origin__ is not None else typ_to_check.__orig_bases__
-    return origin, origin._name if hasattr(origin, '_name') else \
-        typ_to_check._name if hasattr(typ_to_check, '_name') else str(origin).replace('typing.', '')
+            if typ_to_check.__origin__ is not None:
+                origin = typ_to_check.__origin__
+            else:
+                origin = typ_to_check.__orig_bases__
+
+    if hasattr(origin, '_name'):
+        origin_name = origin._name  # type: ignore
+    else:
+        if hasattr(typ_to_check, '_name'):
+            origin_name = typ_to_check._name
+        else:
+            origin_name = str(origin).replace('typing.', '')
+    return origin, origin_name
 
 
 def checking_typing_dict(arg: Any, possible_types: tuple, *args):
@@ -302,7 +314,7 @@ def check_type(argument, type_of, mro=False, **kwargs):
     return check_result
 
 
-class _Validator(_GenericAlias, _root=True):
+class _Validator(_GenericAlias, _root=True):  # type: ignore
 
     def __getitem__(self, item):
         pass
@@ -323,7 +335,7 @@ class _Validator(_GenericAlias, _root=True):
 
 
 if py_version >= 9:
-    @_SpecialForm
+    @_SpecialForm  # type: ignore
     def Validator(self, parameters, *args, **kwargs):
         if not parameters:
             raise TypeError("Cannot take a Validator of no type/function.")
@@ -333,7 +345,7 @@ if py_version >= 9:
             raise TypeError("Validator[..., arg]: arg should be a function.")
         return _Validator(self, parameters)
 else:
-    from typing import _GenericAlias, KT, VT, _alias
+    from typing import _GenericAlias, KT, VT, _alias   # type: ignore
     Validator = _alias(_Validator, (KT, VT), inst=False)
 # try:
 #     from typing import _SpecialGenericAlias

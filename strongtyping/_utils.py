@@ -7,7 +7,7 @@
 import logging
 import os
 from types import MethodType
-from typing import Union
+from typing import Union, Type, Any
 
 from strongtyping.config import SEVERITY_LEVEL
 
@@ -30,19 +30,19 @@ SEVERITY_CONFIG = {
 
 def _severity_level(severity_: Union[str, SEVERITY_LEVEL]):
     if severity_ == 'env':
-        _level = os.environ.get('ST_SEVERITY', 1)
+        _level = os.environ.get('ST_SEVERITY', '1')
         try:
             return int(_level)
         except (TypeError, ValueError):
             return SEVERITY_CONFIG[_level].value
     else:
-        return severity_.value
+        return severity_.value  # type: ignore
 
 
 exclude_builtins = dir(object)
 
 
-def _get_new(typing_func, excep_raise: Exception = TypeError, cache_size=0, severity='env', **kwargs):
+def _get_new(typing_func, excep_raise: Type[Exception] = TypeError, cache_size=0, severity='env', **kwargs):
 
     def new_with_match_typing(cls_, *args, **kwargs):
 
@@ -71,7 +71,7 @@ def install_st_m():
     import os
 
     try:
-        from strongtyping_modules.install import install
+        from strongtyping_modules.install import install  # type: ignore
     except ImportError:
         os.environ['ST_MODULES_INSTALLED'] = '0'
     else:
@@ -81,7 +81,7 @@ def install_st_m():
             os.environ['ST_MODULES_INSTALLED'] = '1'
 
 
-def action(f, frefs, type_function):
+def action(f, frefs, type_function):  # type: ignore
     """
     This code is original from Ruud van der Ham https://github.com/salabim/easy_property
     """
@@ -100,5 +100,5 @@ def action(f, frefs, type_function):
                       else action.f[ref](0) for ref in action.f))
 
 
-action.qualname = None
-action.f = dict.fromkeys(["getter", "setter", "deleter", "documenter"], None)
+action.qualname = None  # type: ignore
+action.f = dict.fromkeys(["getter", "setter", "deleter", "documenter"], None)  # type: ignore

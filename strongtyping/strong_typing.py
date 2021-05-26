@@ -8,6 +8,7 @@ import inspect
 import pprint
 from functools import wraps
 import warnings
+from typing import Type
 
 from strongtyping.strong_typing_utils import TypeMisMatch
 from strongtyping.strong_typing_utils import check_type
@@ -18,7 +19,7 @@ from strongtyping._utils import remove_subclass
 from strongtyping.cached_set import CachedSet
 
 
-def match_typing(_func=None, *, excep_raise: Exception = TypeMisMatch, cache_size=0,
+def match_typing(_func=None, *, excep_raise: Type[Exception] = TypeMisMatch, cache_size=0,
                  subclass: bool = False, severity='env', **kwargs):
     cached_set = None if cache_size == 0 else CachedSet(cache_size)
 
