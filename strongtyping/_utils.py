@@ -22,9 +22,9 @@ def remove_subclass(args, subclass):
 
 
 SEVERITY_CONFIG = {
-    'warning': SEVERITY_LEVEL.WARNING,
-    'disable': SEVERITY_LEVEL.DISABLED,
-    'enable': SEVERITY_LEVEL.ENABLED,
+    "warning": SEVERITY_LEVEL.WARNING,
+    "disable": SEVERITY_LEVEL.DISABLED,
+    "enable": SEVERITY_LEVEL.ENABLED,
 }
 
 
