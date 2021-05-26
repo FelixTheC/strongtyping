@@ -3,6 +3,7 @@
 ![Python tox](https://github.com/FelixTheC/strongtyping/workflows/Python%20tox/badge.svg)
 ![image](https://codecov.io/gh/FelixTheC/strongtyping/graph/badge.svg)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336)](https://pycqa.github.io/isort/)
 [![Documentation Status](https://readthedocs.org/projects/strongtyping/badge/?version=latest)](https://strongtyping.readthedocs.io/en/latest/?badge=latest)
 [![](https://img.shields.io/pypi/dm/strongtyping.svg)](https://pypi.org/project/strongtyping/)
 
