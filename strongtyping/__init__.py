@@ -11,4 +11,5 @@ __all__ = ['_utils',
            'docstring_typing',
            'cached_set',
            'cached_dict',
-           'type_namedtuple']
+           'type_namedtuple',
+           'stubs']
