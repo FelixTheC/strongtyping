@@ -1,4 +1,6 @@
 site_name: strongtyping
+site_url: https://github.com/FelixTheC/strongtyping
+repo_name: 'FelixTheC-strongtyping'
 nav:
     - Home: 'index.md'
     - User's guide:

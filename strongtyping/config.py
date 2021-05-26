@@ -19,4 +19,4 @@ class SEVERITY_LEVEL(Enum):
 
 
 def set_severity_level(_level: SEVERITY_LEVEL):
-    environ['ST_SEVERITY'] = _level.value_as_str
+    environ["ST_SEVERITY"] = _level.value_as_str
