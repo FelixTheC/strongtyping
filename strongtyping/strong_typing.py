@@ -10,10 +10,9 @@ import warnings
 from functools import wraps
 from typing import Type
 
-from strongtyping.strong_typing_utils import default_return_queue
 from strongtyping._utils import _severity_level, action, remove_subclass
 from strongtyping.cached_set import CachedSet
-from strongtyping.strong_typing_utils import TypeMisMatch, check_type
+from strongtyping.strong_typing_utils import TypeMisMatch, check_type, default_return_queue
 
 
 def match_typing(

@@ -371,6 +371,7 @@ if py_version >= 9:
 
 else:
     from typing import KT, VT, _alias, _GenericAlias  # type: ignore
+
     Validator = _alias(_Validator, (KT, VT), inst=False)
 # try:
 #     from typing import _SpecialGenericAlias

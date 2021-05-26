@@ -36,8 +36,19 @@ from mypy.nodes import (
     Var,
 )
 from mypy.options import Options
-from mypy.plugin import CheckerPluginInterface, ClassDefContext, MethodContext, Plugin, \
-    SemanticAnalyzerPluginInterface, AnalyzeTypeContext, FunctionSigContext, FunctionContext, MethodSigContext, AttributeContext, DynamicClassDefContext
+from mypy.plugin import (
+    AnalyzeTypeContext,
+    AttributeContext,
+    CheckerPluginInterface,
+    ClassDefContext,
+    DynamicClassDefContext,
+    FunctionContext,
+    FunctionSigContext,
+    MethodContext,
+    MethodSigContext,
+    Plugin,
+    SemanticAnalyzerPluginInterface,
+)
 from mypy.plugins import dataclasses
 from mypy.semanal import set_callable_name  # type: ignore
 from mypy.server.trigger import make_wildcard_trigger
@@ -45,6 +56,7 @@ from mypy.types import (
     AnyType,
     CallableType,
     Instance,
+    NoneTyp,
     NoneType,
     ProperType,
     Type,
@@ -54,17 +66,17 @@ from mypy.types import (
     TypeVarDef,
     TypeVarType,
     UnionType,
-    get_proper_type, NoneTyp,
+    get_proper_type,
 )
 from mypy.typevars import fill_typevars
 from mypy.util import get_unique_redefinition_name
 
-T = TypeVar('T')
+T = TypeVar("T")
 
-VALIDATOR_TYPE = 'strongtyping.strong_typing_utils.Validator'  # type: Final
+VALIDATOR_TYPE = "strongtyping.strong_typing_utils.Validator"  # type: Final
 
 
-def plugin(version: str) -> 'TypingType[Plugin]':
+def plugin(version: str) -> "TypingType[Plugin]":
     """
     `version` is the mypy version string
     We might want to use this to print a warning if the mypy version being used is
@@ -77,8 +89,9 @@ class StrongtypingPlugin(Plugin):
     def __init__(self, options: Options) -> None:
         super().__init__(options)
 
-    def get_type_analyze_hook(self, fullname: str
-                              ) -> Optional[Callable[[AnalyzeTypeContext], Type]]:
+    def get_type_analyze_hook(
+        self, fullname: str
+    ) -> Optional[Callable[[AnalyzeTypeContext], Type]]:
         if fullname == VALIDATOR_TYPE:
             return validator_callback
         return None
@@ -87,10 +100,12 @@ class StrongtypingPlugin(Plugin):
 def validator_callback(ctx: AnalyzeTypeContext) -> Type:
     assert len(ctx.type.args) == 2
     new_arg = AnyType(TypeOfAny.special_form)
-    return Instance(ctx.type,  # <- muste be a mypy.nodes.TypeInfo
-                    [UnionType([new_arg, new_arg])],
-                    line=ctx.context.line,
-                    column=ctx.context.column)
+    return Instance(
+        ctx.type,  # <- muste be a mypy.nodes.TypeInfo
+        [UnionType([new_arg, new_arg])],
+        line=ctx.context.line,
+        column=ctx.context.column,
+    )
 
 
 def get_fullname(x: Union[FuncBase, SymbolNode]) -> str:
