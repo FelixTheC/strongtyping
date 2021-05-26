@@ -4,6 +4,7 @@
 @created: 20.07.20
 @author: felix
 """
+import sys
 import logging
 import os
 from types import MethodType
@@ -22,9 +23,9 @@ def remove_subclass(args, subclass):
 
 
 SEVERITY_CONFIG = {
-    "warning": SEVERITY_LEVEL.WARNING,
-    "disable": SEVERITY_LEVEL.DISABLED,
-    "enable": SEVERITY_LEVEL.ENABLED,
+    'warning': SEVERITY_LEVEL.WARNING,
+    'disable': SEVERITY_LEVEL.DISABLED,
+    'enable': SEVERITY_LEVEL.ENABLED,
 }
 
 
