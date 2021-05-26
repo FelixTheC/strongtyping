@@ -4,7 +4,6 @@
 @created: 20.07.20
 @author: felix
 """
-import sys
 import logging
 import os
 from types import MethodType
