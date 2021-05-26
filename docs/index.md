@@ -1,4 +1,4 @@
-# Welcome to `strongtyping`
+# Welcome to [`strongtyping`](https://github.com/FelixTheC/strongtyping)
 
 [![PyPI version](https://badge.fury.io/py/strongtyping.svg)](https://badge.fury.io/py/strongtyping)
 ![Python application](https://github.com/FelixTheC/strongtyping/workflows/Python%20application/badge.svg)
@@ -10,7 +10,7 @@
 [![](https://img.shields.io/pypi/dm/strongtyping.svg)](https://pypi.org/project/strongtyping/)
 
 
-<p><b><em>strongtyping</em></b> gives you a handy decorator which checks <b>at runtime</b> whether a function has been called with the correct parameter types.<br> 
+[__*strongtyping*__](https://github.com/FelixTheC/strongtyping) gives you a handy decorator which checks <b>at runtime</b> whether a function has been called with the correct parameter types.<br> 
 It raises <b><em>TypeMisMatch</em></b> if the parameters used in a function call are invalid.</p>
 
 ### The Problem
