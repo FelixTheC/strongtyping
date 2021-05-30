@@ -11,23 +11,39 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum, IntEnum
 from types import FunctionType, MethodType
-from typing import (Any, Callable, Dict, Generator, Iterable, Iterator, List,
-                    NewType, Optional, Set, Tuple, Type, Union)
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Generator,
+    Iterable,
+    Iterator,
+    List,
+    NewType,
+    Optional,
+    Set,
+    Tuple,
+    Type,
+    Union,
+)
 from unittest import mock
 
 import pytest
+import ujson as ujson
+
 from strongtyping.config import SEVERITY_LEVEL
 from strongtyping.strong_typing import match_class_typing, match_typing
-from strongtyping.strong_typing_utils import (TypeMisMatch,
-                                              checking_typing_dict,
-                                              checking_typing_json,
-                                              checking_typing_list,
-                                              checking_typing_set,
-                                              checking_typing_tuple,
-                                              checking_typing_type,
-                                              get_origins, get_possible_types)
-
-import ujson as ujson
+from strongtyping.strong_typing_utils import (
+    TypeMisMatch,
+    checking_typing_dict,
+    checking_typing_json,
+    checking_typing_list,
+    checking_typing_set,
+    checking_typing_tuple,
+    checking_typing_type,
+    get_origins,
+    get_possible_types,
+)
 
 try:
     from typing import Literal
