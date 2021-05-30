@@ -322,6 +322,9 @@ else:
 def check_type(argument, type_of, mro=False, **kwargs):
     # if int(py_version) >= 10 and isinstance(type_of, (str, bytes)):
     #     type_of = eval(type_of, locals(), globals())
+    if checking_typing_generator(argument, type_of):
+        # generator will be exhausted when we check it, so we return it without any checking
+        return argument
 
     if checking_typing_generator(argument, type_of):
         # generator will be exhausted when we check it, so we return it without any checking
@@ -332,8 +335,8 @@ def check_type(argument, type_of, mro=False, **kwargs):
         origin, origin_name = get_origins(type_of)
         origin_name = origin_name.lower()
 
-        if "any" in origin_name or "any" in str(type_of).lower():
-            return check_result
+        if "any" in origin_name:
+            return validate_object(argument, kwargs.get("validation_with"))
         if "json" in origin_name or "json" in str(type_of):
             return supported_typings["checking_typing_json"](argument, type_of, mro)
 
