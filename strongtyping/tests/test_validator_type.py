@@ -14,7 +14,8 @@ from typing import Dict, List, Tuple, Union, Iterable
 import pytest
 
 from strongtyping.strong_typing import TypeMisMatch, match_class_typing, match_typing
-from strongtyping.strong_typing_utils import ValidationError, Validator
+from strongtyping.strong_typing_utils import ValidationError
+from strongtyping.types import IterValidator, Validator
 
 
 @pytest.mark.skipif(
@@ -231,6 +232,28 @@ def test_validator_type_with_default():
 
     with pytest.raises(TypeError):
         AllowedCluster = Validator[Iterable[Union[int, fractions.Fraction, decimal.Decimal]]]
+
+
+def test_iter_validator():
+    number = Union[int, fractions.Fraction, decimal.Decimal]
+
+    def allow_only_int_dec_frac(value: number):
+        if not value % 1 == 0:
+            raise TypeError
+        return True
+
+    AllowedCluster = IterValidator[Iterable[number], allow_only_int_dec_frac]
+
+    @match_typing
+    def cluster(val: AllowedCluster):
+        return True
+
+    # must all fail
+    assert cluster((1, 2, 3.5))  # non int float
+    assert cluster([1, 2, "abc"])  # non int str
+    assert cluster([1, 2, "3.5"])  # non int str
+    assert cluster([1, 2, decimal.Decimal("2.1")])  # not int decimal
+    assert cluster([1, 2, fractions.Fraction(3, 2)])  # non int fraction
 
 
 if __name__ == "__main__":
