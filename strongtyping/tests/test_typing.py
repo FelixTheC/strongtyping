@@ -11,8 +11,25 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum, IntEnum
 from types import FunctionType, MethodType
-from typing import Any, Callable, Dict, Generator, Iterator, List
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Generator,
+    Iterable,
+    Iterator,
+    List,
+    NewType,
+    Optional,
+    Set,
+    Tuple,
+    Type,
+    Union,
+)
 from unittest import mock
+
+import pytest
+import ujson as ujson
 
 from strongtyping.config import SEVERITY_LEVEL
 from strongtyping.strong_typing import match_class_typing, match_typing
@@ -32,10 +49,6 @@ try:
     from typing import Literal
 except ImportError:
     print("python version < 3.8")
-from typing import NewType, Optional, Set, Tuple, Type, Union
-
-import pytest
-import ujson as ujson
 
 
 def test_get_possible_types_from_typing():
@@ -1162,6 +1175,26 @@ def test_empty_typing_parameter():
     assert foo([], {}, set(), ())
 
     assert foo([1, 2, "foo"], {"foo": "bar", 2: [2, 3]}, set([1, 2, 3]), (1, "2"))
+
+
+def test_with_iterable():
+    AllowedCluster = Iterable[int]
+
+    @match_typing
+    def cluster(items: AllowedCluster):
+        return True
+
+    assert cluster((1, 2, 3, 4, 5))
+    assert cluster({1: 0, 2: 0, 3: 0}.keys())
+
+    with pytest.raises(TypeMisMatch):
+        cluster("123")
+
+    with pytest.raises(TypeMisMatch):
+        cluster(cluster)
+
+    with pytest.raises(TypeMisMatch):
+        cluster(1)
 
 
 if __name__ == "__main__":
