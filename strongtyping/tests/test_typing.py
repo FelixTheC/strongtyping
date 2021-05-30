@@ -4,6 +4,7 @@
 @created: 30.04.20
 @author: felix
 """
+import fractions
 import json
 import os
 import sys
@@ -13,7 +14,7 @@ from enum import Enum
 from enum import IntEnum
 from types import FunctionType
 from types import MethodType
-from typing import Any
+from typing import Any, Iterable
 from typing import Callable
 from typing import Dict
 from typing import Generator
@@ -1093,6 +1094,26 @@ def test_with_ellipsis():
 
     with pytest.raises(TypeMisMatch):
         d.a(data)
+
+
+def test_with_iterable():
+    AllowedCluster = Iterable[int]
+
+    @match_typing
+    def cluster(items: AllowedCluster):
+        return True
+
+    assert cluster((1, 2, 3, 4, 5))
+    assert cluster({1: 0, 2: 0, 3: 0}.keys())
+
+    with pytest.raises(TypeMisMatch):
+        cluster('123')
+
+    with pytest.raises(TypeMisMatch):
+        cluster(cluster)
+
+    with pytest.raises(TypeMisMatch):
+        cluster(1)
 
 
 if __name__ == '__main__':
