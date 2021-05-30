@@ -234,6 +234,11 @@ def test_validator_type_with_default():
         AllowedCluster = Validator[Iterable[Union[int, fractions.Fraction, decimal.Decimal]]]
 
 
+@pytest.mark.skipif(
+    bool(int(os.environ["ST_MODULES_INSTALLED"])) is True,
+    reason="module does not support Validator at the moment",
+)
+@pytest.mark.skipif(sys.version_info.minor < 9, reason="Available since 3.9")
 def test_iter_validator():
     number = Union[int, fractions.Fraction, decimal.Decimal]
 
@@ -248,12 +253,12 @@ def test_iter_validator():
     def cluster(val: AllowedCluster):
         return True
 
-    # must all fail
-    assert cluster((1, 2, 3.5))  # non int float
-    assert cluster([1, 2, "abc"])  # non int str
-    assert cluster([1, 2, "3.5"])  # non int str
-    assert cluster([1, 2, decimal.Decimal("2.1")])  # not int decimal
-    assert cluster([1, 2, fractions.Fraction(3, 2)])  # non int fraction
+    with pytest.raises(TypeMisMatch):
+        cluster((1, 2, 3.5))  # non int float
+        cluster([1, 2, "abc"])  # non int str
+        cluster([1, 2, "3.5"])  # non int str
+        cluster([1, 2, decimal.Decimal("2.1")])  # not int decimal
+        cluster([1, 2, fractions.Fraction(3, 2)])  # non int fraction
 
 
 if __name__ == "__main__":
