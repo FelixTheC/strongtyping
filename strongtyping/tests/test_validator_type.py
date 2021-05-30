@@ -4,10 +4,12 @@
 @created: 24.05.21
 @author: felix
 """
+import decimal
+import fractions
 import os
 import sys
 from functools import partial
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Tuple, Union, Iterable
 
 import pytest
 
@@ -226,6 +228,9 @@ def test_validator_type_with_default():
 
     with pytest.raises(ValidationError):
         foo({2: [2, 4]})
+
+    with pytest.raises(TypeError):
+        AllowedCluster = Validator[Iterable[Union[int, fractions.Fraction, decimal.Decimal]]]
 
 
 if __name__ == "__main__":

@@ -367,6 +367,8 @@ if py_version >= 9:
 
     @_SpecialForm  # type: ignore
     def Validator(self, parameters, *args, **kwargs):
+        if isinstance(parameters, _GenericAlias):
+            raise TypeError("Validator needs min 2 values. Validator[type, function]")
         if not parameters:
             raise TypeError("Cannot take a Validator of no type/function.")
         if len(parameters) > 3:
