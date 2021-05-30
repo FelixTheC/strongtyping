@@ -326,6 +326,10 @@ def check_type(argument, type_of, mro=False, **kwargs):
         # generator will be exhausted when we check it, so we return it without any checking
         return argument
 
+    if checking_typing_generator(argument, type_of):
+        # generator will be exhausted when we check it, so we return it without any checking
+        return argument
+
     check_result = True
     if type_of is not None:
         origin, origin_name = get_origins(type_of)
