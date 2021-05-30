@@ -5,20 +5,25 @@
 @author: felix
 """
 import inspect
-from functools import wraps
+import pprint
 import warnings
+from functools import wraps
+from typing import Type
 
-from strongtyping.strong_typing_utils import TypeMisMatch
-from strongtyping.strong_typing_utils import check_type
-
-from strongtyping._utils import action
-from strongtyping._utils import _severity_level
-from strongtyping._utils import remove_subclass
+from strongtyping._utils import _severity_level, action, remove_subclass
 from strongtyping.cached_set import CachedSet
+from strongtyping.strong_typing_utils import TypeMisMatch, check_type, default_return_queue
 
 
-def match_typing(_func=None, *, excep_raise: Exception = TypeMisMatch, cache_size=0,
-                 subclass: bool = False, severity='env', **kwargs):
+def match_typing(
+    _func=None,
+    *,
+    excep_raise: Type[Exception] = TypeMisMatch,
+    cache_size=0,
+    subclass: bool = False,
+    severity="env",
+    **kwargs,
+):
     cached_set = None if cache_size == 0 else CachedSet(cache_size)
 
     def wrapper(func):
@@ -27,7 +32,6 @@ def match_typing(_func=None, *, excep_raise: Exception = TypeMisMatch, cache_siz
 
         arg_names = [name for name in inspect.signature(func).parameters]
         annotations = func.__annotations__
-
         severity_level = _severity_level(severity)
 
         @wraps(func)
@@ -35,7 +39,6 @@ def match_typing(_func=None, *, excep_raise: Exception = TypeMisMatch, cache_siz
             if arg_names and severity_level > 0:
 
                 args = remove_subclass(args, subclass)
-
                 if cached_set is not None:
                     # check if func with args and kwargs was checked once before with positive result
                     cached_key = (func, args.__str__(), kwargs.__str__())
@@ -44,15 +47,30 @@ def match_typing(_func=None, *, excep_raise: Exception = TypeMisMatch, cache_siz
 
                 # Thanks to Ruud van der Ham who find a better and more stable solution for check_args
                 failed_params = tuple(
-                    arg_name for arg, arg_name in zip(args, arg_names) if not check_type(arg, annotations.get(arg_name))
+                    arg_name
+                    for arg, arg_name in zip(args, arg_names)
+                    if not check_type(arg, annotations.get(arg_name))
                 )
                 failed_params += tuple(
-                    kwarg_name for kwarg_name, kwarg in kwargs.items() if not check_type(kwarg,
-                                                                                         annotations.get(kwarg_name))
+                    kwarg_name
+                    for kwarg_name, kwarg in kwargs.items()
+                    if not check_type(kwarg, annotations.get(kwarg_name))
                 )
 
+                if not default_return_queue.empty():
+                    return default_return_queue.queue.pop()
+
                 if failed_params:
-                    msg = f'Incorrect parameters: {", ".join(f"{name}: {annotations[name]}" for name in failed_params)}'
+                    annotated_values = {arg_name: arg for arg, arg_name in zip(args, arg_names)}
+                    for kwarg_name, kwarg in kwargs.items():
+                        annotated_values[kwarg_name] = kwarg
+
+                    msg_list = "\nIncorrect parameter: ".join(
+                        f"[{name}] `{pprint.pformat(annotated_values[name], width=20, depth=2)}`"
+                        f"\n\trequired: {annotations[name]}"
+                        for name in failed_params
+                    )
+                    msg = f"Incorrect parameter: {msg_list}"
 
                     if excep_raise is not None and severity_level == 1:
                         raise excep_raise(msg)
@@ -72,33 +90,15 @@ def match_typing(_func=None, *, excep_raise: Exception = TypeMisMatch, cache_siz
         return wrapper
 
 
-# def match_class_typing(_cls=None, *, excep_raise: Exception = TypeError, cache_size=0, severity='env', **kwargs):
-#
-#     def wrapper(cls):
-#
-#         severity_level = _severity_level(severity)
-#         if severity_level > 0:
-#             cls.__new__ = _get_new(match_typing, excep_raise, cache_size, severity, **kwargs)
-#             if hasattr(cls.__init__, '__annotations__'):
-#                 cls.__init__ = match_typing(cls.__init__)
-#         return cls
-#
-#     if _cls is not None:
-#         return wrapper(_cls)
-#     else:
-#         return wrapper
-
-
 class match_class_typing:
-
     def __new__(cls, instance=None, *args, **kwargs):
         cls.cls = instance
         return super().__new__(cls)
 
     def __init__(self, cls=None, *args, **kwargs):
-        self.excep_raise = kwargs.pop('excep_raise', TypeMisMatch)
-        self.cache_size = kwargs.pop('cache_size', 0)
-        self.severity = kwargs.pop('severity', 'env')
+        self.excep_raise = kwargs.pop("excep_raise", TypeMisMatch)
+        self.cache_size = kwargs.pop("cache_size", 0)
+        self.severity = kwargs.pop("severity", "env")
         self.cls = cls
 
     def __getattr__(self, item):
@@ -106,25 +106,33 @@ class match_class_typing:
 
     @staticmethod
     def __has_annotations__(obj):
-        return hasattr(obj, '__annotations__')
+        return hasattr(obj, "__annotations__")
 
     def __find_methods(self, cls):
-        return [func for func in dir(cls)
-                if callable(getattr(cls, func)) and
-                self.__has_annotations__(getattr(cls, func)) and not
-                hasattr(getattr(cls, func), '__fe_strng_mtch__') and not
-                isinstance(getattr(cls, func), classmethod)
-                ]
+        return [
+            func
+            for func in dir(cls)
+            if callable(getattr(cls, func))
+            and self.__has_annotations__(getattr(cls, func))
+            and not hasattr(getattr(cls, func), "__fe_strng_mtch__")
+            and not isinstance(getattr(cls, func), classmethod)
+        ]
 
     def __add_decorator(self, cls):
         severity_level = _severity_level(self.severity)
         if severity_level > 0:
             for method in self.__find_methods(cls):
                 try:
-                    setattr(cls, method, match_typing(getattr(cls, method),
-                                                      severity=self.severity,
-                                                      cache_size=self.cache_size,
-                                                      excep_raise=self.excep_raise))
+                    setattr(
+                        cls,
+                        method,
+                        match_typing(
+                            getattr(cls, method),
+                            severity=self.severity,
+                            cache_size=self.cache_size,
+                            excep_raise=self.excep_raise,
+                        ),
+                    )
                 except TypeError:
                     pass
 
@@ -141,12 +149,12 @@ class match_class_typing:
 
 
 def getter(func):
-    return action(func, 'getter', match_typing)
+    return action(func, "getter", match_typing)
 
 
 def setter(func):
-    return action(func, 'setter', match_typing)
+    return action(func, "setter", match_typing)
 
 
 def getter_setter(func):
-    return action(func, 'getter_setter', match_typing)
+    return action(func, "getter_setter", match_typing)

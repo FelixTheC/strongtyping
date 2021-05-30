@@ -5,7 +5,7 @@
 @author: felix
 """
 import sys
-from typing import Union
+from typing import Any, Union
 
 
 class CachedDict(dict):
@@ -20,7 +20,7 @@ class CachedDict(dict):
         self.memory_limit = memory_limit * 1000000
         super().__init__(*args, **kwargs)
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: Any, value: Any):
         if sys.getsizeof(self) > self.memory_limit:
             self.clear()
         super().__setitem__(key, value)

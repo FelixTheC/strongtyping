@@ -1,11 +1,10 @@
 ## rest_docs_from_typing
 
-- with `rest_docs_from_typing` 
-  you're be able to generate a docstring from your type annotations
+- With `rest_docs_from_typing` you can generate a docstring from your type annotations
   
-- inside of this docstring there will be also an info if this parameter is an `Argument` 
+- Inside of the docstring there will be addition information indicating whether the parameter is an `Argument` 
   a `Positional Only Argument` or a `Keyword Argument`
-- also default values will be shown
+- Default values are shown:
 ```python
 from typing import List
 
@@ -26,7 +25,7 @@ Function foo
 :type val_b: List(int)
 ```
 
-- own docstrings will not be overwritten
+- Existing docstrings will not be overwritten:
 ```python
 from typing import List
 
@@ -51,7 +50,7 @@ sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam
 
 ```
 
-- with $<1-9> you can assign specific infos to each parameter
+- Using `$<1-9>` you can assign specific information to each parameter:
 ```python
 from typing import List
 

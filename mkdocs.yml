@@ -1,4 +1,6 @@
 site_name: strongtyping
+site_url: https://github.com/FelixTheC/strongtyping
+repo_name: 'FelixTheC-strongtyping'
 nav:
     - Home: 'index.md'
     - User's guide:
@@ -12,7 +14,10 @@ nav:
         - 'getter_setter': 'getter_setter.md'
         - 'rest_docs_from_typing': 'rest_docs_from_typing.md'
         - 'numpy_docs_from_typing': 'numpy_docs_from_typing.md'
+        - 'Validator - type': 'validator.md'
     - About:
         - 'License': 'license.md'
         - 'Release Notes': 'release-notes.md'
+        - 'Authors': 'authors.md'
+        - 'Special thanks': 'special_thanks.md'
 theme: readthedocs

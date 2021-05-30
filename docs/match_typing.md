@@ -21,8 +21,8 @@ class Foo:
 ```
 
 ### mix typed and untyped parameters 
-- only the typed parameters are checked on runtime
-- with this your able to also add only a type hint to the parameter you want to "secure"
+- by default, only parameters with type hints are checked at runtime
+- you're also able to specify exactly which type hint(s) you want to "secure":
 ```python
 from strongtyping.strong_typing import match_typing
 
@@ -64,8 +64,7 @@ def foo_bar(a: tuple, b: MyClass):
 ```
 
 ### disable Exception
-  - You can also __disable__ the raise of an __Exception__ and get a __warning instead__ this means your function will <br>
-  execute even when the parameters are wrong <b>use only when you know what you're doing</b>
+  - You can also __disable__ the raising of an __Exception__ and get a __warning__ instead.  This means your function will execute even when the parameters are wrong, but you're advised to only use this if you're sure you know what you're doing!
 ```python
 from strongtyping.strong_typing import match_typing
 
@@ -75,13 +74,16 @@ def multipler(a: int, b: int):
 
 print(multipler('Hello', 4))
 """
-/StrongTyping/strongtyping/docs.py:208: RuntimeWarning: Incorrect parameters: a: <class 'int'>
+/StrongTyping/strongtyping/docs.py:208: RuntimeWarning: Incorrect parameter: [a] `'Hello'`
+	required: <class 'int'>
   warnings.warn(msg, RuntimeWarning)
 HelloHelloHelloHello
 """
 ```
 
-### At the current state, it will work with
+### Limitations
+
+The current version of `strongtyping` supports:
 
 - builtin types like: str, int, tuple etc
 - from typing: 
@@ -99,4 +101,4 @@ HelloHelloHelloHello
 - from types:
     - FunctionType
     - MethodType
-- with string types representation like
+- with string types representation like _[Ed: Not sure what this means Felix?]_

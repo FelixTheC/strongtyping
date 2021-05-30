@@ -1,54 +1,56 @@
-# Welcome to strongtyping
-<p>Decorator which <b>checks at Runtime</b> whether the function is called with the correct type of parameters.<br> 
-And <b><em>raises</em> TypeMisMatch</b> if the used parameters in a function call where invalid.</p>
+# Welcome to [`strongtyping`](https://github.com/FelixTheC/strongtyping)
 
-### The problem
-> > I love python and his freedom but with the new option of adding type hints I wanted to get rid of writing `if isinstance(value, whatever)` in my programs. 
-> 
->> In a bigger project, it happened that some developers used a tiny IDE and others a more advanced one which highlighted 
- typing issues. And there the trouble began, we had a bug and after a long debugging session we found out that the issue 
- was a wrong type of an argument, it doesn't crash the program but the output was not what anyone of us had expected.  
-> 
-> And that only encouraged me even more to tackle this problem.
+[![PyPI version](https://badge.fury.io/py/strongtyping.svg)](https://badge.fury.io/py/strongtyping)
+![Python application](https://github.com/FelixTheC/strongtyping/workflows/Python%20application/badge.svg)
+![Python tox](https://github.com/FelixTheC/strongtyping/workflows/Python%20tox/badge.svg)
+![image](https://codecov.io/gh/FelixTheC/strongtyping/graph/badge.svg)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336)](https://pycqa.github.io/isort/)
+[![Documentation Status](https://readthedocs.org/projects/strongtyping/badge/?version=latest)](https://strongtyping.readthedocs.io/en/latest/?badge=latest)
+[![](https://img.shields.io/pypi/dm/strongtyping.svg)](https://pypi.org/project/strongtyping/)
 
-- Highlighting
-    - __Some__ IDE's will/can highlight that one of the parameters in a function call doesn't match but you can execute the function.
-- Exception??
-    - When the call raise an Exception then we know what to do but sometimes we don't get an Exception only a weird result.
+
+[__*strongtyping*__](https://github.com/FelixTheC/strongtyping) gives you a handy decorator which checks <b>at runtime</b> whether a function has been called with the correct parameter types.<br> 
+It raises <b><em>TypeMisMatch</em></b> if the parameters used in a function call are invalid.</p>
+
+### The Problem
+
+Even if you use an advanced IDE which can highlight typing issues, in bigger projects you'll probably find yourself struggling through long debugging sessions before realising the issue was due to the _wrong type of argument_.  These bugs are tricky to spot because they don't necessarily crash the program, but the output is still unexpected or just plain wrong.  For example:
 
 ```python
-def multipler(a: int, b: int):
-    return a * b
+>>> def multiplier(a: int, b: int):
+...     return a * b
 
 
-product = multipler(3, 4)
-# >>> 12
+>>> product = multiplier(3, 4)
+12
 
-product_2 = multipler('Hello', 'World') # Will be highlighted in some IDE's
-# >>> TypeError
+>>> product_2 = multiplier('Hello', 'World') # Will be highlighted in some IDE's
+TypeError
 
-product_3 = multipler('Hello', 4)
-# >>> 'HelloHelloHelloHello'
+>>> product_3 = multiplier('Hello', 4)
+'HelloHelloHelloHello'
 # No Exception but the result isn’t really what we expect
 ```
 ___
-Now we can say that we will check the types in the function body to prevent this.
+Without `strongtyping` you have to check for every valid type of every parameter in every function, which creates a lot of noisy/bloated code and begs the questions "Why use Python type hinting at all?":
 ___
 
 ```python
-def multipler(a: int, b: int):
-    if isinstance(a, int) and isinstance(b, int):
-        return a * b
-    ...
+>>> def multipler(a: int, b: int):
+...     if isinstance(a, int) and isinstance(b, int):
+...         return a * b
+
 ```
-But when your function needs a lot of different parameters with different types you have to create a lot of noising code.<br>
-And why should we then use typing in our parameters??
 
-### The solution
-I created a decorator called <b>@match_typing</b> which will check at runtime if the parameters which will be used when <br>
-calling this function is from the same type as you have defined.<br>
+### The Solution
 
-Here are some examples from my tests
+![](https://media.giphy.com/media/L0Z4qwdwv62cn4haFp/giphy.gif)
+
+I love Python and its freedom, but with the new option of adding _type hints_ I wanted to get rid of writing `if isinstance(value, whatever)` repeatedly in my programs, so I decided to create `strongtyping`...
+
+My solution is a simple decorator called `@match_typing` which will check <b>at runtime</b> whether the parameters you provide to a function are valid, based on type hints you've already defined in the `def` line.  Here are some examples:
+ 
 ```python
 from typing import List, Union
 import datetime
@@ -76,7 +78,7 @@ func_e([5, ('a', 'b'), '10'], [1, '2', 3, datetime.date])
 ```
 
 ## Requirements
-<b>Python 3.7 > <=3.9</b>
+<b>Python 3.7, 3.8, 3.9</b>
 
 - ujson
 - pytest
@@ -98,12 +100,14 @@ func_e([5, ('a', 'b'), '10'], [1, '2', 3, datetime.date])
 * `@rest_docs_from_typing`
 * `@numpy_docs_from_typing`
 
+#### from strongtyping.strong_typing_utils import 
+* `Validator`
+
 
 ## Extension
 #### strongtpying_module
 
-- A __package__ written by my own in __Cython__ to speed up the time for checking the parameters <br>
-  with this package you can achieve a __boost__ by the __factor 3__ and higher
-- you only need to install this package via `pip install strongtyping-modules`
-- for a detailed information please checkout the readme from [strongtyping_modules](https://github.com/FelixTheC/strongtyping_modules/blob/master/README.md)
+- A __package__ I wrote in __Cython__ to speed up parameter checking.  This package provides a speed boost of __over 300%__.
+- you can simply install this package with `pip install strongtyping-modules`
+- for more detailed information please check out the [README](https://github.com/FelixTheC/strongtyping_modules/blob/master/README.md)
 

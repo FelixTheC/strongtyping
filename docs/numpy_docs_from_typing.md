@@ -1,12 +1,12 @@
 ## numpy_docs_from_typing
 
-- with `numpy_docs_from_typing` you're be able to generate a docstring from your type annotations
+- Wth `numpy_docs_from_typing` you can generate a docstring from your type annotations
   
-- inside of this docstring there will be also an info if this parameter is an `Argument` 
+- Inside the docstring there will be extra information indicating whether a parameter is an `Argument` 
   a `Positional Only Argument` or a `Keyword Argument`
-- also default values will be shown
+- Default values are also shown
 
-- own docstrings will not be overwritten
+- Existing docstrings will not be overwritten
 ```python
 from typing import Union, Literal, Dict
 

@@ -1,5 +1,5 @@
 ## match_class_typing
-- this decorator will cover each class function automatically with the __match_typing__ decorator
+- This decorator will cover each class function automatically with the `@match_typing` decorator:
  
 ```python
 from strongtyping.strong_typing import match_class_typing
@@ -20,7 +20,7 @@ class Dummy:
     def _my_secure_func(self, val: Union[int, float], other: 'Dummy'):
         return val * other.attr
 ```
-- this decorator supports also disabling of raising Exception and internal caching
+- You can also disable the raising of Exceptions and/or internal caching:
 ```python
 from strongtyping.strong_typing import match_class_typing
 
@@ -41,7 +41,7 @@ class Dummy:
         return val * other.attr
 
 ```
-- single class methods inside of a allready decorated class can be overwritten with the match_typing decorator
+- Single class methods inside of a previously decorated class can be overwritten with the `@match_typing` decorator:
 ```python
 from strongtyping.strong_typing import match_class_typing
 from strongtyping.strong_typing import match_typing

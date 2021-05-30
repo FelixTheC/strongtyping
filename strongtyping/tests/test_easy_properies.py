@@ -5,16 +5,14 @@
 @author: eisenmenger
 """
 import pytest
-from strongtyping.docstring_typing import setter as dt_setter
-from strongtyping.docstring_typing import getter_setter as dt_getter_setter
-from strongtyping.strong_typing import getter_setter
-from strongtyping.strong_typing import setter
-from strongtyping.strong_typing import TypeMisMatch
+
+from strongtyping.docstring_typing import getter_setter as dt_getter_setter, setter as dt_setter
+from strongtyping.strong_typing import TypeMisMatch, getter_setter, setter
 
 
 class Dummy:
     attr = 100
-    val = 'foo'
+    val = "foo"
 
     @setter
     def b(self, val: str):
@@ -29,7 +27,7 @@ class Dummy:
 
 class DummyDocStr:
     attr = 100
-    val = 'foo'
+    val = "foo"
 
     @dt_setter
     def b(self, val):
@@ -51,20 +49,20 @@ class DummyDocStr:
 def test_setter():
     d = Dummy()
     with pytest.raises(AttributeError):
-        assert d.b == 'foo'
+        assert d.b == "foo"
 
-    d.b = 'bar'
-    assert d.val == 'bar'
+    d.b = "bar"
+    assert d.val == "bar"
 
     with pytest.raises(TypeMisMatch):
         d.b = 1
 
     dd = DummyDocStr()
     with pytest.raises(AttributeError):
-        assert dd.b == 'foo'
+        assert dd.b == "foo"
 
-    dd.b = 'bar'
-    assert dd.val == 'bar'
+    dd.b = "bar"
+    assert dd.val == "bar"
 
     with pytest.raises(TypeMisMatch):
         dd.b = 1
@@ -74,17 +72,17 @@ def test_getter_setter():
     d = Dummy()
     assert d.c == 100
     with pytest.raises(TypeMisMatch):
-        d.c = '10'
+        d.c = "10"
     d.c = 10
     assert d.c == 10
 
     dd = DummyDocStr()
     assert dd.c == 100
     with pytest.raises(TypeMisMatch):
-        dd.c = '10'
+        dd.c = "10"
     dd.c = 10
     assert dd.c == 10
 
 
-if __name__ == '__main__':
-    pytest.main(['-v', '-s', __file__])
+if __name__ == "__main__":
+    pytest.main(["-v", "-s", __file__])

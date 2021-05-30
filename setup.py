@@ -19,11 +19,11 @@ packages = find_packages(exclude=['test_*', '*.tests'])
 
 setup(
     name="strongtyping",
-    version="2.0.0b",
+    version="2.1.1",
     description="Decorator which checks whether the function is called with the correct type of parameters",
     long_description=README,
     long_description_content_type="text/markdown",
-    url="https://github.com/FelixTheC/strongtyping",
+    url="https://strongtyping.readthedocs.io/en/latest/",
     author="FelixTheC",
     author_email="fberndt87@gmail.com",
     license="MIT",
@@ -35,4 +35,3 @@ setup(
     python_requires='>=3.7',
     include_package_data=True,
 )
-
