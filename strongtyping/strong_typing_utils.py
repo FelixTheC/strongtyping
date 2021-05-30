@@ -265,13 +265,6 @@ def checking_typing_iterable(arg: Any, possible_types: tuple, *args, **kwargs):
     return all(check_type(argument, pssble_type, **kwargs) for argument in arg)
 
 
-def checking_typing_iterable(arg: Any, possible_types: tuple, *args):
-    if not hasattr(arg, "__iter__"):
-        return False
-    pssble_type = possible_types[0]
-    return all(check_type(argument, pssble_type) for argument in arg)
-
-
 def module_checking_typing_list(arg: Any, possible_types: Any):
     if (
         not hasattr(possible_types, "__args__")
