@@ -51,7 +51,6 @@ except ImportError:
     print("python version < 3.8")
 
 
-
 def test_get_possible_types_from_typing():
     # using pytest.mark.parametrize is also an option but for the moment this is fine also
     assert get_possible_types(List[str]) == (str,)
@@ -1189,13 +1188,14 @@ def test_with_iterable():
     assert cluster({1: 0, 2: 0, 3: 0}.keys())
 
     with pytest.raises(TypeMisMatch):
-        cluster('123')
+        cluster("123")
 
     with pytest.raises(TypeMisMatch):
         cluster(cluster)
 
     with pytest.raises(TypeMisMatch):
         cluster(1)
+
 
 if __name__ == "__main__":
     pytest.main(["-vv", "-s", __file__])

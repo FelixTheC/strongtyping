@@ -238,7 +238,7 @@ def checking_typing_validator(arg, possible_types, *args):
 
 
 def checking_typing_iterable(arg: Any, possible_types: tuple, *args):
-    if not hasattr(arg, '__iter__'):
+    if not hasattr(arg, "__iter__"):
         return False
     pssble_type = possible_types[0]
     return all(check_type(argument, pssble_type) for argument in arg)
