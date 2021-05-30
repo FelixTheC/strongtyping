@@ -395,7 +395,7 @@ def test_lists_with_unions():
 
 def test_with_any():
     @match_typing
-    def func_a(a: Any, b: any):
+    def func_a(a: Any, b: Any):
         return f"{a}-{b}"
 
     assert func_a(2, "2") == "2-2"
