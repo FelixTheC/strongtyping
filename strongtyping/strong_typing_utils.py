@@ -126,17 +126,22 @@ def checking_typing_set(arg: Any, possible_types: tuple, *args, **kwargs):
     if not possible_types:
         return isinstance(arg, set)
     possible_type = possible_types[0]
-    return isinstance(arg, set) and all(check_type(argument, possible_type, **kwargs) for argument in arg)
+    return isinstance(arg, set) and all(
+        check_type(argument, possible_type, **kwargs) for argument in arg
+    )
 
 
 def checking_typing_type(arg: Any, possible_types: tuple, *args, **kwargs):
     try:
         arguments = arg.__mro__
     except AttributeError:
-        return any(check_type(arg, possible_type, mro=False, **kwargs) for possible_type in possible_types)
+        return any(
+            check_type(arg, possible_type, mro=False, **kwargs) for possible_type in possible_types
+        )
     else:
         return any(
-            check_type(arguments, possible_type, mro=True, **kwargs) for possible_type in possible_types
+            check_type(arguments, possible_type, mro=True, **kwargs)
+            for possible_type in possible_types
         )
 
 
@@ -151,7 +156,7 @@ def checking_typing_union(arg: Any, possible_types: tuple, mro, **kwargs):
         if not is_instance:
             return False
         else:
-            return validate_object(arg, kwargs.get('validation_with'))
+            return validate_object(arg, kwargs.get("validation_with"))
 
 
 def checking_typing_iterator(arg: Any, *args, **kwargs):
@@ -366,5 +371,5 @@ def check_type(argument, type_of, mro=False, **kwargs):
             else:
                 if not is_instance:
                     return False
-                return validate_object(argument, kwargs.get('validation_with'))
+                return validate_object(argument, kwargs.get("validation_with"))
     return check_result

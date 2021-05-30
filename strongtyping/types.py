@@ -84,6 +84,7 @@ if py_version >= 9:
             raise TypeError("Validator[..., arg]: arg should be a function.")
         return _IterValidator(self, parameters)
 
+
 else:
     from typing import KT, VT, _alias, _GenericAlias, _type_repr  # type: ignore
 

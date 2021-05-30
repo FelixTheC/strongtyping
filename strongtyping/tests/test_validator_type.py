@@ -9,7 +9,7 @@ import fractions
 import os
 import sys
 from functools import partial
-from typing import Dict, List, Tuple, Union, Iterable
+from typing import Dict, Iterable, List, Tuple, Union
 
 import pytest
 
