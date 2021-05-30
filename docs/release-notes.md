@@ -1,5 +1,11 @@
 # Release Notes
 
+
+## v2.1.3
+- moving `Validator` to `strongtyping.types`
+- fixing some bugs
+- new type `IterValidator` which works mostly like map
+
 ## v2.1.2
 - include missing type check for `Iterable`
 
