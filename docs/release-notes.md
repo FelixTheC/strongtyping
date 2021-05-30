@@ -1,5 +1,8 @@
 # Release Notes
 
+## v2.1.2
+- include missing type check for `Iterable`
+
 ## v2.1.0
 - new type hint type `Validator` like `Union` you join a type-hint and a validation function
 - better `TypeMisMatch` tracecback informations (you will now see the value which caused this issue)

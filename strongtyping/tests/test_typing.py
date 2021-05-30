@@ -11,7 +11,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum, IntEnum
 from types import FunctionType, MethodType
-from typing import Any, Callable, Dict, Generator, Iterator, List
+from typing import Any, Callable, Dict, Generator, Iterator, List, Iterable
 from unittest import mock
 
 from strongtyping.config import SEVERITY_LEVEL
@@ -1163,6 +1163,25 @@ def test_empty_typing_parameter():
 
     assert foo([1, 2, "foo"], {"foo": "bar", 2: [2, 3]}, set([1, 2, 3]), (1, "2"))
 
+
+def test_with_iterable():
+    AllowedCluster = Iterable[int]
+
+    @match_typing
+    def cluster(items: AllowedCluster):
+        return True
+
+    assert cluster((1, 2, 3, 4, 5))
+    assert cluster({1: 0, 2: 0, 3: 0}.keys())
+
+    with pytest.raises(TypeMisMatch):
+        cluster('123')
+
+    with pytest.raises(TypeMisMatch):
+        cluster(cluster)
+
+    with pytest.raises(TypeMisMatch):
+        cluster(1)
 
 if __name__ == "__main__":
     pytest.main(["-vv", "-s", __file__])
