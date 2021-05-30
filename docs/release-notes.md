@@ -1,6 +1,9 @@
 # Release Notes
 
 
+## v2.1.4
+- fix `IterValidator` with typing.Any
+
 ## v2.1.3
 - moving `Validator` to `strongtyping.types`
 - fixing some bugs
