@@ -1,5 +1,6 @@
 # Release Notes
 
+
 ## v2.1.3
 - moving `Validator` to `strongtyping.types`
 - fixing some bugs
