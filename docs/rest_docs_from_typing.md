@@ -32,7 +32,7 @@ from typing import List
 from strongtyping.docs_from_typing import rest_docs_from_typing
 
 @rest_docs_from_typing
-def foo(val_a: int, val_b: List[int]):
+def foo(val_a: int, val_b: List[int]) -> List[str]:
     """
     Lorem ipsum dolor sit amet, consetetur sadipscing elitr, 
     sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam
@@ -47,6 +47,7 @@ sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam
 :param val_b: argument 
 :type val_a: int
 :type val_b: List(int)
+:returns: List(str)
 
 ```
 
@@ -57,7 +58,7 @@ from typing import List
 from strongtyping.docs_from_typing import rest_docs_from_typing
 
 @rest_docs_from_typing
-def foo(val_a: int, val_b: List[int]):
+def foo(val_a: int, val_b: List[int]) -> int:
     """
     Lorem ipsum dolor sit amet, consetetur sadipscing elitr,
     sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam
@@ -81,6 +82,7 @@ sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam
 	sed diam voluptua
 :type val_a: int
 :type val_b: List(int)
+:returns: int
 
 ```
 - with `linebreak=True` you can remove the linebreak between the first paragraph and the beginning of the parameters
@@ -118,16 +120,15 @@ sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam
 
 - with `insert_at` you can define a placeholder where you want to place the generated docstring
 ```python
-from typing import List
+from typing import Dict, List
 
-from strongtyping.docs_from_typing import numpy_docs_from_typing
+from strongtyping.docs_from_typing import rest_docs_from_typing
 
-@numpy_docs_from_typing(insert_at='---')
-def foo(val_a: int, val_b: List[int]):
+@rest_docs_from_typing(insert_at='---')
+def foo(val_a: int, val_b: List[int]) -> Dict[str, Dict[str, str]]:
     """
     Lorem ipsum dolor sit amet, consetetur sadipscing elitr,
     sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam
-    
     ---
     raises: IndexError
     
@@ -137,11 +138,9 @@ Lorem ipsum dolor sit amet, consetetur sadipscing elitr,
 sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam
 
 :param val_a: argument 
-	Lorem ipsum dolor sit amet
 :param val_b: argument 
-	nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat,
-	sed diam voluptua
 :type val_a: int
 :type val_b: List(int)
+:returns: Dict(str, Dict(str, str))
 raises: IndexError
 ```

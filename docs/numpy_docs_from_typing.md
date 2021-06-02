@@ -13,7 +13,9 @@ from typing import Union, Literal, Dict
 from strongtyping.docs_from_typing import numpy_docs_from_typing
 
 @numpy_docs_from_typing
-def foo(val_a: Literal['foo', 'bar'], val_b: Dict[str, Union[int, float]], val_c: str = "Hello World"):
+def foo(val_a: Literal['foo', 'bar'], 
+        val_b: Dict[str, Union[int, float]],
+        val_c: str = "Hello World") -> Dict[str, Union[int, float]]:
     """
     Lorem ipsum dolor sit amet, consetetur sadipscing elitr,
     sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam
@@ -31,6 +33,10 @@ val_b : argument of type Dict(str, int or float)
 val_c : argument of type str
 	Default is Hello World
 
+Returns
+-------
+Dict(str, int or float)
+
 ```
 
 - with $<1-9> you can assign specific infos to each parameter
@@ -40,7 +46,7 @@ from typing import List
 from strongtyping.docs_from_typing import numpy_docs_from_typing
 
 @numpy_docs_from_typing(remove_linebreak=True)
-def foo(val_a: int, val_b: List[int]):
+def foo(val_a: int, val_b: List[int]) -> List[str]:
     """
     Lorem ipsum dolor sit amet, consetetur sadipscing elitr,
     sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam
@@ -56,7 +62,6 @@ def foo(val_a: int, val_b: List[int]):
 Lorem ipsum dolor sit amet, consetetur sadipscing elitr,
 sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam
 
-
 Parameters
 ----------
 val_a : argument of type int
@@ -64,6 +69,11 @@ val_a : argument of type int
 val_b : argument of type List(int)
 	nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat,
 	sed diam voluptua
+
+Returns
+-------
+List(str)
+
 ```
 
 - with `linebreak=True` you can remove the linebreak between the first paragraph and the beginning of the parameters
