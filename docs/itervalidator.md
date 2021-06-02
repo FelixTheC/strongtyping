@@ -9,7 +9,7 @@
 - The second parameter of the `IterValidator` must be a `function`
 - Should __only__ be used __with__ `iterables`
 ```
-Validator[<type>, <function>]
+IterValidator[<type>, <function>]
 ```
 ---
 ### Example code
