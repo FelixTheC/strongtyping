@@ -29,5 +29,5 @@ toml==0.10.2
 tornado==6.1
 tqdm==4.60.0
 ujson==4.0.2
-urllib3==1.26.4
+urllib3==1.26.5
 wcwidth==0.2.5
