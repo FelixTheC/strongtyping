@@ -6,8 +6,7 @@
 """
 import pathlib
 
-from setuptools import find_packages
-from setuptools import setup
+from setuptools import find_packages, setup
 
 # The directory containing this file
 HERE = pathlib.Path(__file__).parent
@@ -15,7 +14,7 @@ HERE = pathlib.Path(__file__).parent
 # The text of the README file
 README = (HERE / "README.md").read_text()
 
-packages = find_packages(exclude=['test_*', '*.tests'])
+packages = find_packages(exclude=["test_*", "*.tests"])
 
 setup(
     name="strongtyping",
@@ -32,6 +31,6 @@ setup(
         "Programming Language :: Python :: 3",
     ],
     packages=packages,
-    python_requires='>=3.7',
+    python_requires=">=3.7",
     include_package_data=True,
 )

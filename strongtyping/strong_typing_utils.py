@@ -305,6 +305,7 @@ def module_checking_typing_tuple(arg: Any, possible_types: Any):
         return isinstance(arg, tuple)
     return bool(tuple_elements(arg, possible_types))
 
+
 def module_checking_typing_validator(arg, possible_types, *args, **kwargs):
     try:
         required_type, validation = possible_types.__args__
@@ -357,7 +358,7 @@ def check_type(argument, type_of, mro=False, **kwargs):
         try:
             return supported_modules[f"module_checking_typing_{origin_name}"](argument, type_of)
         except KeyError:
-            print(f'{origin_name = }')
+            pass
 
         if "new_type" in origin_name:
             type_of = type_of.__supertype__
