@@ -5,7 +5,7 @@
 @author: felix
 """
 import sys
-from typing import List, TypedDict
+from typing import List
 
 import pytest
 
@@ -15,6 +15,8 @@ from strongtyping.strong_typing_utils import TypeMisMatch
 
 @pytest.mark.skipif(sys.version_info.minor < 8, reason="TypedDict only available since 3.8")
 def test_typedict():
+    from typing import TypedDict
+
     @match_class_typing
     class SalesSummary(TypedDict):
         sales: int
@@ -29,6 +31,8 @@ def test_typedict():
 
 @pytest.mark.skipif(sys.version_info.minor < 8, reason="TypedDict only available since 3.8")
 def test_typedict_with_total():
+    from typing import TypedDict
+
     @match_class_typing
     class SalesSummary(TypedDict, total=False):
         sales: int
