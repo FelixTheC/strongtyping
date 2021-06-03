@@ -84,7 +84,7 @@ def get_origins(typ_to_check: Any) -> tuple:
     """
     origin = None
     if hasattr(typ_to_check, "__origin__") or hasattr(typ_to_check, "__orig_bases__"):
-        if py_version >= 3.9 and hasattr(typ_to_check.__origin__, "__name__"):
+        if py_version >= 9 and hasattr(typ_to_check.__origin__, "__name__"):
             origin = typ_to_check.__origin__.__name__
         else:
             if typ_to_check.__origin__ is not None:

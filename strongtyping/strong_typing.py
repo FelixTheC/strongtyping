@@ -18,6 +18,7 @@ from strongtyping.strong_typing_utils import (
     checking_typing_typedict_values,
     default_return_queue,
     get_origins,
+    py_version,
 )
 
 
@@ -144,18 +145,21 @@ class match_class_typing:
 
     @property
     def is_typed_dict(self):
+        if py_version < 9:
+            return hasattr(self.cls, "__total__")
         if hasattr(self.cls, "__orig_bases__"):
             return any(obj.__name__ == "TypedDict" for obj in self.cls.__orig_bases__)
 
     def create_error_msg(self, args: dict):
         msg_list = "\nIncorrect parameter: ".join(
             f"[{name}] `{pprint.pformat(args[name], width=20, depth=2)}`"
-            f"\n\trequired: {self.__annotations__[name]}"
+            f"\n\trequired: {self.__annotations__}"
             for name in args
         )
-        msg = f"Incorrect parameter: {msg_list}"
+        return f"Incorrect parameter: {msg_list}"
 
     def __call__(self, *args, **kwargs):
+        print(f"{self.is_typed_dict = }")
         if self.is_typed_dict:
             if not checking_typing_typedict_values(args[0], self.__annotations__, self.__total__):
                 raise self.excep_raise(self.create_error_msg(args[0]))

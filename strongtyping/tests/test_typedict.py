@@ -4,6 +4,7 @@
 @created: 03.06.21
 @author: felix
 """
+import sys
 from typing import List, TypedDict
 
 import pytest
@@ -12,6 +13,7 @@ from strongtyping.strong_typing import match_class_typing
 from strongtyping.strong_typing_utils import TypeMisMatch
 
 
+@pytest.mark.skipif(sys.version_info.minor < 8, reason="TypedDict only available since 3.8")
 def test_typedict():
     @match_class_typing
     class SalesSummary(TypedDict):
@@ -25,6 +27,7 @@ def test_typedict():
         SalesSummary({"sales": "Foo", "country": 10, "product_codes": [1, 2, 3]})
 
 
+@pytest.mark.skipif(sys.version_info.minor < 8, reason="TypedDict only available since 3.8")
 def test_typedict_with_total():
     @match_class_typing
     class SalesSummary(TypedDict, total=False):
