@@ -4,9 +4,7 @@
 @created: 03.06.21
 @author: felix
 """
-import dataclasses
-from collections import UserDict
-from typing import TypedDict, List
+from typing import List, TypedDict
 
 import pytest
 
