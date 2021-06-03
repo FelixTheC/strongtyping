@@ -159,7 +159,6 @@ class match_class_typing:
         return f"Incorrect parameter: {msg_list}"
 
     def __call__(self, *args, **kwargs):
-        print(f"{self.is_typed_dict = }")
         if self.is_typed_dict:
             if not checking_typing_typedict_values(args[0], self.__annotations__, self.__total__):
                 raise self.excep_raise(self.create_error_msg(args[0]))
