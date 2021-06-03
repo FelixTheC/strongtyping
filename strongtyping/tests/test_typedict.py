@@ -26,7 +26,6 @@ def test_typedict():
 
 
 def test_typedict_with_total():
-
     @match_class_typing
     class SalesSummary(TypedDict, total=False):
         sales: int
