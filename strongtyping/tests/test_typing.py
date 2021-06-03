@@ -1110,10 +1110,10 @@ def test_strongtyping_modules_integration():
         pass
 
 
-@pytest.mark.skipif(
-    bool(int(os.environ["ST_MODULES_INSTALLED"])) is True,
-    reason="module does not support ellipsis at the moment",
-)
+# @pytest.mark.skipif(
+#     bool(int(os.environ["ST_MODULES_INSTALLED"])) is True,
+#     reason="module does not support ellipsis at the moment",
+# )
 def test_with_ellipsis():
     class Dummy:
         @match_typing
@@ -1137,10 +1137,10 @@ def test_with_ellipsis():
         d.a(data)
 
 
-@pytest.mark.skipif(
-    bool(int(os.environ["ST_MODULES_INSTALLED"])) is True,
-    reason="module does not support ellipsis at the moment",
-)
+# @pytest.mark.skipif(
+#     bool(int(os.environ["ST_MODULES_INSTALLED"])) is True,
+#     reason="module does not support ellipsis at the moment",
+# )
 def test_empty_containers_are_valid_if_the_share_same_type():
     @match_typing
     def foo(val_a: List[str], val_b: Dict[str, str], val_c: Set[int]):

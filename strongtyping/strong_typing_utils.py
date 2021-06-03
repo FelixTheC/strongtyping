@@ -8,6 +8,7 @@ import inspect
 import json
 import os
 import sys
+import types
 import typing
 from functools import lru_cache, partial
 from queue import Queue
@@ -305,6 +306,24 @@ def module_checking_typing_tuple(arg: Any, possible_types: Any):
     return bool(tuple_elements(arg, possible_types))
 
 
+def module_checking_typing_validator(arg, possible_types, *args, **kwargs):
+    try:
+        required_type, validation = possible_types.__args__
+    except ValueError:
+        required_type, validation, _ = possible_types.__args__
+    if validation(arg) is False:
+        if isinstance(validation, partial):
+            validation = validation.func
+        validation_function_file = inspect.getfile(validation)
+        validation_body, validation_line = inspect.getsourcelines(validation)
+        raise ValidationError(
+            f"Argument: `{arg}` did not pass the validation defined here "
+            f'\n\tFile: "{validation_function_file}", line {validation_line}'
+            f"\n\tName: {validation.__name__}"
+        )
+    return check_type(arg, required_type, **kwargs)
+
+
 def validate_object(value, validation_func=None):
     if validation_func:
         return validation_func(value)
@@ -313,7 +332,7 @@ def validate_object(value, validation_func=None):
 
 supported_typings = vars()
 if extension_module:
-    m = [f"module_checking_typing_{t}" for t in ("list", "dict", "set", "tuple")]
+    m = [f"module_checking_typing_{t}" for t in ("list", "dict", "set", "tuple", "validator")]
     supported_modules = {k: v for k, v in vars().items() if k in m}
 else:
     supported_modules = {}
@@ -322,10 +341,6 @@ else:
 def check_type(argument, type_of, mro=False, **kwargs):
     # if int(py_version) >= 10 and isinstance(type_of, (str, bytes)):
     #     type_of = eval(type_of, locals(), globals())
-    if checking_typing_generator(argument, type_of):
-        # generator will be exhausted when we check it, so we return it without any checking
-        return argument
-
     if checking_typing_generator(argument, type_of):
         # generator will be exhausted when we check it, so we return it without any checking
         return argument
