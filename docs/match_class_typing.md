@@ -63,3 +63,37 @@ class Dummy:
     def _my_secure_func(self, val: Union[int, float], other: 'Dummy'):
         return val * other.attr
 ```
+
+### with dataclass
+- The `match_class_typing` decorator will also work very well with `dataclass`
+
+```python
+from dataclasses import dataclass
+from strongtyping.strong_typing import match_class_typing
+
+# normal usage
+
+@dataclass
+class Dummy:
+    attr_a: int
+    attr_b: str
+
+# no error will happen here
+d = Dummy("10", 10)
+
+# so we switched the types of the values unnoticed
+assert d.attr_a == "10"
+assert d.attr_b == 10
+
+
+# with the `match_class_typing` decorator this won't happen anymore
+
+@match_class_typing
+@dataclass
+class Dummy:
+    attr_a: int
+    attr_b: str
+
+# wrong types are raising a TypeMisMatch error
+assert Dummy("10", 10)
+```

@@ -8,6 +8,7 @@ import inspect
 import json
 import os
 import sys
+import types
 import typing
 from functools import lru_cache, partial
 from queue import Queue
@@ -304,6 +305,23 @@ def module_checking_typing_tuple(arg: Any, possible_types: Any):
         return isinstance(arg, tuple)
     return bool(tuple_elements(arg, possible_types))
 
+def module_checking_typing_validator(arg, possible_types, *args, **kwargs):
+    try:
+        required_type, validation = possible_types.__args__
+    except ValueError:
+        required_type, validation, _ = possible_types.__args__
+    if validation(arg) is False:
+        if isinstance(validation, partial):
+            validation = validation.func
+        validation_function_file = inspect.getfile(validation)
+        validation_body, validation_line = inspect.getsourcelines(validation)
+        raise ValidationError(
+            f"Argument: `{arg}` did not pass the validation defined here "
+            f'\n\tFile: "{validation_function_file}", line {validation_line}'
+            f"\n\tName: {validation.__name__}"
+        )
+    return check_type(arg, required_type, **kwargs)
+
 
 def validate_object(value, validation_func=None):
     if validation_func:
@@ -313,7 +331,7 @@ def validate_object(value, validation_func=None):
 
 supported_typings = vars()
 if extension_module:
-    m = [f"module_checking_typing_{t}" for t in ("list", "dict", "set", "tuple")]
+    m = [f"module_checking_typing_{t}" for t in ("list", "dict", "set", "tuple", "validator")]
     supported_modules = {k: v for k, v in vars().items() if k in m}
 else:
     supported_modules = {}
@@ -339,7 +357,7 @@ def check_type(argument, type_of, mro=False, **kwargs):
         try:
             return supported_modules[f"module_checking_typing_{origin_name}"](argument, type_of)
         except KeyError:
-            pass
+            print(f'{origin_name = }')
 
         if "new_type" in origin_name:
             type_of = type_of.__supertype__
