@@ -12,7 +12,13 @@ from typing import Type
 
 from strongtyping._utils import _severity_level, action, remove_subclass
 from strongtyping.cached_set import CachedSet
-from strongtyping.strong_typing_utils import TypeMisMatch, check_type, default_return_queue
+from strongtyping.strong_typing_utils import (
+    TypeMisMatch,
+    check_type,
+    checking_typing_typedict_values,
+    default_return_queue,
+    get_origins,
+)
 
 
 def match_typing(
@@ -136,7 +142,23 @@ class match_class_typing:
                 except TypeError:
                     pass
 
+    @property
+    def is_typed_dict(self):
+        if hasattr(self.cls, "__orig_bases__"):
+            return any(obj.__name__ == "TypedDict" for obj in self.cls.__orig_bases__)
+
+    def create_error_msg(self, args: dict):
+        msg_list = "\nIncorrect parameter: ".join(
+            f"[{name}] `{pprint.pformat(args[name], width=20, depth=2)}`"
+            f"\n\trequired: {self.__annotations__[name]}"
+            for name in args
+        )
+        msg = f"Incorrect parameter: {msg_list}"
+
     def __call__(self, *args, **kwargs):
+        if self.is_typed_dict:
+            if not checking_typing_typedict_values(args[0], self.__annotations__, self.__total__):
+                raise self.excep_raise(self.create_error_msg(args[0]))
         if self.cls:
             if self.__has_annotations__(self.cls.__init__):
                 self.cls.__init__ = match_typing(self.cls.__init__)

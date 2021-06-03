@@ -266,6 +266,13 @@ def checking_typing_iterable(arg: Any, possible_types: tuple, *args, **kwargs):
     return all(check_type(argument, pssble_type, **kwargs) for argument in arg)
 
 
+def checking_typing_typedict_values(args: dict, required_types: dict, total: bool):
+    if total:
+        return all(check_type(args[key], val) for key, val in required_types.items())
+    fields_to_check = {key: val for key, val in required_types.items() if key in args}
+    return all(check_type(args[key], val) for key, val in fields_to_check.items())
+
+
 def module_checking_typing_list(arg: Any, possible_types: Any):
     if (
         not hasattr(possible_types, "__args__")
