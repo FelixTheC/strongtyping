@@ -6,7 +6,7 @@
 """
 import dataclasses
 from collections import UserDict
-from typing import TypedDict
+from typing import TypedDict, List
 
 import pytest
 
@@ -19,7 +19,7 @@ def test_typedict():
     class SalesSummary(TypedDict):
         sales: int
         country: str
-        product_codes: list[str]
+        product_codes: List[str]
 
     assert SalesSummary({"sales": 10, "country": "Foo", "product_codes": ["1", "2", "3"]})
 
@@ -33,7 +33,7 @@ def test_typedict_with_total():
     class SalesSummary(TypedDict, total=False):
         sales: int
         country: str
-        product_codes: list[str]
+        product_codes: List[str]
 
     assert SalesSummary({"sales": 10, "product_codes": ["1", "2", "3"]})
 
