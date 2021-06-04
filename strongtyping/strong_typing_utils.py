@@ -61,6 +61,9 @@ def get_possible_types(typ_to_check) -> typing.Union[tuple, None]:
         - Dict[str, int] = (str, int, )
         - Tuple[Union[str, int], List[int]] = (Union[str, int], List[int], )
     """
+    from strongtyping.strong_typing import match_class_typing
+    if isinstance(typ_to_check, match_class_typing):
+        return typ_to_check
     if extension_module:
         if not hasattr(typ_to_check, "__args__"):
             try:
@@ -74,6 +77,7 @@ def get_possible_types(typ_to_check) -> typing.Union[tuple, None]:
 
 
 def get_origins(typ_to_check: Any) -> tuple:
+    from strongtyping.strong_typing import match_class_typing
     """
     :param typ_to_check: typ_to_check: some typing like List[str], Dict[str, int], Tuple[Union[str, int], List[int]]
     :return: the class, alias_class and the class name
@@ -83,11 +87,18 @@ def get_origins(typ_to_check: Any) -> tuple:
         - FunctionType = (None, 'None')
     """
     origin = None
+    if isinstance(typ_to_check, match_class_typing):
+        print(vars(typ_to_check))
+        return typ_to_check.cls, typ_to_check.cls.__orig_bases__[0].__name__
+
+    if hasattr(typ_to_check, "__annotations__"):
+        return typ_to_check, typ_to_check.__orig_bases__[0].__name__
+
     if hasattr(typ_to_check, "__origin__") or hasattr(typ_to_check, "__orig_bases__"):
-        if py_version >= 9 and hasattr(typ_to_check.__origin__, "__name__"):
+        if py_version >= 9 and hasattr(typ_to_check, "__origin__") and hasattr(typ_to_check.__origin__, "__name__"):
             origin = typ_to_check.__origin__.__name__
-        else:
-            if typ_to_check.__origin__ is not None:
+        elif hasattr(typ_to_check, "__origin__") or hasattr(typ_to_check, "__orig_bases__"):
+            if hasattr(typ_to_check, "__origin__") and typ_to_check.__origin__ is not None:
                 origin = typ_to_check.__origin__
             else:
                 origin = typ_to_check.__orig_bases__
@@ -223,6 +234,8 @@ def checking_typing__validator(arg, possible_types, *args, **kwargs):
 
 
 def checking_typing_validator(arg, possible_types, *args, **kwargs):
+    from strongtyping.strong_typing import match_class_typing
+
     if len(possible_types) == 2:
         default_return = empty
         required_type, validation = possible_types
@@ -241,6 +254,13 @@ def checking_typing_validator(arg, possible_types, *args, **kwargs):
             f'\n\tFile: "{validation_function_file}", line {validation_line}'
             f"\n\tName: {validation.__name__}"
         )
+
+    if isinstance(required_type, match_class_typing):
+        try:
+            required_type(arg)
+        except required_type.excep_raise:
+            return False
+        return True
     try:
         return isinstance(arg, required_type)
     except TypeError:
@@ -371,13 +391,12 @@ def check_type(argument, type_of, mro=False, **kwargs):
             type_of = type_of.__supertype__
             origin, origin_name = get_origins(type_of)
             origin_name = origin_name.lower()
-
-        if isinstance(type_of, typing_base_class) or (py_version >= 3.9 and origin is not None):
+        if isinstance(type_of, typing_base_class) or (py_version >= 9 and origin is not None):
             try:
                 return supported_typings[f"checking_typing_{origin_name}"](
                     argument, get_possible_types(type_of), mro, **kwargs
                 )
-            except AttributeError:
+            except AttributeError as err:
                 return isinstance(argument, type_of.__args__)
         elif isinstance(type_of, str):
             return argument.__class__.__name__ == type_of

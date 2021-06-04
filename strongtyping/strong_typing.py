@@ -151,12 +151,8 @@ class match_class_typing:
             return any(obj.__name__ == "TypedDict" for obj in self.cls.__orig_bases__)
 
     def create_error_msg(self, args: dict):
-        msg_list = "\nIncorrect parameter: ".join(
-            f"[{name}] `{pprint.pformat(args[name], width=20, depth=2)}`"
-            f"\n\trequired: {self.__annotations__}"
-            for name in args
-        )
-        return f"Incorrect parameter: {msg_list}"
+        return f"Incorrect parameter: `{pprint.pformat(args, width=20, depth=2)}`" \
+               f"\n\trequired: {self.__annotations__}"
 
     def __call__(self, *args, **kwargs):
         if self.is_typed_dict:
