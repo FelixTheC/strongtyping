@@ -93,7 +93,7 @@ def get_origins(typ_to_check: Any) -> tuple:
         print(vars(typ_to_check))
         return typ_to_check.cls, typ_to_check.cls.__orig_bases__[0].__name__
 
-    if hasattr(typ_to_check, "__annotations__"):
+    if hasattr(typ_to_check, "__annotations__") and hasattr(typ_to_check, "__orig_bases__"):
         return typ_to_check, typ_to_check.__orig_bases__[0].__name__
 
     if hasattr(typ_to_check, "__origin__") or hasattr(typ_to_check, "__orig_bases__"):
