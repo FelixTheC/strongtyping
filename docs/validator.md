@@ -75,7 +75,7 @@ assert foo(((1, 2), (3, 4)))  # TypeMisMatch
 ```
 
 
-### TypedDict
+## TypedDict
 - Works also with the `Validator` type
 ```python
 from typing import List, TypedDict
