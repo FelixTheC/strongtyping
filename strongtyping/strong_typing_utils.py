@@ -62,6 +62,7 @@ def get_possible_types(typ_to_check) -> typing.Union[tuple, None]:
         - Tuple[Union[str, int], List[int]] = (Union[str, int], List[int], )
     """
     from strongtyping.strong_typing import match_class_typing
+
     if isinstance(typ_to_check, match_class_typing):
         return typ_to_check
     if extension_module:
@@ -78,6 +79,7 @@ def get_possible_types(typ_to_check) -> typing.Union[tuple, None]:
 
 def get_origins(typ_to_check: Any) -> tuple:
     from strongtyping.strong_typing import match_class_typing
+
     """
     :param typ_to_check: typ_to_check: some typing like List[str], Dict[str, int], Tuple[Union[str, int], List[int]]
     :return: the class, alias_class and the class name
@@ -95,7 +97,11 @@ def get_origins(typ_to_check: Any) -> tuple:
         return typ_to_check, typ_to_check.__orig_bases__[0].__name__
 
     if hasattr(typ_to_check, "__origin__") or hasattr(typ_to_check, "__orig_bases__"):
-        if py_version >= 9 and hasattr(typ_to_check, "__origin__") and hasattr(typ_to_check.__origin__, "__name__"):
+        if (
+            py_version >= 9
+            and hasattr(typ_to_check, "__origin__")
+            and hasattr(typ_to_check.__origin__, "__name__")
+        ):
             origin = typ_to_check.__origin__.__name__
         elif hasattr(typ_to_check, "__origin__") or hasattr(typ_to_check, "__orig_bases__"):
             if hasattr(typ_to_check, "__origin__") and typ_to_check.__origin__ is not None:

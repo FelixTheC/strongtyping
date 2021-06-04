@@ -48,6 +48,7 @@ def test_typedict_with_total():
 @pytest.mark.skipif(sys.version_info.minor < 8, reason="TypedDict only available since 3.8")
 def test_typedict_with_validator():
     from typing import TypedDict
+
     from strongtyping.types import Validator
 
     @match_class_typing
@@ -78,6 +79,7 @@ def test_typedict_with_validator():
 @pytest.mark.skipif(sys.version_info.minor < 8, reason="TypedDict only available since 3.8")
 def test_typedict_with_validator_and_total():
     from typing import TypedDict
+
     from strongtyping.types import Validator
 
     @match_class_typing
