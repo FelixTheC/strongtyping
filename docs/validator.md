@@ -74,16 +74,6 @@ assert foo({2: [2, 4]})  # ValidationError
 assert foo(((1, 2), (3, 4)))  # TypeMisMatch
 ```
 
-## ValidationError traceback
-- A traceback for the `Validator` can look similar to this
-```
-Argument: `{2: [2, 4]}` did not passed the validation defined here 
-	File: "/home/eisenmenger/PycharmProjects/strongtyping/strongtyping/tmp.py", line: 13
-	Name: min_length
-```
-- `File:` describes where the validation function is defined
-- `Name:` the name of the validation function
-
 
 ### TypedDict
 - Works also with the `Validator` type
@@ -121,3 +111,14 @@ cluster({"sales": 10, "country": "Europe", "product_codes": list(range(10))})
 cluster({"sales": "10", "country": "Europe"})
 cluster({"product_codes": list(range(10))})
 ```
+
+
+## ValidationError traceback
+- A traceback for the `Validator` can look similar to this
+```
+Argument: `{2: [2, 4]}` did not passed the validation defined here 
+	File: "/home/eisenmenger/PycharmProjects/strongtyping/strongtyping/tmp.py", line: 13
+	Name: min_length
+```
+- `File:` describes where the validation function is defined
+- `Name:` the name of the validation function
