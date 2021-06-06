@@ -26,12 +26,12 @@ def match_typing(
     _func=None,
     *,
     excep_raise: Type[Exception] = TypeMisMatch,
-    cache_size=0,
     subclass: bool = False,
     severity="env",
     **kwargs,
 ):
-    cached_set = None if cache_size == 0 else CachedSet(cache_size)
+    cached_enabled: int = kwargs.get("cache_size", 1)
+    cached_set = CachedSet(cached_enabled) if cached_enabled > 0 else None
 
     def wrapper(func):
         # needed in py 3.10
@@ -46,7 +46,7 @@ def match_typing(
             if arg_names and severity_level > 0:
 
                 args = remove_subclass(args, subclass)
-                if cached_set is not None:
+                if cached_set is not None and func.__name__ not in ("__init__", "__repr__"):
                     # check if func with args and kwargs was checked once before with positive result
                     cached_key = (func, args.__str__(), kwargs.__str__())
                     if cached_key in cached_set:
@@ -84,7 +84,7 @@ def match_typing(
                     else:
                         warnings.warn(msg, RuntimeWarning)
 
-                if cached_set is not None:
+                if cached_set is not None and func.__name__ not in ("__init__", "__repr__"):
                     cached_set.add(cached_key)
             return func(*args, **kwargs)
 
@@ -104,7 +104,7 @@ class match_class_typing:
 
     def __init__(self, cls=None, *args, **kwargs):
         self.excep_raise = kwargs.pop("excep_raise", TypeMisMatch)
-        self.cache_size = kwargs.pop("cache_size", 0)
+        self.cache_size = kwargs.pop("cache_size", 1)
         self.severity = kwargs.pop("severity", "env")
         self.cls = cls
 
