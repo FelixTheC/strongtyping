@@ -46,7 +46,7 @@ def match_typing(
             if arg_names and severity_level > 0:
 
                 args = remove_subclass(args, subclass)
-                if cached_set is not None and func.__name__ not in ("__init__", ):
+                if cached_set is not None and func.__name__ not in ("__init__",):
                     # check if func with args and kwargs was checked once before with positive result
                     cached_key = (func, args.__str__(), kwargs.__str__())
                     if cached_key in cached_set:
@@ -84,7 +84,7 @@ def match_typing(
                     else:
                         warnings.warn(msg, RuntimeWarning)
 
-                if cached_set is not None and func.__name__ not in ("__init__", ):
+                if cached_set is not None and func.__name__ not in ("__init__",):
                     cached_set.add(cached_key)
             return func(*args, **kwargs)
 
