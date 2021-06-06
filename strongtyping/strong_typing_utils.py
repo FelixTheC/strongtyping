@@ -90,11 +90,13 @@ def get_origins(typ_to_check: Any) -> tuple:
     """
     origin = None
     if isinstance(typ_to_check, match_class_typing):
-        print(vars(typ_to_check))
         return typ_to_check.cls, typ_to_check.cls.__orig_bases__[0].__name__
 
     if hasattr(typ_to_check, "__annotations__") and hasattr(typ_to_check, "__orig_bases__"):
         return typ_to_check, typ_to_check.__orig_bases__[0].__name__
+
+    if hasattr(typ_to_check, "__annotations__") and hasattr(typ_to_check, "__total__"):
+        return typ_to_check, typ_to_check.__class__.__name__
 
     if hasattr(typ_to_check, "__origin__") or hasattr(typ_to_check, "__orig_bases__"):
         if (
