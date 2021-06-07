@@ -3,6 +3,7 @@
 ## v2.1.5
 - support for latest strongtyping-modules version (0.1.4)
 - support for TypedDict
+- bugfixes
 
 ## v2.1.4
 - fix `IterValidator` with typing.Any
