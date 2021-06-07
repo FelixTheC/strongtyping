@@ -5,6 +5,7 @@
 @author: eisenmenger
 """
 import inspect
+import pprint
 import re
 import textwrap
 from functools import wraps
@@ -108,6 +109,16 @@ def get_type_info(val, type_origins):
     elif val_origins[1] == "Literal":
         text = " or ".join([f"`{elem}`" for elem in type_origins])
         return f"`{type(type_origins[0]).__name__}` allowed values are {text}"
+    elif val_origins[1] == "TypedDict" or val_origins[1] == "_TypedDictMeta":
+        required = " required" if val_origins[0].__total__ else ""
+        fields = {
+            key: get_type_info(key, val) for key, val in val_origins[0].__annotations__.items()
+        }
+        return f"{val.__name__}[TypedDict]{required} fields are \n\t`{pprint.pformat(fields, sort_dicts=False)}`"
+    elif "Validator" in origins[1]:
+        required_type, *not_needed = type_origins.__args__
+        text = f"{get_type_info(val, required_type)}[{origins[1]}]"
+        return text
     else:
         if type_origins:
             try:

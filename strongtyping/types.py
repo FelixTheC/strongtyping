@@ -13,8 +13,10 @@ from strongtyping.strong_typing_utils import py_version
 
 
 class _Validator(_GenericAlias, _root=True):  # type: ignore
+    _name = "Validator"
+
     def __getitem__(self, item):
-        pass
+        return super().__getitem__(item)
 
     def __hash__(self):
         if len(self.__args__) > 2:
@@ -36,8 +38,10 @@ class _Validator(_GenericAlias, _root=True):  # type: ignore
 
 
 class _IterValidator(_GenericAlias, _root=True):  # type: ignore
+    _name = "IterValidator"
+
     def __getitem__(self, item):
-        pass
+        return super().__getitem__(item)
 
     def __hash__(self):
         if len(self.__args__) > 2:

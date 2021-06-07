@@ -1,6 +1,5 @@
-from typing import Any
-
 from strongtyping.config import SEVERITY_LEVEL as SEVERITY_LEVEL
+from typing import Any
 
 logger: Any
 

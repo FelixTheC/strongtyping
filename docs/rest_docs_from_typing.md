@@ -144,3 +144,50 @@ sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam
 :returns: Dict(str, Dict(str, str))
 raises: IndexError
 ```
+
+
+### TypedDict
+- when used with a `TypedDict` the fields of the `TypedDict` are included
+```python
+class MyDict(TypedDict):
+    sales: int
+    country: str
+    product_codes: List[str]
+
+    
+@rest_docs_from_typing
+def foo(val: MyDict, val_b: List[int]) -> str:
+    ...
+
+>>>print(foo.__doc__)
+
+Lorem ipsum dolor samit
+:param val: argument 
+:param val_b: argument 
+:type val: MyDict[TypedDict] required fields are 
+	`{'sales': 'int', 'country': 'str', 'product_codes': 'List(str)'}`
+:type val_b: List(int)
+:returns: str
+```
+- when setting `total=False` the `required` word in the doc string will be removed
+```python
+class MyDict(TypedDict, total=False):
+    sales: int
+    country: str
+    product_codes: List[str]
+
+    
+@rest_docs_from_typing
+def foo(val: MyDict, val_b: List[int]) -> str:
+    ...
+
+>>>print(foo.__doc__)
+
+Lorem ipsum dolor samit
+:param val: argument 
+:param val_b: argument 
+:type val: MyDict[TypedDict] fields are 
+	`{'sales': 'int', 'country': 'str', 'product_codes': 'List(str)'}`
+:type val_b: List(int)
+:returns: str
+```

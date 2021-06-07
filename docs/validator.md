@@ -74,6 +74,45 @@ assert foo({2: [2, 4]})  # ValidationError
 assert foo(((1, 2), (3, 4)))  # TypeMisMatch
 ```
 
+
+## TypedDict
+- Works also with the `Validator` type
+```python
+from typing import List, TypedDict
+
+from strongtyping.strong_typing import match_class_typing, match_typing
+from strongtyping.types import Validator
+
+@match_class_typing
+class MyDict(TypedDict, total=False):
+    sales: int
+    country: str
+    product_codes: List[str]
+
+def allow_only_valid_country_names(value: MyDict):
+    return not value.get("country", "").isnumeric()
+
+AllowedDicts = Validator[MyDict, allow_only_valid_country_names]
+
+@match_typing
+def cluster(val: AllowedDicts):
+    return True
+
+# works like expected
+cluster({"sales": 10, "country": "Europe", "product_codes": "Hello World".split()})
+cluster({"sales": 10, "product_codes": "Hello World".split()})
+
+# will raise a ValidationError
+cluster({"sales": 10, "country": "123456789", "product_codes": "Hello World".split()})
+cluster({"country": "123456789", "product_codes": "Hello World".split()})
+
+# will raise a TypeMisMatch
+cluster({"sales": 10, "country": "Europe", "product_codes": list(range(10))})
+cluster({"sales": "10", "country": "Europe"})
+cluster({"product_codes": list(range(10))})
+```
+
+
 ## ValidationError traceback
 - A traceback for the `Validator` can look similar to this
 ```

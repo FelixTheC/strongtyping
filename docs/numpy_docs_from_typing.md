@@ -145,3 +145,54 @@ Lorem ipsum dolor sit amet, consetetur sadipscing elitr,
 sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam
 
 ```
+
+### TypedDict
+- when used with a `TypedDict` the fields of the `TypedDict` are included
+```python
+class MyDict(TypedDict):
+    sales: int
+    country: str
+    product_codes: List[str]
+
+    
+@numpy_docs_from_typing
+def foo(val: MyDict, val_b: List[int]) -> str:
+    ...
+
+>>>print(foo.__doc__)
+
+Lorem ipsum dolor samit
+Parameters
+----------
+val : argument of type MyDict[TypedDict] required fields are 
+	`{'sales': 'int', 'country': 'str', 'product_codes': 'List(str)'}`
+val_b : argument of type List(int)
+
+Returns
+-------
+str
+```
+- when setting `total=False` the `required` word in the doc string will be removed
+```python
+class MyDict(TypedDict, total=False):
+    sales: int
+    country: str
+    product_codes: List[str]
+
+    
+@numpy_docs_from_typing
+def foo(val: MyDict, val_b: List[int]) -> str:
+    ...
+
+>>>print(foo.__doc__)
+Lorem ipsum dolor samit
+Parameters
+----------
+val : argument of type MyDict[TypedDict] fields are 
+	`{'sales': 'int', 'country': 'str', 'product_codes': 'List(str)'}`
+val_b : argument of type List(int)
+
+Returns
+-------
+str
+```

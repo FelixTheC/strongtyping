@@ -97,3 +97,43 @@ class Dummy:
 # wrong types are raising a TypeMisMatch error
 assert Dummy("10", 10)
 ```
+
+### with TypedDict
+- The `match_class_typing` decorator will also work very well with `TypedDict`
+```python
+from typing import List, TypedDict
+
+from strongtyping.strong_typing import match_class_typing
+
+
+@match_class_typing
+class SalesSummary(TypedDict):
+    sales: int
+    country: str
+    product_codes: List[str]
+
+# works like expected
+SalesSummary({"sales": 10, "country": "Foo", "product_codes": ["1", "2", "3"]})
+
+# will raise a TypeMisMatch
+SalesSummary({"sales": "Foo", "country": 10, "product_codes": [1, 2, 3]})
+```
+- The `total` keyword will supported like the original TypeDict
+```python
+from typing import List, TypedDict
+
+from strongtyping.strong_typing import match_class_typing
+
+
+@match_class_typing
+class SalesSummary(TypedDict, total=False):
+    sales: int
+    country: str
+    product_codes: List[str]
+
+# works like expected
+SalesSummary({"sales": 10, "product_codes": ["1", "2", "3"]})
+
+# will raise TypeMisMatch
+SalesSummary({"sales": "Foo", "product_codes": [1, 2, 3]})
+```

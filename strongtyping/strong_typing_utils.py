@@ -61,6 +61,10 @@ def get_possible_types(typ_to_check) -> typing.Union[tuple, None]:
         - Dict[str, int] = (str, int, )
         - Tuple[Union[str, int], List[int]] = (Union[str, int], List[int], )
     """
+    from strongtyping.strong_typing import match_class_typing
+
+    if isinstance(typ_to_check, match_class_typing):
+        return typ_to_check
     if extension_module:
         if not hasattr(typ_to_check, "__args__"):
             try:
@@ -74,6 +78,8 @@ def get_possible_types(typ_to_check) -> typing.Union[tuple, None]:
 
 
 def get_origins(typ_to_check: Any) -> tuple:
+    from strongtyping.strong_typing import match_class_typing
+
     """
     :param typ_to_check: typ_to_check: some typing like List[str], Dict[str, int], Tuple[Union[str, int], List[int]]
     :return: the class, alias_class and the class name
@@ -83,11 +89,24 @@ def get_origins(typ_to_check: Any) -> tuple:
         - FunctionType = (None, 'None')
     """
     origin = None
+    if isinstance(typ_to_check, match_class_typing):
+        return typ_to_check.cls, typ_to_check.cls.__orig_bases__[0].__name__
+
+    if hasattr(typ_to_check, "__annotations__") and hasattr(typ_to_check, "__orig_bases__"):
+        return typ_to_check, typ_to_check.__orig_bases__[0].__name__
+
+    if hasattr(typ_to_check, "__annotations__") and hasattr(typ_to_check, "__total__"):
+        return typ_to_check, typ_to_check.__class__.__name__
+
     if hasattr(typ_to_check, "__origin__") or hasattr(typ_to_check, "__orig_bases__"):
-        if py_version >= 3.9 and hasattr(typ_to_check.__origin__, "__name__"):
+        if (
+            py_version >= 9
+            and hasattr(typ_to_check, "__origin__")
+            and hasattr(typ_to_check.__origin__, "__name__")
+        ):
             origin = typ_to_check.__origin__.__name__
-        else:
-            if typ_to_check.__origin__ is not None:
+        elif hasattr(typ_to_check, "__origin__") or hasattr(typ_to_check, "__orig_bases__"):
+            if hasattr(typ_to_check, "__origin__") and typ_to_check.__origin__ is not None:
                 origin = typ_to_check.__origin__
             else:
                 origin = typ_to_check.__orig_bases__
@@ -223,6 +242,8 @@ def checking_typing__validator(arg, possible_types, *args, **kwargs):
 
 
 def checking_typing_validator(arg, possible_types, *args, **kwargs):
+    from strongtyping.strong_typing import match_class_typing
+
     if len(possible_types) == 2:
         default_return = empty
         required_type, validation = possible_types
@@ -241,6 +262,13 @@ def checking_typing_validator(arg, possible_types, *args, **kwargs):
             f'\n\tFile: "{validation_function_file}", line {validation_line}'
             f"\n\tName: {validation.__name__}"
         )
+
+    if isinstance(required_type, match_class_typing):
+        try:
+            required_type(arg)
+        except required_type.excep_raise:
+            return False
+        return True
     try:
         return isinstance(arg, required_type)
     except TypeError:
@@ -264,6 +292,13 @@ def checking_typing_iterable(arg: Any, possible_types: tuple, *args, **kwargs):
         return False
     pssble_type = possible_types[0]
     return all(check_type(argument, pssble_type, **kwargs) for argument in arg)
+
+
+def checking_typing_typedict_values(args: dict, required_types: dict, total: bool):
+    if total:
+        return all(check_type(args[key], val) for key, val in required_types.items())
+    fields_to_check = {key: val for key, val in required_types.items() if key in args}
+    return all(check_type(args[key], val) for key, val in fields_to_check.items())
 
 
 def module_checking_typing_list(arg: Any, possible_types: Any):
@@ -364,13 +399,12 @@ def check_type(argument, type_of, mro=False, **kwargs):
             type_of = type_of.__supertype__
             origin, origin_name = get_origins(type_of)
             origin_name = origin_name.lower()
-
-        if isinstance(type_of, typing_base_class) or (py_version >= 3.9 and origin is not None):
+        if isinstance(type_of, typing_base_class) or (py_version >= 9 and origin is not None):
             try:
                 return supported_typings[f"checking_typing_{origin_name}"](
                     argument, get_possible_types(type_of), mro, **kwargs
                 )
-            except AttributeError:
+            except AttributeError as err:
                 return isinstance(argument, type_of.__args__)
         elif isinstance(type_of, str):
             return argument.__class__.__name__ == type_of

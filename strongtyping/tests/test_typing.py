@@ -874,8 +874,12 @@ def test_with_dataclass():
         attr_a: int
         attr_b: str
 
+    Dummy(10, "10")
+
     with pytest.raises(TypeMisMatch):
         Dummy("10", 10)
+        Dummy("9", 10)
+        Dummy("8", 10)
 
 
 def test_with_severity_param():
