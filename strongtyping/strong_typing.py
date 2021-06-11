@@ -24,12 +24,12 @@ from strongtyping.types import FinalType
 
 
 def match_typing(
-    _func=None,
-    *,
-    excep_raise: Type[Exception] = TypeMisMatch,
-    subclass: bool = False,
-    severity="env",
-    **kwargs,
+        _func=None,
+        *,
+        excep_raise: Type[Exception] = TypeMisMatch,
+        subclass: bool = False,
+        severity="env",
+        **kwargs,
 ):
     cached_enabled: int = kwargs.get("cache_size", 1)
     cached_set = CachedSet(cached_enabled) if cached_enabled > 0 else None
@@ -121,9 +121,9 @@ class match_class_typing:
             func
             for func in dir(cls)
             if callable(getattr(cls, func))
-            and self.__has_annotations__(getattr(cls, func))
-            and not hasattr(getattr(cls, func), "__fe_strng_mtch__")
-            and not isinstance(getattr(cls, func), classmethod)
+               and self.__has_annotations__(getattr(cls, func))
+               and not hasattr(getattr(cls, func), "__fe_strng_mtch__")
+               and not isinstance(getattr(cls, func), classmethod)
         ]
 
     def __add_decorator(self, cls):
