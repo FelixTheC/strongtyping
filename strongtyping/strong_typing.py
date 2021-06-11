@@ -20,6 +20,7 @@ from strongtyping.strong_typing_utils import (
     get_origins,
     py_version,
 )
+from strongtyping.types import FinalType
 
 
 def match_typing(
@@ -181,3 +182,30 @@ def setter(func):
 
 def getter_setter(func):
     return action(func, "getter_setter", match_typing)
+
+
+class static_dataclass:
+
+    # TODO add same behavior https://docs.python.org/3/library/dataclasses.html
+
+    def __new__(cls, instance=None, *args, **kwargs):
+        cls.cls = instance
+        return super().__new__(cls)
+
+    def __init__(self, cls=None, *args, **kwargs):
+        self.cls = cls
+
+    def cls_init(self, *args, **kwargs):
+        anno = self.cls.__annotations__
+        for arg, attr in zip(args, anno.items()):
+            setattr(self.cls, attr[0], FinalType(attr[1], arg))
+
+        for key, val in kwargs.items():
+            setattr(self.cls, key, FinalType(anno[key], val))
+
+    def __call__(self, *args, **kwargs):
+        self.cls.__init__ = self.cls_init
+        cls = self.cls(*args, **kwargs)
+        cls.__doc__ = self.cls.__doc__
+        cls.__dict__ = dict(vars(self.cls))
+        return cls
