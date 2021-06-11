@@ -94,3 +94,52 @@ else:
 
     Validator = _alias(_Validator, (KT, VT), inst=False)
     IterValidator = _alias(_IterValidator, (KT, VT), inst=False)
+
+
+class FinalType:
+    __slots__ = ("required_type", "stored_value",)
+
+    def __init__(self, required_type, stored_value=None):
+        self.required_type = required_type
+        self.stored_value = stored_value
+
+    def __getattr__(self, item):
+        return getattr(self.stored_value, item)
+
+    def __get__(self, instance=None, owner=None):
+        return self.stored_value
+
+    def __set__(self, instance=None, value=None):
+        if isinstance(value, tuple) and isinstance(value[0], FinalType):
+            self.required_type, original_type = value[1], self.required_type
+            try:
+                self.stored_value = value[1](self.stored_value)
+            except TypeError:
+                self.required_type = original_type
+                raise TypeError(f"Cannot cast {self.required_type} to {value[1]}")
+        else:
+            if not isinstance(value, self.required_type):
+                raise TypeError("This is a final type. "
+                                f"\nYou cannot assign {type(value)} to {self.required_type}")
+            else:
+                self.stored_value = value
+
+    def __repr__(self):
+        return repr(self.required_type)
+
+    def __str__(self):
+        return str(self.stored_value)
+
+    def __doc__(self):
+        return self.required_type.__doc__
+
+    @classmethod
+    def cast(cls, origin, new):
+        """
+        change the type explicit not implicit by accident
+        """
+        try:
+            new(origin)
+        except TypeError:
+            raise TypeError(f"Cannot cast {type(origin)} to {new}")
+        return FinalType(FinalType), new
