@@ -1,16 +1,14 @@
 import typing
+from typing import Any
 
 from strongtyping.strong_typing_utils import py_version as py_version
-from typing import Any
 
 Validator: Any
 IterValidator: Any
 
-
-class FinalType:
-    def __init__(self, attr: typing.Type):
+class FrozenType:
+    def __init__(self, *args):
         pass
-
     @classmethod
-    def cast(cls, origin: Any, new: typing.Type):
+    def cast(cls, instance: Any, origin: Any, new: typing.Type):
         pass

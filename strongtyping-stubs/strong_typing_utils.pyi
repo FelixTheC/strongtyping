@@ -1,6 +1,7 @@
 import typing
-from strongtyping._utils import install_st_m as install_st_m
 from typing import Any, Optional
+
+from strongtyping._utils import install_st_m as install_st_m
 
 extension_module: bool
 empty: Any
