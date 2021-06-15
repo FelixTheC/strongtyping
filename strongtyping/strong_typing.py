@@ -17,19 +17,17 @@ from strongtyping.strong_typing_utils import (
     check_type,
     checking_typing_typedict_values,
     default_return_queue,
-    get_origins,
     py_version,
 )
-from strongtyping.types import FinalType
 
 
 def match_typing(
-        _func=None,
-        *,
-        excep_raise: Type[Exception] = TypeMisMatch,
-        subclass: bool = False,
-        severity="env",
-        **kwargs,
+    _func=None,
+    *,
+    excep_raise: Type[Exception] = TypeMisMatch,
+    subclass: bool = False,
+    severity="env",
+    **kwargs,
 ):
     cached_enabled: int = kwargs.get("cache_size", 1)
     cached_set = CachedSet(cached_enabled) if cached_enabled > 0 else None
@@ -121,9 +119,9 @@ class match_class_typing:
             func
             for func in dir(cls)
             if callable(getattr(cls, func))
-               and self.__has_annotations__(getattr(cls, func))
-               and not hasattr(getattr(cls, func), "__fe_strng_mtch__")
-               and not isinstance(getattr(cls, func), classmethod)
+            and self.__has_annotations__(getattr(cls, func))
+            and not hasattr(getattr(cls, func), "__fe_strng_mtch__")
+            and not isinstance(getattr(cls, func), classmethod)
         ]
 
     def __add_decorator(self, cls):
@@ -182,30 +180,3 @@ def setter(func):
 
 def getter_setter(func):
     return action(func, "getter_setter", match_typing)
-
-
-class static_dataclass:
-
-    # TODO add same behavior https://docs.python.org/3/library/dataclasses.html
-
-    def __new__(cls, instance=None, *args, **kwargs):
-        cls.cls = instance
-        return super().__new__(cls)
-
-    def __init__(self, cls=None, *args, **kwargs):
-        self.cls = cls
-
-    def cls_init(self, *args, **kwargs):
-        anno = self.cls.__annotations__
-        for arg, attr in zip(args, anno.items()):
-            setattr(self.cls, attr[0], FinalType(attr[1], arg))
-
-        for key, val in kwargs.items():
-            setattr(self.cls, key, FinalType(anno[key], val))
-
-    def __call__(self, *args, **kwargs):
-        self.cls.__init__ = self.cls_init
-        cls = self.cls(*args, **kwargs)
-        cls.__doc__ = self.cls.__doc__
-        cls.__dict__ = dict(vars(self.cls))
-        return cls
