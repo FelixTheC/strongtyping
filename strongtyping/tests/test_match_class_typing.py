@@ -45,7 +45,6 @@ def test_correct_str():
 
 
 def test_wrong_type_for_classes_decorated_with_match_class_typing():
-
     class Foo:
         def __init__(self, val: int):
             self.val = val

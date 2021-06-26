@@ -424,6 +424,7 @@ def check_type(argument, type_of, mro=False, **kwargs):
             return type_of in argument
         else:
             from strongtyping.strong_typing import match_class_typing
+
             if isinstance(type_of, match_class_typing):
                 return isinstance(argument, type_of.cls)
             try:
