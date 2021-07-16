@@ -1,6 +1,6 @@
 ## docs_from_typing
 
-- Wth `docs_from_typing` you can generate a docstring from your type annotations for a whole class
+- Wth `class_docs_from_typing` you can generate a docstring from your type annotations for a whole class
   
 - Inside the docstring there will be extra information indicating whether a parameter is an `Argument` 
   a `Positional Only Argument` or a `Keyword Argument`
@@ -8,7 +8,7 @@
 - Existing docstrings will not be overwritten
 
 ### Usage
-- add `docs_from_typing` as decorator to your class
+- add `class_docs_from_typing` as decorator to your class
 - the default docstring rendering style is `reST` you can also use `numpy` by setting `doc_type` to `numpy`
     - `@class_docs_from_typing(doc_type="numpy")`
 
