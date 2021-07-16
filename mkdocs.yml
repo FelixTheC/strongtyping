@@ -26,3 +26,4 @@ nav:
         - 'Authors': 'authors.md'
         - 'Special thanks': 'special_thanks.md'
 theme: readthedocs
+extra_css: [extra.css]
