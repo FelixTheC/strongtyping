@@ -13,8 +13,8 @@ nav:
         - 'getter / setter': 'setter.md'
         - 'getter_setter': 'getter_setter.md'
         - 'docs_from_typing': 'docs_from_typing.md'
-            - 'rest_docs_from_typing': 'rest_docs_from_typing.md'
-            - 'numpy_docs_from_typing': 'numpy_docs_from_typing.md'
+        - 'rest_docs_from_typing': 'rest_docs_from_typing.md'
+        - 'numpy_docs_from_typing': 'numpy_docs_from_typing.md'
         - 'Validator - type': 'validator.md'
         - 'IterValidator - type': 'itervalidator.md'
     - About:
