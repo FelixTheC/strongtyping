@@ -15,7 +15,8 @@ except ImportError:
 
 import pytest
 
-from strongtyping.docs_from_typing import numpy_docs_from_typing, rest_docs_from_typing
+from strongtyping.docs_from_typing import numpy_docs_from_typing, rest_docs_from_typing, \
+    class_docs_from_typing
 
 
 @pytest.mark.skipif(
@@ -110,3 +111,15 @@ def test_numpy_docstring_from_typing_literal():
         pass
 
     assert foo.__doc__
+
+
+def test_docstring_on_whole_class():
+
+    @class_docs_from_typing
+    class Foo:
+        def __init__(self, val_a: int, val_b: Tuple[str, ...]):
+            pass
+
+    assert Foo.__doc__
+    assert "val_a" in Foo.__doc__
+    assert "val_b" in Foo.__doc__

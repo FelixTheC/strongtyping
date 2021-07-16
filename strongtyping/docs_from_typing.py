@@ -63,6 +63,8 @@ ARGUMENT_TYPE = {
     inspect.Parameter.KEYWORD_ONLY: "keyword only argument",
     inspect.Parameter.POSITIONAL_ONLY: "postional only argument",
     inspect.Parameter.POSITIONAL_OR_KEYWORD: "argument",
+    inspect.Parameter.VAR_POSITIONAL: "variadic arguments",
+    inspect.Parameter.VAR_KEYWORD: "variadic keyword arguments"
 }
 
 
@@ -119,6 +121,10 @@ def get_type_info(val, type_origins):
         required_type, *not_needed = type_origins.__args__
         text = f"{get_type_info(val, required_type)}[{origins[1]}]"
         return text
+    elif val_origins[1] == "args":
+        return "tuple"
+    elif val_origins[1] == "kwargs":
+        return "dict"
     else:
         if type_origins:
             try:
@@ -149,9 +155,13 @@ def docs_from_typing_numpy_format(
 ):
     doc_infos = ["Parameters", "----------"]
     type_infos = ["Returns", "-------"]
-    for idx, item in enumerate(annotations.items(), 1):
-        key, val = item
+    func_param_keys = [key for key in func_params.keys()
+                       if key != "self" and key not in annotations]
+    annotation_keys = list(annotations.keys())
+
+    for idx, key in enumerate((annotation_keys + func_param_keys), 1):
         if key != "return":
+            val = annotations.get(key, func_params[key])
             type_origins = get_possible_types(val)
             predefined_info = "\n\t".join(additional_infos.get(f"${idx}", "").split("\n"))
             predefined_info = f"\n\t{predefined_info}" if predefined_info else ""
@@ -178,9 +188,12 @@ def docs_from_typing_reST_format(
 ):
     doc_infos = []
     type_infos = []
-    for idx, item in enumerate(annotations.items(), 1):
-        key, val = item
+    func_param_keys = [key for key in func_params.keys()
+                       if key != "self" and key not in annotations]
+    annotation_keys = list(annotations.keys())
+    for idx, key in enumerate((annotation_keys + func_param_keys), 1):
         if key != "return":
+            val = annotations.get(key, func_params[key])
             type_origins = get_possible_types(val)
             predefined_info = "\n\t".join(additional_infos.get(f"${idx}", "").split("\n"))
             predefined_info = f"\n\t{predefined_info}" if predefined_info else ""
@@ -206,7 +219,11 @@ def docs_from_typing(func, remove_linebreak, style):
     annotations = func.__annotations__
     func_params = inspect.signature(func).parameters
     if func.__doc__:
-        additional_infos = Pattern.split(textwrap.dedent(func.__doc__))
+        if not func.__doc__.endswith("\n") and func.__doc__ != "":
+            func_doc = f"{func.__doc__}\n"
+        else:
+            func_doc = func.__doc__
+        additional_infos = Pattern.split(textwrap.dedent(func_doc))
         func_info = textwrap.dedent(additional_infos[0])
         additional_infos = dict(
             [
@@ -216,7 +233,10 @@ def docs_from_typing(func, remove_linebreak, style):
             ]
         )
     else:
-        func_info = f"Function {func.__name__}\n\n"
+        if func.__name__ != "__init__":
+            func_info = f"Function {func.__name__}\n\n"
+        else:
+            func_info = "\n"
         additional_infos = {}
     if style == "rest":
         return docs_from_typing_reST_format(
@@ -240,6 +260,7 @@ def rest_docs_from_typing(_func=None, *, insert_at: str = None, remove_linebreak
             inner.__doc__ = func_doc.replace(insert_at, text)
         else:
             inner.__doc__ = f"{func_doc}{text}"
+        inner.has_auto_generated_docs = True
         return inner
 
     if _func is not None:
@@ -260,9 +281,30 @@ def numpy_docs_from_typing(_func=None, *, insert_at: str = None, remove_linebrea
             inner.__doc__ = func_doc.replace(insert_at, text)
         else:
             inner.__doc__ = f"{func_doc}{text}"
+        inner.has_auto_generated_docs = True
         return inner
 
     if _func is not None:
         return wrapper(_func)
+    else:
+        return wrapper
+
+
+def class_docs_from_typing(_cls=None, *, doc_type: str = "reST"):
+    def wrapper(cls):
+        docs_formatter = (rest_docs_from_typing
+                         if doc_type.lower() == "rest" else numpy_docs_from_typing)
+        cls.__doc__ = f"{cls.__doc__}{docs_formatter(cls.__init__).__doc__}"
+        cls.__init__.__doc__ = ""
+        users_funcs = [func for func in dir(cls)
+                       if inspect.isfunction(getattr(cls, func)) and func != "__init__"]
+        for func in users_funcs:
+            cls_method = getattr(cls, func)
+            if cls_method.__annotations__ and not hasattr(cls_method, "has_auto_generated_docs"):
+                cls_method.__doc__ = docs_formatter(getattr(cls, func)).__doc__
+        return cls
+
+    if _cls is not None:
+        return wrapper(_cls)
     else:
         return wrapper
