@@ -1,5 +1,6 @@
 from typing import Any, Optional, Type
 
+
 from strongtyping._utils import action as action, remove_subclass as remove_subclass
 from strongtyping.cached_set import CachedSet as CachedSet
 from strongtyping.strong_typing_utils import (
@@ -11,7 +12,14 @@ from strongtyping.strong_typing_utils import (
     py_version as py_version,
 )
 
-def match_typing(_func: Any=..., *, excep_raise: Type[Exception]=..., subclass: bool=..., severity: Any=..., **kwargs: Any) -> Any: ...
+def match_typing(
+    _func: Any = ...,
+    *,
+    excep_raise: Type[Exception] = ...,
+    subclass: bool = ...,
+    severity: Any = ...,
+    **kwargs: Any,
+) -> Any: ...
 
 class match_class_typing:
     def __new__(cls, instance: Optional[Any] = ..., *args: Any, **kwargs: Any): ...

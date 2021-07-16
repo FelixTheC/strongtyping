@@ -64,7 +64,7 @@ def get_possible_types(typ_to_check) -> typing.Union[tuple, None]:
     from strongtyping.strong_typing import match_class_typing
 
     if isinstance(typ_to_check, match_class_typing):
-        return typ_to_check
+        return typ_to_check.cls
     if extension_module:
         if not hasattr(typ_to_check, "__args__"):
             try:
@@ -90,7 +90,10 @@ def get_origins(typ_to_check: Any) -> tuple:
     """
     origin = None
     if isinstance(typ_to_check, match_class_typing):
-        return typ_to_check.cls, typ_to_check.cls.__orig_bases__[0].__name__
+        if hasattr(typ_to_check.cls, "__orig_bases__"):
+            return typ_to_check.cls, typ_to_check.cls.__orig_bases__[0].__name__
+        else:
+            return typ_to_check.cls, "class"
 
     if hasattr(typ_to_check, "__annotations__") and hasattr(typ_to_check, "__orig_bases__"):
         return typ_to_check, typ_to_check.__orig_bases__[0].__name__
@@ -301,6 +304,10 @@ def checking_typing_typedict_values(args: dict, required_types: dict, total: boo
     return all(check_type(args[key], val) for key, val in fields_to_check.items())
 
 
+def checking_typing_class(arg: Any, possible_types: tuple, *args, **kwargs):
+    return isinstance(arg, possible_types)
+
+
 def module_checking_typing_list(arg: Any, possible_types: Any):
     if (
         not hasattr(possible_types, "__args__")
@@ -404,7 +411,7 @@ def check_type(argument, type_of, mro=False, **kwargs):
                 return supported_typings[f"checking_typing_{origin_name}"](
                     argument, get_possible_types(type_of), mro, **kwargs
                 )
-            except AttributeError as err:
+            except AttributeError:
                 return isinstance(argument, type_of.__args__)
         elif isinstance(type_of, str):
             return argument.__class__.__name__ == type_of
@@ -416,6 +423,10 @@ def check_type(argument, type_of, mro=False, **kwargs):
                 )
             return type_of in argument
         else:
+            from strongtyping.strong_typing import match_class_typing
+
+            if isinstance(type_of, match_class_typing):
+                return isinstance(argument, type_of.cls)
             try:
                 is_instance = isinstance(argument, type_of)
             except TypeError:

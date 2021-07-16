@@ -5,4 +5,11 @@ from strongtyping.strong_typing import check_type as check_type, match_typing as
 
 use_match_typing: Any
 
-def typed_namedtuple(typename: str, field_names: Union[List[str], str, List[Tuple[str, Any]]], *, rename: bool=..., defaults: Union[list, tuple]=..., module: str=...) -> Any: ...
+def typed_namedtuple(
+    typename: str,
+    field_names: Union[List[str], str, List[Tuple[str, Any]]],
+    *,
+    rename: bool = ...,
+    defaults: Union[list, tuple] = ...,
+    module: str = ...,
+) -> Any: ...

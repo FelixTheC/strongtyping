@@ -4,6 +4,7 @@
 @created: 28.04.20
 @author: felix
 """
+import functools
 import inspect
 import pprint
 import warnings
@@ -17,7 +18,6 @@ from strongtyping.strong_typing_utils import (
     check_type,
     checking_typing_typedict_values,
     default_return_queue,
-    get_origins,
     py_version,
 )
 
@@ -169,6 +169,12 @@ class match_class_typing:
             cls = args[0]
             self.__add_decorator(cls)
         return cls
+
+    def __repr__(self):
+        return repr(self.cls)
+
+    def __str__(self):
+        return str(self.cls)
 
 
 def getter(func):
