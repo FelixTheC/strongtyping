@@ -1,8 +1,9 @@
 import typing
+from typing import Any
+
 from strongtyping._utils import action as action, remove_subclass as remove_subclass
 from strongtyping.cached_set import CachedSet as CachedSet
 from strongtyping.strong_typing import TypeMisMatch as TypeMisMatch
-from typing import Any
 
 TYPE_EXTRACTION_PATTERN: str
 PATTERN_1: str
@@ -33,8 +34,23 @@ def check_doc_str_type(arg: Any, type_of: Any): ...
 def is_type_info(docstring_line: str) -> bool: ...
 def is_param_info(docstring_line: str) -> bool: ...
 def extract_docstring_param_types(func: Any) -> dict: ...
-def match_docstring(_func: Any=..., *, excep_raise: Exception=..., cache_size: Any=..., subclass: bool=..., severity: Any=..., **kwargs: Any) -> Any: ...
-def match_class_docstring(_cls: Any=..., *, excep_raise: Exception=..., cache_size: Any=..., severity: Any=..., **kwargs: Any) -> Any: ...
+def match_docstring(
+    _func: Any = ...,
+    *,
+    excep_raise: Exception = ...,
+    cache_size: Any = ...,
+    subclass: bool = ...,
+    severity: Any = ...,
+    **kwargs: Any,
+) -> Any: ...
+def match_class_docstring(
+    _cls: Any = ...,
+    *,
+    excep_raise: Exception = ...,
+    cache_size: Any = ...,
+    severity: Any = ...,
+    **kwargs: Any,
+) -> Any: ...
 def getter(func: Any): ...
 def setter(func: Any): ...
 def getter_setter(func: Any): ...
