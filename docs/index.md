@@ -97,6 +97,7 @@ func_e([5, ('a', 'b'), '10'], [1, '2', 3, datetime.date])
 * `typed_namedtuple`
 
 #### from strongtyping.docs_from_typing import
+* `@class_docs_from_typing`
 * `@rest_docs_from_typing`
 * `@numpy_docs_from_typing`
 

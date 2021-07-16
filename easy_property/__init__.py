@@ -5,6 +5,7 @@
 @author: felix
 """
 from functools import partial
+
 import strongtyping
 
 

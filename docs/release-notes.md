@@ -1,5 +1,8 @@
 # Release Notes
 
+## Unreleased
+- class decorator for docstrings from typing `class_docs_from_typing`
+
 ## v2.1.5
 - support for latest strongtyping-modules version (0.1.4)
 - support for TypedDict
