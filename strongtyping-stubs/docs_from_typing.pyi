@@ -1,5 +1,9 @@
-from strongtyping.strong_typing_utils import get_origins as get_origins, get_possible_types as get_possible_types
 from typing import Any
+
+from strongtyping.strong_typing_utils import (
+    get_origins as get_origins,
+    get_possible_types as get_possible_types,
+)
 
 Pattern: Any
 

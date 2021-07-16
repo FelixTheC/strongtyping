@@ -1,6 +1,7 @@
+from typing import Any, List, Tuple, Union
+
 from strongtyping.docstring_typing import check_doc_str_type as check_doc_str_type
 from strongtyping.strong_typing import check_type as check_type, match_typing as match_typing
-from typing import Any, List, Tuple, Union
 
 use_match_typing: Any
 

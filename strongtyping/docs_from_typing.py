@@ -64,7 +64,7 @@ ARGUMENT_TYPE = {
     inspect.Parameter.POSITIONAL_ONLY: "postional only argument",
     inspect.Parameter.POSITIONAL_OR_KEYWORD: "argument",
     inspect.Parameter.VAR_POSITIONAL: "variadic arguments",
-    inspect.Parameter.VAR_KEYWORD: "variadic keyword arguments"
+    inspect.Parameter.VAR_KEYWORD: "variadic keyword arguments",
 }
 
 
@@ -155,8 +155,9 @@ def docs_from_typing_numpy_format(
 ):
     doc_infos = ["Parameters", "----------"]
     type_infos = ["Returns", "-------"]
-    func_param_keys = [key for key in func_params.keys()
-                       if key != "self" and key not in annotations]
+    func_param_keys = [
+        key for key in func_params.keys() if key != "self" and key not in annotations
+    ]
     annotation_keys = list(annotations.keys())
 
     for idx, key in enumerate((annotation_keys + func_param_keys), 1):
@@ -188,8 +189,9 @@ def docs_from_typing_reST_format(
 ):
     doc_infos = []
     type_infos = []
-    func_param_keys = [key for key in func_params.keys()
-                       if key != "self" and key not in annotations]
+    func_param_keys = [
+        key for key in func_params.keys() if key != "self" and key not in annotations
+    ]
     annotation_keys = list(annotations.keys())
     for idx, key in enumerate((annotation_keys + func_param_keys), 1):
         if key != "return":
@@ -292,12 +294,16 @@ def numpy_docs_from_typing(_func=None, *, insert_at: str = None, remove_linebrea
 
 def class_docs_from_typing(_cls=None, *, doc_type: str = "reST"):
     def wrapper(cls):
-        docs_formatter = (rest_docs_from_typing
-                         if doc_type.lower() == "rest" else numpy_docs_from_typing)
+        docs_formatter = (
+            rest_docs_from_typing if doc_type.lower() == "rest" else numpy_docs_from_typing
+        )
         cls.__doc__ = f"{cls.__doc__}{docs_formatter(cls.__init__).__doc__}"
         cls.__init__.__doc__ = ""
-        users_funcs = [func for func in dir(cls)
-                       if inspect.isfunction(getattr(cls, func)) and func != "__init__"]
+        users_funcs = [
+            func
+            for func in dir(cls)
+            if inspect.isfunction(getattr(cls, func)) and func != "__init__"
+        ]
         for func in users_funcs:
             cls_method = getattr(cls, func)
             if cls_method.__annotations__ and not hasattr(cls_method, "has_auto_generated_docs"):

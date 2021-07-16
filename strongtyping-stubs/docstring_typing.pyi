@@ -1,8 +1,9 @@
 import typing
+from typing import Any
+
 from strongtyping._utils import action as action, remove_subclass as remove_subclass
 from strongtyping.cached_set import CachedSet as CachedSet
 from strongtyping.strong_typing import TypeMisMatch as TypeMisMatch
-from typing import Any
 
 TYPE_EXTRACTION_PATTERN: str
 PATTERN_1: str
