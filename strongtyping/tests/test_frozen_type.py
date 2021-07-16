@@ -82,6 +82,7 @@ def test_inheritance():
         pass
 
     child = Child()
+    child.attr_a = {"jon": "doe"}
 
     with pytest.raises(TypeError):
         child.attr_a = {"foo", "bar"}
