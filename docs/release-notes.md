@@ -1,7 +1,8 @@
 # Release Notes
 
-## Unreleased
+## v2.1.6
 - class decorator for docstrings from typing `class_docs_from_typing`
+- beta feature FrozenType
 
 ## v2.1.5
 - support for latest strongtyping-modules version (0.1.4)

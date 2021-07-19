@@ -5,16 +5,18 @@ nav:
     - Home: 'index.md'
     - User's guide:
         - 'Installation': 'install.md'
-    - Reference:
+    - Runtime Typechecking:
         - 'match_typing': 'match_typing.md'
         - 'match_class_typing': 'match_class_typing.md'
         - 'severity_level': 'severity_level.md'
         - 'typed_namedtuple': 'namedtuple.md'
         - 'getter / setter': 'setter.md'
         - 'getter_setter': 'getter_setter.md'
+    - Additional Tools:
         - 'docs_from_typing': 'docs_from_typing.md'
         - 'rest_docs_from_typing': 'rest_docs_from_typing.md'
         - 'numpy_docs_from_typing': 'numpy_docs_from_typing.md'
+    - Custom Types:
         - 'Validator - type': 'validator.md'
         - 'IterValidator - type': 'itervalidator.md'
         - 'FrozenType': 'frozentype.md'
@@ -24,3 +26,4 @@ nav:
         - 'Authors': 'authors.md'
         - 'Special thanks': 'special_thanks.md'
 theme: readthedocs
+extra_css: [extra.css]

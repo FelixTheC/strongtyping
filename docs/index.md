@@ -45,8 +45,6 @@ ___
 
 ### The Solution
 
-![](https://media.giphy.com/media/L0Z4qwdwv62cn4haFp/giphy.gif)
-
 I love Python and its freedom, but with the new option of adding _type hints_ I wanted to get rid of writing `if isinstance(value, whatever)` repeatedly in my programs, so I decided to create `strongtyping`...
 
 My solution is a simple decorator called `@match_typing` which will check <b>at runtime</b> whether the parameters you provide to a function are valid, based on type hints you've already defined in the `def` line.  Here are some examples:
