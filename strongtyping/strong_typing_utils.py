@@ -56,6 +56,7 @@ else:
 def get_possible_types(typ_to_check, origin_name: str = "") -> typing.Union[tuple, None]:
     """
     :param typ_to_check: some typing like List[str], Dict[str, int], Tuple[Union[str, int], List[int]]
+    :param origin_name: the name of the origin
     :return: the inner types, classes of the type
         - List[str] = (str, )
         - Dict[str, int] = (str, int, )
@@ -428,6 +429,8 @@ def check_type(argument, type_of, mro=False, **kwargs):
                 return isinstance(argument, type_of.__args__)
         elif isinstance(type_of, str):
             return argument.__class__.__name__ == type_of
+        elif origin_name == "_typeddictmeta":
+            return checking_typing_typeddict(argument, get_possible_types(type_of, "typeddict"))
         elif mro:
             if origin_name == "union":
                 possible_types = get_possible_types(type_of)
