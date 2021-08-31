@@ -53,7 +53,7 @@ else:
 
 
 @lru_cache(maxsize=1024)
-def get_possible_types(typ_to_check) -> typing.Union[tuple, None]:
+def get_possible_types(typ_to_check, origin_name: str = "") -> typing.Union[tuple, None]:
     """
     :param typ_to_check: some typing like List[str], Dict[str, int], Tuple[Union[str, int], List[int]]
     :return: the inner types, classes of the type
@@ -62,6 +62,10 @@ def get_possible_types(typ_to_check) -> typing.Union[tuple, None]:
         - Tuple[Union[str, int], List[int]] = (Union[str, int], List[int], )
     """
     from strongtyping.strong_typing import match_class_typing
+
+    if origin_name == "typeddict":
+        # we can ensure now that we use a python version which has typing.TypedDict
+        return typ_to_check
 
     if isinstance(typ_to_check, match_class_typing):
         return typ_to_check.cls
@@ -308,6 +312,15 @@ def checking_typing_class(arg: Any, possible_types: tuple, *args, **kwargs):
     return isinstance(arg, possible_types)
 
 
+def checking_typing_typeddict(arg: Any, possible_types: Any, *args, **kwargs):
+    total = possible_types.__total__
+    required_fields = possible_types.__annotations__
+    if total:
+        if not all(field in arg for field in required_fields):
+            return False
+    return checking_typing_typedict_values(arg, required_fields, total)
+
+
 def module_checking_typing_list(arg: Any, possible_types: Any):
     if (
         not hasattr(possible_types, "__args__")
@@ -409,7 +422,7 @@ def check_type(argument, type_of, mro=False, **kwargs):
         if isinstance(type_of, typing_base_class) or (py_version >= 9 and origin is not None):
             try:
                 return supported_typings[f"checking_typing_{origin_name}"](
-                    argument, get_possible_types(type_of), mro, **kwargs
+                    argument, get_possible_types(type_of, origin_name), mro, **kwargs
                 )
             except AttributeError:
                 return isinstance(argument, type_of.__args__)
