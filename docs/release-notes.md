@@ -1,5 +1,8 @@
 # Release Notes
 
+## Unreleased
+- fix bug #69 (Handle functions wich specify a value having of type TypeDict)
+
 ## v2.1.6
 - class decorator for docstrings from typing `class_docs_from_typing`
 - beta feature FrozenType

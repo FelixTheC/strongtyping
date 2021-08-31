@@ -5,7 +5,7 @@
 @author: felix
 """
 import sys
-from typing import List
+from typing import List, Union
 
 import pytest
 
@@ -105,6 +105,73 @@ def test_typedict_with_validator_and_total():
     with pytest.raises(TypeMisMatch):
         cluster({"sales": "10", "country": "Europe"})
         cluster({"product_codes": list(range(10))})
+
+
+@pytest.mark.skipif(sys.version_info.minor < 8, reason="TypedDict only available since 3.8")
+def test_use_typed_dict_total_true_class_as_function_parameter_to_validate():
+    from typing import TypedDict
+
+    class Point(TypedDict):
+        x: float
+        y: float
+
+    @match_typing
+    def move_to(pos: Point):
+        print(f'moving to ({pos["x"]}, {pos["y"]})')
+        return True
+
+    assert move_to({"x": 1.0, "y": 2.2})
+
+    with pytest.raises(TypeMisMatch):
+        move_to({"x": 1.0, "y": 2})
+    with pytest.raises(TypeMisMatch):
+        move_to({"y": 2.1})
+
+
+@pytest.mark.skipif(sys.version_info.minor < 8, reason="TypedDict only available since 3.8")
+def test_use_typed_dict_total_false_class_as_function_parameter_to_validate():
+    from typing import TypedDict
+
+    class Vector(TypedDict, total=False):
+        x: float
+        y: float
+        z: float
+
+    @match_typing
+    def move_to(pos: Vector):
+        print(f'moving to ({pos.get("x", 1.0)}, {pos.get("y", 1.0)}, {pos.get("z", 1)})')
+        return True
+
+    assert move_to({})
+    assert move_to({"x": 1.0, "y": 2.0})
+
+
+@pytest.mark.skipif(sys.version_info.minor < 8, reason="TypedDict only available since 3.8")
+def test_nested_typeddicts():
+    from typing import TypedDict
+
+    class Vector(TypedDict, total=False):
+        x: float
+        y: float
+        z: float
+
+    class Move(TypedDict):
+        position: Vector
+        velocity: Union[float, int]
+
+    @match_typing
+    def make_move(move: Move):
+        return True
+
+    assert make_move({"position": {"x": 1.0, "y": 2.0, "z": 0.25}, "velocity": 1.0})
+    assert make_move({"position": {"x": 1.0, "z": 0.25}, "velocity": 1.0})
+    assert make_move({"position": {"x": 1.0, "y": 2.0, "z": 0.25}, "velocity": 1})
+
+    with pytest.raises(TypeMisMatch):
+        make_move({"position": {"x": 1.0, "y": 2.0, "z": "0.25"}, "velocity": 1.0})
+
+    with pytest.raises(TypeMisMatch):
+        make_move({"position": {"x": 1.0, "y": 2.0, "z": 0.25}})
 
 
 if __name__ == "__main__":
