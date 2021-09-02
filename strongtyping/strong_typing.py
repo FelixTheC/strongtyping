@@ -188,3 +188,28 @@ def setter(func):
 
 def getter_setter(func):
     return action(func, "getter_setter", match_typing)
+
+
+class FinalClass:
+    def __new__(cls, instance=None, *args, **kwargs):
+        if args:
+            raise RuntimeError(
+                f"`class {instance}` can not inherit from `class {args[0][0].__name__}`"
+            )
+        cls.cls = instance
+        return super().__new__(cls)
+
+    def __init__(self, cls=None, *args, **kwargs):
+        self.cls = cls
+
+    def __getattr__(self, item):
+        return getattr(self.cls, item)
+
+    def __call__(self, *args, **kwargs):
+        return self.cls(*args, **kwargs)
+
+    def __repr__(self):
+        return repr(self.cls)
+
+    def __str__(self):
+        return str(self.cls)
