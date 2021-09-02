@@ -1,6 +1,7 @@
 # Release Notes
 
 ## Unreleased
+- feat `FinalClass` decorator, __disable Inheritance__ for the decorated class
 - fix bug #71 (Initializing TypedDict like a normal class with kwargs fails)
 - fix bug #69 (Handle functions wich specify a value having of type TypeDict)
 
