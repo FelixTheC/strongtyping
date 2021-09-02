@@ -158,8 +158,9 @@ class match_class_typing:
 
     def __call__(self, *args, **kwargs):
         if self.is_typed_dict:
-            if not checking_typing_typedict_values(args[0], self.__annotations__, self.__total__):
-                raise self.excep_raise(self.create_error_msg(args[0]))
+            arguments = kwargs if kwargs else args[0]
+            if not checking_typing_typedict_values(arguments, self.__annotations__, self.__total__):
+                raise self.excep_raise(self.create_error_msg(arguments))
         if self.cls:
             if self.__has_annotations__(self.cls.__init__):
                 self.cls.__init__ = match_typing(self.cls.__init__)
