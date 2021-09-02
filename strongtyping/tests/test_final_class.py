@@ -8,12 +8,16 @@ from strongtyping.strong_typing import FinalClass
 def test_decorated_class_behaves_like_normal_class():
     @FinalClass
     class Some:
+        """Some is a decorated class"""
+
         def __init__(self, name, value):
             self.name = name
             self.value = value
 
         def __repr__(self):
             return f"[FinalClass]({self.__class__.__name__}): {self.name}, {self.value}"
+
+    assert Some.__doc__ == "Some is a decorated class"
 
     some = Some("Hello", "Class")
     assert "[FinalClass](Some): Hello, Class" == repr(some)

@@ -213,3 +213,7 @@ class FinalClass:
 
     def __str__(self):
         return str(self.cls)
+
+    @property
+    def __doc__(self):
+        return self.cls.__doc__
