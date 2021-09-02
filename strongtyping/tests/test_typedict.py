@@ -174,5 +174,19 @@ def test_nested_typeddicts():
         make_move({"position": {"x": 1.0, "y": 2.0, "z": 0.25}})
 
 
+@pytest.mark.skipif(sys.version_info.minor < 8, reason="TypedDict only available since 3.8")
+def test_calling_a_typeddict_class_without_dict():
+    from typing import TypedDict
+
+    @match_class_typing
+    class Example(TypedDict):
+        x: float
+        y: float
+        z: float
+
+    new_obj = Example(x=1.0, y=2.0, z=3.0)
+    assert new_obj
+
+
 if __name__ == "__main__":
     pytest.main(["-vv", "-s", __file__])
