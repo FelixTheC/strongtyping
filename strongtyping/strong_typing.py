@@ -98,7 +98,7 @@ def match_typing(
 
 
 def add_required_methods_to_class(cls, inst):
-    for method in ('__instancecheck__',):
+    for method in ("__instancecheck__",):
         setattr(cls, method, getattr(inst, method))
 
 

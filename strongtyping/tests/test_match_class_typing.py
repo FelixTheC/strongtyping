@@ -73,7 +73,6 @@ def test_wrong_type_for_classes_decorated_with_match_class_typing():
 
 
 def test_class_decorated_class_isinstance_is_proberly_working():
-
     @match_class_typing
     class Foo:
         def __init__(self, val: int = 10):
