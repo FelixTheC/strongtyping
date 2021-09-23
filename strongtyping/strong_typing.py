@@ -97,9 +97,15 @@ def match_typing(
         return wrapper
 
 
+def add_required_methods_to_class(cls, inst):
+    for method in ('__instancecheck__',):
+        setattr(cls, method, getattr(inst, method))
+
+
 class match_class_typing:
     def __new__(cls, instance=None, *args, **kwargs):
         cls.cls = instance
+        add_required_methods_to_class(cls, instance)
         return super().__new__(cls)
 
     def __init__(self, cls=None, *args, **kwargs):

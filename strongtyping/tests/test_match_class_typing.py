@@ -72,5 +72,16 @@ def test_wrong_type_for_classes_decorated_with_match_class_typing():
         bar("10")
 
 
+def test_class_decorated_class_isinstance_is_proberly_working():
+
+    @match_class_typing
+    class Foo:
+        def __init__(self, val: int = 10):
+            self.val = val
+
+    foo = Foo()
+    assert isinstance(foo, Foo)
+
+
 if __name__ == "__main__":
     pytest.main(["-vv", "-s", __file__])
