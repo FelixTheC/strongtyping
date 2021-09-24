@@ -9,10 +9,11 @@ import inspect
 import pprint
 import warnings
 from functools import wraps
-from typing import Type
+from typing import Type, TypedDict, _TypedDict, _TypedDictMeta
 
 from strongtyping._utils import _severity_level, action, remove_subclass
 from strongtyping.cached_set import CachedSet
+from strongtyping.config import SEVERITY_LEVEL
 from strongtyping.strong_typing_utils import (
     TypeMisMatch,
     check_type,
@@ -43,7 +44,7 @@ def match_typing(
 
         @wraps(func)
         def inner(*args, **kwargs):
-            if arg_names and severity_level > 0:
+            if arg_names and severity_level > SEVERITY_LEVEL.DISABLED.value:
 
                 args = remove_subclass(args, subclass)
                 if cached_set is not None and func.__name__ not in ("__init__",):
@@ -79,7 +80,7 @@ def match_typing(
                     )
                     msg = f"Incorrect parameter: {msg_list}"
 
-                    if excep_raise is not None and severity_level == 1:
+                    if excep_raise is not None and severity_level == SEVERITY_LEVEL.ENABLED.value:
                         raise excep_raise(msg) from None
                     else:
                         warnings.warn(msg, RuntimeWarning)
@@ -105,7 +106,7 @@ def add_required_methods_to_class(cls, inst):
             continue
 
 
-class match_class_typing:
+class MatchClassTyping:
     def __new__(cls, instance=None, *args, **kwargs):
         cls.cls = instance
         add_required_methods_to_class(cls, instance)
@@ -185,6 +186,63 @@ class match_class_typing:
 
     def __str__(self):
         return str(self.cls)
+
+
+def match_class_typing(cls=None, **kwargs):
+    excep_raise = kwargs.pop("excep_raise", TypeMisMatch)
+    cache_size = kwargs.pop("cache_size", 1)
+    severity = kwargs.pop("severity", "env")
+
+    def __has_annotations__(obj):
+        return hasattr(obj, "__annotations__")
+
+    def __find_methods(_cls):
+        return [
+            func
+            for func in dir(_cls)
+            if callable(getattr(_cls, func))
+            and __has_annotations__(getattr(_cls, func))
+            and not hasattr(getattr(_cls, func), "__fe_strng_mtch__")
+            and not isinstance(getattr(_cls, func), classmethod)
+        ]
+
+    def __add_decorator(_cls):
+        severity_level = _severity_level(severity)
+        if severity_level > SEVERITY_LEVEL.DISABLED.value:
+            for method in __find_methods(_cls):
+                try:
+                    func = getattr(_cls, method)
+                    is_static = "self" not in inspect.signature(func).parameters
+                    setattr(
+                        _cls,
+                        method,
+                        match_typing(
+                            func,
+                            severity=severity,
+                            cache_size=cache_size,
+                            excep_raise=excep_raise,
+                            subclass=is_static,
+                        ),
+                    )
+                except TypeError:
+                    pass
+
+    def wrapper(some_cls):
+        def inner(*args, **cls_kwargs):
+            __add_decorator(some_cls)
+            return some_cls(*args, **cls_kwargs)
+
+        inner._matches_class = True
+        return inner
+
+    if cls is not None:
+        if isinstance(cls, _TypedDictMeta):
+            return MatchClassTyping(cls)
+        __add_decorator(cls)
+        cls._matches_class = True
+        return cls
+    else:
+        return wrapper
 
 
 def getter(func):

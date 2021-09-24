@@ -4,6 +4,7 @@
 @created: 20.07.20
 @author: felix
 """
+import inspect
 import logging
 import os
 from types import MethodType
@@ -15,6 +16,8 @@ logger = logging.getLogger(__name__)
 
 
 def remove_subclass(args, subclass):
+    if len(args) == 1:
+        return args
     cls = args[0] if subclass else None
     if cls is not None:
         args = args[1:]
