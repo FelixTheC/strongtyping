@@ -239,6 +239,7 @@ def match_class_typing(cls=None, **kwargs):
     if cls is not None:
         if sys.version_info.major >= 3 and sys.version_info.minor > 7:
             from typing import Type, _TypedDictMeta
+
             if isinstance(cls, _TypedDictMeta):
                 return MatchClassTyping(cls)
         __add_decorator(cls)
