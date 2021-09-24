@@ -303,6 +303,10 @@ def checking_typing_typeddict(arg: Any, possible_types: Any, *args, **kwargs):
     return checking_typing_typedict_values(arg, required_fields, total)
 
 
+def checking_typing_matchclasstyping(arg: Any, possible_types: tuple, *args, **kwargs):
+    return checking_typing_typeddict(arg, possible_types)
+
+
 def module_checking_typing_list(arg: Any, possible_types: Any):
     if (
         not hasattr(possible_types, "__args__")
@@ -411,7 +415,7 @@ def check_type(argument, type_of, mro=False, **kwargs):
                 return isinstance(argument, type_of.__args__)
         elif isinstance(type_of, str):
             return argument.__class__.__name__ == type_of
-        elif origin_name == "_typeddictmeta":
+        elif origin_name in ("_typeddictmeta", "matchclasstyping"):
             return checking_typing_typeddict(argument, get_possible_types(type_of, "typeddict"))
         elif mro:
             if origin_name == "union":
@@ -421,7 +425,6 @@ def check_type(argument, type_of, mro=False, **kwargs):
                 )
             return type_of in argument
         else:
-
             try:
                 is_instance = isinstance(argument, type_of)
             except TypeError:

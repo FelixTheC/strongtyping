@@ -7,9 +7,10 @@
 import functools
 import inspect
 import pprint
+import sys
 import warnings
 from functools import wraps
-from typing import Type, TypedDict, _TypedDict, _TypedDictMeta
+from typing import Type
 
 from strongtyping._utils import _severity_level, action, remove_subclass
 from strongtyping.cached_set import CachedSet
@@ -236,8 +237,10 @@ def match_class_typing(cls=None, **kwargs):
         return inner
 
     if cls is not None:
-        if isinstance(cls, _TypedDictMeta):
-            return MatchClassTyping(cls)
+        if sys.version_info.major >= 3 and sys.version_info.minor > 7:
+            from typing import Type, _TypedDictMeta
+            if isinstance(cls, _TypedDictMeta):
+                return MatchClassTyping(cls)
         __add_decorator(cls)
         cls._matches_class = True
         return cls

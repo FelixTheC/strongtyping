@@ -1024,7 +1024,10 @@ def test_classmethod_staticmethod(monkeypatch):
 
     d = Dummy()
 
-    d.c("2")
+    try:
+        d.c("2")
+    except RuntimeWarning:
+        assert True
 
     with pytest.warns(RuntimeWarning):
         assert d.d("2")
