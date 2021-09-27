@@ -107,7 +107,7 @@ def add_required_methods_to_class(cls, inst):
             continue
 
 
-class MatchClassTyping:
+class MatchTypedDict:
     def __new__(cls, instance=None, *args, **kwargs):
         cls.cls = instance
         add_required_methods_to_class(cls, instance)
@@ -121,38 +121,6 @@ class MatchClassTyping:
 
     def __getattr__(self, item):
         return getattr(self.cls, item)
-
-    @staticmethod
-    def __has_annotations__(obj):
-        return hasattr(obj, "__annotations__")
-
-    def __find_methods(self, cls):
-        return [
-            func
-            for func in dir(cls)
-            if callable(getattr(cls, func))
-            and self.__has_annotations__(getattr(cls, func))
-            and not hasattr(getattr(cls, func), "__fe_strng_mtch__")
-            and not isinstance(getattr(cls, func), classmethod)
-        ]
-
-    def __add_decorator(self, cls):
-        severity_level = _severity_level(self.severity)
-        if severity_level > 0:
-            for method in self.__find_methods(cls):
-                try:
-                    setattr(
-                        cls,
-                        method,
-                        match_typing(
-                            getattr(cls, method),
-                            severity=self.severity,
-                            cache_size=self.cache_size,
-                            excep_raise=self.excep_raise,
-                        ),
-                    )
-                except TypeError:
-                    pass
 
     @property
     def is_typed_dict(self):
@@ -173,20 +141,10 @@ class MatchClassTyping:
             if not checking_typing_typedict_values(arguments, self.__annotations__, self.__total__):
                 raise self.excep_raise(self.create_error_msg(arguments))
         if self.cls:
-            if self.__has_annotations__(self.cls.__init__):
-                self.cls.__init__ = match_typing(self.cls.__init__)
             cls = self.cls(*args, **kwargs)
-            self.__add_decorator(cls)
         else:
             cls = args[0]
-            self.__add_decorator(cls)
         return cls
-
-    def __repr__(self):
-        return repr(self.cls)
-
-    def __str__(self):
-        return str(self.cls)
 
 
 def match_class_typing(cls=None, **kwargs):
@@ -241,7 +199,7 @@ def match_class_typing(cls=None, **kwargs):
             from typing import Type, _TypedDictMeta
 
             if isinstance(cls, _TypedDictMeta):
-                return MatchClassTyping(cls)
+                return MatchTypedDict(cls)
         __add_decorator(cls)
         cls._matches_class = True
         return cls
