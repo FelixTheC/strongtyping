@@ -1016,19 +1016,21 @@ def test_classmethod_staticmethod(monkeypatch):
         def d(val: int):
             return val * 10
 
-    assert Dummy.b()  # classmethods must be decorated separately
+    # classmethods/staticmethods must be decorated separately if you want to call them in
+    # this way
+    assert Dummy.b()
     assert Dummy.c(2) == 20
     assert Dummy.c("2") != 20  # staticmethod can't be checked when called that way
 
-    with pytest.warns(RuntimeWarning):
-        assert Dummy.d(
-            "2"
-        )  # staticmethod must be decorated separately too, to be able to call it that way
-
     d = Dummy()
 
-    with pytest.warns(RuntimeWarning):
+    try:
         d.c("2")
+    except RuntimeWarning:
+        assert True
+
+    with pytest.warns(RuntimeWarning):
+        assert d.d("2")
 
 
 @pytest.mark.skipif(sys.version_info.minor < 9, reason="Literal first available in py3.8")

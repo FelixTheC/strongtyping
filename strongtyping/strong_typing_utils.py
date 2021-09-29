@@ -5,10 +5,8 @@
 @author: felix
 """
 import inspect
-import json
 import os
 import sys
-import types
 import typing
 from functools import lru_cache, partial
 from queue import Queue
@@ -62,14 +60,10 @@ def get_possible_types(typ_to_check, origin_name: str = "") -> typing.Union[tupl
         - Dict[str, int] = (str, int, )
         - Tuple[Union[str, int], List[int]] = (Union[str, int], List[int], )
     """
-    from strongtyping.strong_typing import match_class_typing
-
     if origin_name == "typeddict":
         # we can ensure now that we use a python version which has typing.TypedDict
         return typ_to_check
 
-    if isinstance(typ_to_check, match_class_typing):
-        return typ_to_check.cls
     if extension_module:
         if not hasattr(typ_to_check, "__args__"):
             try:
@@ -94,11 +88,6 @@ def get_origins(typ_to_check: Any) -> tuple:
         - FunctionType = (None, 'None')
     """
     origin = None
-    if isinstance(typ_to_check, match_class_typing):
-        if hasattr(typ_to_check.cls, "__orig_bases__"):
-            return typ_to_check.cls, typ_to_check.cls.__orig_bases__[0].__name__
-        else:
-            return typ_to_check.cls, "class"
 
     if hasattr(typ_to_check, "__annotations__") and hasattr(typ_to_check, "__orig_bases__"):
         return typ_to_check, typ_to_check.__orig_bases__[0].__name__
@@ -250,8 +239,6 @@ def checking_typing__validator(arg, possible_types, *args, **kwargs):
 
 
 def checking_typing_validator(arg, possible_types, *args, **kwargs):
-    from strongtyping.strong_typing import match_class_typing
-
     if len(possible_types) == 2:
         default_return = empty
         required_type, validation = possible_types
@@ -271,12 +258,6 @@ def checking_typing_validator(arg, possible_types, *args, **kwargs):
             f"\n\tName: {validation.__name__}"
         )
 
-    if isinstance(required_type, match_class_typing):
-        try:
-            required_type(arg)
-        except required_type.excep_raise:
-            return False
-        return True
     try:
         return isinstance(arg, required_type)
     except TypeError:
@@ -420,6 +401,7 @@ def check_type(argument, type_of, mro=False, **kwargs):
             type_of = type_of.__supertype__
             origin, origin_name = get_origins(type_of)
             origin_name = origin_name.lower()
+
         if isinstance(type_of, typing_base_class) or (py_version >= 9 and origin is not None):
             try:
                 return supported_typings[f"checking_typing_{origin_name}"](
@@ -429,7 +411,7 @@ def check_type(argument, type_of, mro=False, **kwargs):
                 return isinstance(argument, type_of.__args__)
         elif isinstance(type_of, str):
             return argument.__class__.__name__ == type_of
-        elif origin_name == "_typeddictmeta":
+        elif origin_name in ("_typeddictmeta", "matchtypeddict"):
             return checking_typing_typeddict(argument, get_possible_types(type_of, "typeddict"))
         elif mro:
             if origin_name == "union":
@@ -439,10 +421,6 @@ def check_type(argument, type_of, mro=False, **kwargs):
                 )
             return type_of in argument
         else:
-            from strongtyping.strong_typing import match_class_typing
-
-            if isinstance(type_of, match_class_typing):
-                return isinstance(argument, type_of.cls)
             try:
                 is_instance = isinstance(argument, type_of)
             except TypeError:
