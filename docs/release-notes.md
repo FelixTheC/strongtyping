@@ -1,5 +1,8 @@
 # Release Notes
 
+## v2.1.8
+- fix `isinstance` with `@match_class_typing` decorator
+
 ## v2.1.7
 - feat `FinalClass` decorator, __disable Inheritance__ for the decorated class
 - fix bug #71 (Initializing TypedDict like a normal class with kwargs fails)
