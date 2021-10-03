@@ -349,7 +349,7 @@ def test_with_lists():
     def func_b(a, b: List):
         return f"{len(a)}, {len(b)}"
 
-    # assert func_b([1, 2], ['a', 'b', 'c']) == '2, 3'
+    assert func_b([1, 2], ['a', 'b', 'c']) == '2, 3'
 
     with pytest.raises(TypeMisMatch):
         func_b([1, 2], ("a", "b", "c")) == "2, 3"
@@ -1201,6 +1201,17 @@ def test_with_iterable():
 
     with pytest.raises(TypeMisMatch):
         cluster(1)
+
+
+def test_with_binary_union_operator():
+    @match_typing
+    def func_e(a: List[str | int], b: List[str | int | tuple]):
+        return f"{len(a)}-{len(b)}"
+
+    assert func_e([1, "2", 3, "4"], [5, ("a", "b"), "10"]) == "4-3"
+
+    with pytest.raises(TypeMisMatch):
+        func_e([5, ("a", "b"), "10"], [1, "2", 3, datetime.date])
 
 
 if __name__ == "__main__":

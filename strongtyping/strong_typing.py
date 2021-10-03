@@ -20,7 +20,6 @@ from strongtyping.strong_typing_utils import (
     check_type,
     checking_typing_typedict_values,
     default_return_queue,
-    py_version,
 )
 
 
@@ -124,8 +123,6 @@ class MatchTypedDict:
 
     @property
     def is_typed_dict(self):
-        if py_version < 9:
-            return hasattr(self.cls, "__total__")
         if hasattr(self.cls, "__orig_bases__"):
             return any(obj.__name__ == "TypedDict" for obj in self.cls.__orig_bases__)
 
