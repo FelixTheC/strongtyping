@@ -85,7 +85,7 @@ def get_origins(typ_to_check: Any) -> tuple:
     if hasattr(typ_to_check, "__annotations__") and hasattr(typ_to_check, "__orig_bases__"):
         return typ_to_check, typ_to_check.__orig_bases__[0].__name__
 
-    if hasattr(typ_to_check, "__annotations__") and hasattr(typ_to_check, "__total__"):
+    if typing.is_typeddict(typ_to_check):
         return typ_to_check, typ_to_check.__class__.__name__
 
     if hasattr(typ_to_check, "__origin__") or hasattr(typ_to_check, "__orig_bases__"):
