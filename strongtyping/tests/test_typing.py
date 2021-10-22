@@ -546,10 +546,10 @@ def test_with_iterator():
 
 
 def test_with_callable():
-    def dummy_func(a: int, b: str, c: Union[str, int]) -> str:
+    def dummy_func(a: int, b: str, c: int) -> str:
         return "success"
 
-    def fail_func(a: int, b: str, c: Union[str, int]) -> int:
+    def fail_func(a: int, b: str, c: str) -> int:
         return 42
 
     @match_typing
@@ -559,6 +559,63 @@ def test_with_callable():
     assert func_a(dummy_func)
     with pytest.raises(TypeMisMatch):
         func_a(fail_func)
+
+
+def test_with_callable_return_parameter_typing():
+
+    def dummy_func_str(a: int, b: str, c: Union[str, int]) -> Optional[str]:
+        return "success"
+
+    def dummy_func_list_int(a: int, b: str, c: Union[str, int]) -> List[int]:
+        return [42, ]
+
+    @match_typing
+    def func_a(a: Callable[[int, str, Union[str, int]], str]):
+        return True
+
+    @match_typing
+    def func_b(a: Callable[[int, str, Union[str, int]], list]):
+        return True
+
+    @match_typing
+    def func_c(a: Callable[[int, str, Union[str, int]], List[Union[str, int]]]):
+        return True
+
+    assert func_a(dummy_func_str)
+    assert func_b(dummy_func_list_int)
+    assert func_c(dummy_func_list_int)
+
+    with pytest.raises(TypeMisMatch):
+        func_a(dummy_func_list_int)
+
+    with pytest.raises(TypeMisMatch):
+        func_b(dummy_func_str)
+
+    with pytest.raises(TypeMisMatch):
+        func_c(dummy_func_str)
+
+
+def test_with_callable_ellipse_any():
+
+    def dummy_func(val_a, val_b, val_c, val_d):
+        return "success"
+
+    @match_typing
+    def func_a(a: Callable[..., Any]):
+        return True
+
+    assert func_a(dummy_func)
+
+
+def test_with_callable_empty_parameters():
+    def dummy_func() -> str:
+        return "success"
+
+    @match_typing
+    def func_a(a: Callable[[], str]):
+        return True
+
+    assert func_a(dummy_func)
 
 
 def test_with_functiontype():
