@@ -164,6 +164,8 @@ def checking_typing_type(arg: Any, possible_types: tuple, *args, **kwargs):
 def checking_typing_union(arg: Any, possible_types: tuple, mro, **kwargs):
     if mro:
         return any(pssble_type in arg for pssble_type in possible_types)
+    if isinstance(possible_types, typing_base_class):
+        return any(check_type(arg, typ, **kwargs) for typ in get_possible_types(possible_types))
     try:
         is_instance = isinstance(arg, possible_types)
     except TypeError:
@@ -181,30 +183,18 @@ def checking_typing_iterator(arg: Any, *args, **kwargs):
 
 def checking_typing_callable(arg: Any, possible_types: tuple, *args, **kwargs):
     def callable_check(parameter_type: object, required_parameter_type: object) -> bool:
-        methods = dir(parameter_type)
-        if '__origin__' in methods:
-            _, name = get_origins(parameter_type)
-            return supported_typings[f"checking_typing_{name.lower()}"](parameter_type,
-                                                                        required_parameter_type,
-                                                                        *args,
-                                                                        **kwargs)
-        elif required_parameter_type == Ellipsis:
+        if required_parameter_type == Ellipsis:
             return True
         else:
-            _, required_name = get_origins(required_parameter_type)
-            if required_name.lower() == 'any':
-                return True
-            elif required_name.lower() == 'none':
-                return parameter_type == required_parameter_type
-            else:
-                return supported_typings[f"checking_typing_{required_name.lower()}"](parameter_type,
-                                                                                     required_parameter_type,
-                                                                                     *args,
-                                                                                     **kwargs)
+            return parameter_type == required_parameter_type
 
     insp = inspect.signature(arg)
     *required_params, return_val = possible_types
-    correct_return_val = callable_check(insp.return_annotation, return_val)
+    _, return_name = get_origins(return_val)
+    if return_name.lower() == 'any':
+        correct_return_val = True
+    else:
+        correct_return_val = insp.return_annotation == return_val
     params = insp.parameters
     return correct_return_val and all(
         callable_check(param.annotation, required_param) for param, required_param in
@@ -446,7 +436,7 @@ def check_type(argument, type_of, mro=False, **kwargs):
             return type_of in argument
         else:
             try:
-                is_instance = isinstance(argument, type_of)
+                is_instance = isinstance(argument, type_of) or argument == type_of
             except TypeError:
                 return isinstance(argument, type_of._subs_tree()[1:])
             else:

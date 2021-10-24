@@ -553,7 +553,7 @@ def test_with_callable():
         return 42
 
     @match_typing
-    def func_a(a: Callable[[int, str, Union[str, int]], str]):
+    def func_a(a: Union[Callable[[int, str, str], str], Callable[[int, str, int], str]]):
         return True
 
     assert func_a(dummy_func)
@@ -570,15 +570,18 @@ def test_with_callable_return_parameter_typing():
         return [42, ]
 
     @match_typing
-    def func_a(a: Callable[[int, str, Union[str, int]], str]):
+    def func_a(a: Callable[[int, str, Union[str, int]], Optional[str]]):
         return True
 
     @match_typing
-    def func_b(a: Callable[[int, str, Union[str, int]], list]):
+    def func_b(a: Callable[[int, str, Union[str, int]], List[int]]):
         return True
 
+    allowed_callables = Union[Callable[[int, str, Union[str, int]], List[int]],
+                              Callable[[int, str, Union[str, int]], List[str]]]
+
     @match_typing
-    def func_c(a: Callable[[int, str, Union[str, int]], List[Union[str, int]]]):
+    def func_c(a: allowed_callables):
         return True
 
     assert func_a(dummy_func_str)
