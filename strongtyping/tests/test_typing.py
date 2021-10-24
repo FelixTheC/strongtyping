@@ -562,12 +562,13 @@ def test_with_callable():
 
 
 def test_with_callable_return_parameter_typing():
-
     def dummy_func_str(a: int, b: str, c: Union[str, int]) -> Optional[str]:
         return "success"
 
     def dummy_func_list_int(a: int, b: str, c: Union[str, int]) -> List[int]:
-        return [42, ]
+        return [
+            42,
+        ]
 
     @match_typing
     def func_a(a: Callable[[int, str, Union[str, int]], Optional[str]]):
@@ -577,8 +578,10 @@ def test_with_callable_return_parameter_typing():
     def func_b(a: Callable[[int, str, Union[str, int]], List[int]]):
         return True
 
-    allowed_callables = Union[Callable[[int, str, Union[str, int]], List[int]],
-                              Callable[[int, str, Union[str, int]], List[str]]]
+    allowed_callables = Union[
+        Callable[[int, str, Union[str, int]], List[int]],
+        Callable[[int, str, Union[str, int]], List[str]],
+    ]
 
     @match_typing
     def func_c(a: allowed_callables):
@@ -599,7 +602,6 @@ def test_with_callable_return_parameter_typing():
 
 
 def test_with_callable_ellipse_any():
-
     def dummy_func(val_a, val_b, val_c, val_d):
         return "success"
 

@@ -96,9 +96,9 @@ def get_origins(typ_to_check: Any) -> tuple:
 
     if hasattr(typ_to_check, "__origin__") or hasattr(typ_to_check, "__orig_bases__"):
         if (
-                py_version >= 9
-                and hasattr(typ_to_check, "__origin__")
-                and hasattr(typ_to_check.__origin__, "__name__")
+            py_version >= 9
+            and hasattr(typ_to_check, "__origin__")
+            and hasattr(typ_to_check.__origin__, "__name__")
         ):
             origin = typ_to_check.__origin__.__name__
         elif hasattr(typ_to_check, "__origin__") or hasattr(typ_to_check, "__orig_bases__"):
@@ -191,14 +191,15 @@ def checking_typing_callable(arg: Any, possible_types: tuple, *args, **kwargs):
     insp = inspect.signature(arg)
     *required_params, return_val = possible_types
     _, return_name = get_origins(return_val)
-    if return_name.lower() == 'any':
+    if return_name.lower() == "any":
         correct_return_val = True
     else:
         correct_return_val = insp.return_annotation == return_val
     params = insp.parameters
     return correct_return_val and all(
-        callable_check(param.annotation, required_param) for param, required_param in
-        zip(params.values(), required_params))
+        callable_check(param.annotation, required_param)
+        for param, required_param in zip(params.values(), required_params)
+    )
 
 
 def checking_typing_tuple(arg: Any, possible_types: tuple, *args, **kwargs):
@@ -319,9 +320,9 @@ def checking_typing_typeddict(arg: Any, possible_types: Any, *args, **kwargs):
 
 def module_checking_typing_list(arg: Any, possible_types: Any):
     if (
-            not hasattr(possible_types, "__args__")
-            or not possible_types.__args__
-            or all(isinstance(pt, TypeVar) for pt in possible_types.__args__)
+        not hasattr(possible_types, "__args__")
+        or not possible_types.__args__
+        or all(isinstance(pt, TypeVar) for pt in possible_types.__args__)
     ):
         return isinstance(arg, list)
     return bool(list_elements(arg, possible_types))
@@ -329,9 +330,9 @@ def module_checking_typing_list(arg: Any, possible_types: Any):
 
 def module_checking_typing_dict(arg: Any, possible_types: Any):
     if (
-            not hasattr(possible_types, "__args__")
-            or not possible_types.__args__
-            or all(isinstance(pt, TypeVar) for pt in possible_types.__args__)
+        not hasattr(possible_types, "__args__")
+        or not possible_types.__args__
+        or all(isinstance(pt, TypeVar) for pt in possible_types.__args__)
     ):
         return isinstance(arg, dict)
     return bool(dict_elements(arg, possible_types))
@@ -339,9 +340,9 @@ def module_checking_typing_dict(arg: Any, possible_types: Any):
 
 def module_checking_typing_set(arg: Any, possible_types: Any):
     if (
-            not hasattr(possible_types, "__args__")
-            or isinstance(possible_types.__args__[0], TypeVar)
-            or all(isinstance(pt, TypeVar) for pt in possible_types.__args__)
+        not hasattr(possible_types, "__args__")
+        or isinstance(possible_types.__args__[0], TypeVar)
+        or all(isinstance(pt, TypeVar) for pt in possible_types.__args__)
     ):
         return isinstance(arg, set)
     return bool(set_elements(arg, possible_types))
@@ -349,9 +350,9 @@ def module_checking_typing_set(arg: Any, possible_types: Any):
 
 def module_checking_typing_tuple(arg: Any, possible_types: Any):
     if (
-            not hasattr(possible_types, "__args__")
-            or not possible_types.__args__
-            or all(isinstance(pt, TypeVar) for pt in possible_types.__args__)
+        not hasattr(possible_types, "__args__")
+        or not possible_types.__args__
+        or all(isinstance(pt, TypeVar) for pt in possible_types.__args__)
     ):
         return isinstance(arg, tuple)
     return bool(tuple_elements(arg, possible_types))
