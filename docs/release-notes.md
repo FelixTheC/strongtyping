@@ -1,5 +1,24 @@
 # Release Notes
 
+## v2.1.9
+- improvement of callable checks
+  ```python
+  # the parameter/return value is an unknown callable
+  Callable[..., Any]
+  ```
+  ```python
+  # the callable will have no arguments and returns a string
+  Callable[[], str]
+  ```
+  ```python
+  # the annotation needs to match the callable you want to allow
+  # for multiple options use
+  Union[
+        Callable[[int, str, str], str], 
+        Callable[[int, str, int], str]
+       ]
+  ```
+
 ## v2.1.8
 - fix `isinstance` with `@match_class_typing` decorator
 
