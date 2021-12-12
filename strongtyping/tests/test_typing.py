@@ -349,7 +349,7 @@ def test_with_lists():
     def func_b(a, b: List):
         return f"{len(a)}, {len(b)}"
 
-    assert func_b([1, 2], ['a', 'b', 'c']) == '2, 3'
+    assert func_b([1, 2], ["a", "b", "c"]) == "2, 3"
 
     with pytest.raises(TypeMisMatch):
         func_b([1, 2], ("a", "b", "c")) == "2, 3"

@@ -73,6 +73,7 @@ def Validator(self, parameters, *args, **kwargs):
         raise TypeError("Validator[..., arg]: arg should be a function.")
     return _Validator(self, parameters)
 
+
 @_SpecialForm  # type: ignore
 def IterValidator(self, parameters, *args, **kwargs):
     if isinstance(parameters, _GenericAlias):
