@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - 'py_3_10'
-      - '#47_in_py10_globals_from_func_must_be_known'
+      - 'prepared_for_PEP-563'
 
 jobs:
   build:
