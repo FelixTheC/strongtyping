@@ -5,14 +5,15 @@
 @author: felix
 """
 from __future__ import annotations
+
 import inspect
 import pprint
-import sys
-import warnings
 from functools import wraps
-from typing import Type
+import warnings
 
 from strongtyping.utils import get_type_hints
+
+from strongtyping.config import SEVERITY_LEVEL
 from strongtyping.strong_typing_utils import TypeMisMatch
 from strongtyping.strong_typing_utils import check_type
 
@@ -21,7 +22,6 @@ from strongtyping._utils import _get_new
 from strongtyping._utils import _severity_level
 from strongtyping._utils import remove_subclass
 from strongtyping.cached_set import CachedSet
-from strongtyping.config import SEVERITY_LEVEL
 from strongtyping.strong_typing_utils import (
     TypeMisMatch,
     check_type,
@@ -30,21 +30,11 @@ from strongtyping.strong_typing_utils import (
 )
 
 
-def match_typing(
-    _func=None,
-    *,
-    excep_raise: Type[Exception] = TypeMisMatch,
-    subclass: bool = False,
-    severity="env",
-    **kwargs,
-
-):
-    cached_enabled: int = kwargs.get("cache_size", 1)
-    cached_set = CachedSet(cached_enabled) if cached_enabled > 0 else None
+def match_typing(_func=None, *, excep_raise: Exception = TypeMisMatch, cache_size=0,
+                 subclass: bool = False, severity='env', **kwargs):
+    cached_set = None if cache_size == 0 else CachedSet(cache_size)
 
     def wrapper(func):
-        # needed in py 3.10
-        # maybe pep-0558 will solve this problem with something similar to func.__globals__
         arg_names, _annotations = get_type_hints(func)
         severity_level = _severity_level(severity)
 
@@ -60,12 +50,18 @@ def match_typing(
                         return func(*args, **kwargs)
 
                 # Thanks to Ruud van der Ham who find a better and more stable solution for check_args
-                failed_params = tuple(arg_name
-                                      for arg, arg_name in zip(args, arg_names)
-                                      if not check_type(arg, _annotations.get(arg_name)))
-                failed_params += tuple(kwarg_name
-                                       for kwarg_name, kwarg in kwargs.items()
-                                       if not check_type(kwarg, _annotations.get(kwarg_name)))if not default_return_queue.empty():
+                failed_params = tuple(
+                    arg_name
+                    for arg, arg_name in zip(args, arg_names)
+                    if not check_type(arg, _annotations.get(arg_name))
+                )
+                failed_params += tuple(
+                    kwarg_name
+                    for kwarg_name, kwarg in kwargs.items()
+                    if not check_type(kwarg, _annotations.get(kwarg_name))
+                )
+
+                if not default_return_queue.empty():
                     return default_return_queue.queue.pop()
 
                 if failed_params:
@@ -75,7 +71,7 @@ def match_typing(
 
                     msg_list = "\nIncorrect parameter: ".join(
                         f"[{name}] `{pprint.pformat(annotated_values[name], width=20, depth=2)}`"
-                        f"\n\trequired: {annotations[name]}"
+                        f"\n\trequired: {_annotations[name]}"
                         for name in failed_params
                     )
                     msg = f"Incorrect parameter: {msg_list}"
@@ -131,7 +127,7 @@ class MatchTypedDict:
             f"Incorrect parameter: `{pprint.pformat(args, width=20, depth=2)}`"
             f"\n\trequired: {self.__annotations__}"
         )
-    @wraps(_cls)
+
     def __call__(self, *args, **kwargs):
         if self.is_typed_dict:
             arguments = kwargs if kwargs else args[0]
@@ -157,9 +153,9 @@ def match_class_typing(cls=None, **kwargs):
             func
             for func in dir(_cls)
             if callable(getattr(_cls, func))
-            and __has_annotations__(getattr(_cls, func))
-            and not hasattr(getattr(_cls, func), "__fe_strng_mtch__")
-            and not isinstance(getattr(_cls, func), classmethod)
+               and __has_annotations__(getattr(_cls, func))
+               and not hasattr(getattr(_cls, func), "__fe_strng_mtch__")
+               and not isinstance(getattr(_cls, func), classmethod)
         ]
 
     def __add_decorator(_cls):
@@ -192,11 +188,10 @@ def match_class_typing(cls=None, **kwargs):
         return inner
 
     if cls is not None:
-        if sys.version_info.major >= 3 and sys.version_info.minor > 7:
-            from typing import Type, _TypedDictMeta
+        from typing import Type, _TypedDictMeta
 
-            if isinstance(cls, _TypedDictMeta):
-                return MatchTypedDict(cls)
+        if isinstance(cls, _TypedDictMeta):
+            return MatchTypedDict(cls)
         __add_decorator(cls)
         cls._matches_class = True
         return cls

@@ -159,7 +159,6 @@ def test_inside_of_a_class():
     bool(int(os.environ["ST_MODULES_INSTALLED"])) is True,
     reason="module does not support Validator at the moment",
 )
-@pytest.mark.skipif(sys.version_info.minor < 9, reason="Available since 3.9")
 def test_validator_type_with_default():
     @match_typing
     def foo(val_a: Validator[list, lambda x: len(x) > 2, []]):
@@ -226,7 +225,6 @@ def test_validator_type_with_default():
         AllowedCluster = Validator[Iterable[Union[int, fractions.Fraction, decimal.Decimal]]]
 
 
-@pytest.mark.skipif(sys.version_info.minor < 9, reason="Available since 3.9")
 def test_iter_validator():
     number = Union[int, fractions.Fraction, decimal.Decimal]
 

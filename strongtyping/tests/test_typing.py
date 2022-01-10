@@ -829,7 +829,7 @@ def test_with_class_decorator_no_execption():
 
 def test_with_class_decorator_and_function_override():
     @match_class_typing
-    class Dummy:
+    class Dummy2:
         attr = 100
 
         @match_typing(excep_raise=None)
@@ -842,10 +842,10 @@ def test_with_class_decorator_and_function_override():
         def c(self):
             return "c"
 
-        def _my_secure_func(self, val: Union[int, float], other: "Dummy"):
+        def _my_secure_func(self, val: Union[int, float], other: "Dummy2"):
             return val * other.attr
 
-    d = Dummy()
+    d = Dummy2()
     assert d._my_secure_func(0.5, d) == 50
 
     with pytest.warns(RuntimeWarning) as record:

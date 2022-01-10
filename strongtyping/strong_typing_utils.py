@@ -86,6 +86,7 @@ def get_possible_types(typ_to_check, origin_name: str = "") -> typing.Union[tupl
 
 def get_origins(typ_to_check: Any) -> tuple:
     from strongtyping.strong_typing import match_class_typing
+
     """
     :param typ_to_check: typ_to_check: some typing like List[str], Dict[str, int], Tuple[Union[str, int], List[int]]
     :return: the class, alias_class and the class name
@@ -94,17 +95,18 @@ def get_origins(typ_to_check: Any) -> tuple:
         - Tuple[Union[str, int], List[int]] = (tuple, 'Tuple)
         - FunctionType = (None, 'None')
     """
-    origin, origin_name = None, ""
-
+    origin = None
     if hasattr(typ_to_check, "__annotations__") and hasattr(typ_to_check, "__orig_bases__"):
         return typ_to_check, typ_to_check.__orig_bases__[0].__name__
 
-    if typing.is_typeddict(typ_to_check):
+    if hasattr(typ_to_check, "__annotations__") and hasattr(typ_to_check, "__total__"):
         return typ_to_check, typ_to_check.__class__.__name__
-
     if hasattr(typ_to_check, "__origin__") or hasattr(typ_to_check, "__orig_bases__"):
-        if hasattr(typ_to_check, "__origin__") and hasattr(typ_to_check.__origin__, "__name__"):
-            origin = origin_name = typ_to_check.__origin__.__name__
+        if (
+                hasattr(typ_to_check, "__origin__")
+                and hasattr(typ_to_check, "_name")
+        ):
+            origin = typ_to_check._name
         elif hasattr(typ_to_check, "__origin__") or hasattr(typ_to_check, "__orig_bases__"):
             if hasattr(typ_to_check, "__origin__") and typ_to_check.__origin__ is not None:
                 origin = typ_to_check.__origin__
@@ -113,9 +115,16 @@ def get_origins(typ_to_check: Any) -> tuple:
 
     if hasattr(origin, "_name"):
         origin_name = origin._name  # type: ignore
+    elif hasattr(origin, "__name__"):
+        origin_name = origin.__name__  # type: ignore
     else:
         if hasattr(typ_to_check, "_name"):
-            origin_name = typ_to_check._name if typ_to_check._name is not None else origin_name
+            if hasattr(typ_to_check, "__origin__") and hasattr(typ_to_check.__origin__, "_name"):
+                origin_name = typ_to_check.__origin__._name
+            else:
+                origin_name = typ_to_check._name
+        else:
+            origin_name = str(origin).replace("typing.", "")
     return origin, origin_name
 
 
@@ -184,12 +193,14 @@ def checking_typing_union(arg: Any, possible_types: tuple, mro, **kwargs):
         else:
             return validate_object(arg, kwargs.get("validation_with"))
 
+
 def checking_typing_optional(arg: Any, possible_types: tuple, mro, **kwargs):
     return arg is None or check_type(arg, possible_types[0])
 
 
 def checking_typing_iterator(arg: Any, *args, **kwargs):
     return hasattr(arg, "__iter__") and hasattr(arg, "__next__")
+
 
 def checking_typing_callable(arg: Any, possible_types: tuple, *args, **kwargs):
     def callable_check(parameter_type: object, required_parameter_type: object) -> bool:
@@ -277,11 +288,17 @@ def checking_typing_validator(arg, possible_types, *args, **kwargs):
             f'\n\tFile: "{validation_function_file}", line {validation_line}'
             f"\n\tName: {validation.__name__}"
         )
-
     try:
         return isinstance(arg, required_type)
     except TypeError:
         return check_type(arg, required_type, **kwargs)
+
+
+def checking_typing__itervalidator(arg, possible_types, *args, **kwargs):
+    """
+    required to support python versions 3.7, 3.8
+    """
+    return checking_typing_itervalidator(arg, possible_types, *args, **kwargs)
 
 
 def checking_typing_itervalidator(arg, possible_types, *args, **kwargs):
@@ -392,7 +409,8 @@ def check_type(argument, type_of, mro=False, **kwargs):
     # if int(py_version) >= 10 and isinstance(type_of, (str, bytes)):
     #     type_of = eval(type_of, locals(), globals())
     if isinstance(type_of, (str, bytes)):
-        type_of = get_type_hint(type_of, inspect.currentframe())
+        type_of = get_type_hint(type_of)
+
     if checking_typing_generator(argument, type_of):
         # generator will be exhausted when we check it, so we return it without any checking
         return argument
@@ -429,7 +447,6 @@ def check_type(argument, type_of, mro=False, **kwargs):
             if origin_name == "union":
                 possible_types = get_possible_types(type_of)
                 return supported_typings[f"checking_typing_{origin_name}"](
-
                     argument, possible_types, mro
                 )
             return type_of in argument
