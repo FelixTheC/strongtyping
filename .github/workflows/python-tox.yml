@@ -4,6 +4,7 @@ on:
   push:
     branches-ignore:
       - 'py_3_10'
+      - '#47_in_py10_globals_from_func_must_be_known'
 
 jobs:
   build:
