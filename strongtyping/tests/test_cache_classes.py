@@ -4,6 +4,7 @@
 @created: 12.07.20
 @author: felix
 """
+from __future__ import annotations
 import pytest
 
 from strongtyping.cached_dict import CachedDict
