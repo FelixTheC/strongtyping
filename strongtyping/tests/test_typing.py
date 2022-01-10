@@ -5,6 +5,7 @@
 @author: felix
 """
 from __future__ import annotations
+
 import json
 import os
 import sys
@@ -862,7 +863,7 @@ def test_with_dataclass():
         attr_a: int
         attr_b: str
 
-    assert Dummy.__annotations__ == {"attr_a": 'int', "attr_b": 'str'}
+    assert Dummy.__annotations__ == {"attr_a": "int", "attr_b": "str"}
 
     d = Dummy("10", 10)
 

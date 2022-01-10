@@ -5,6 +5,7 @@
 @author: felix
 """
 from __future__ import annotations
+
 import sys
 from typing import Union
 
@@ -202,9 +203,7 @@ def test_typed_namedtuple_instantiate_with_incorrect_types_raises_type_error(dum
 
 def test_typed_namedtuple_incorrect_default_types_raises_type_error():
     with pytest.raises(TypeError):
-        typed_namedtuple(
-            "Dummy", ["spell:str", "mana:int", "effect:list"], defaults=[0, "", ""]
-        )
+        typed_namedtuple("Dummy", ["spell:str", "mana:int", "effect:list"], defaults=[0, "", ""])
 
     with pytest.raises(TypeError):
         typed_namedtuple(
@@ -239,9 +238,7 @@ def test_typed_namedtuple_with_field_names_as_str():
         Dummy(mana="Lumos", spell=5, effect="Makes light")
 
     with pytest.raises(TypeError):
-        typed_namedtuple(
-            "Dummy", "spell:str, mana:int or str,effect:list", defaults=[0, "", ""]
-        )
+        typed_namedtuple("Dummy", "spell:str, mana:int or str,effect:list", defaults=[0, "", ""])
 
 
 def test_typed_namedtuple_default_values_and_instantiate_with_some_values():

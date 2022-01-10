@@ -5,6 +5,7 @@
 @author: felix
 """
 from __future__ import annotations
+
 import pytest
 
 from strongtyping.config import SEVERITY_LEVEL

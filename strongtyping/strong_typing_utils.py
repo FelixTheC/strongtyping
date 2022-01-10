@@ -5,6 +5,7 @@
 @author: felix
 """
 from __future__ import annotations
+
 import inspect
 import os
 import pprint
@@ -15,8 +16,7 @@ from queue import Queue
 from typing import Any, TypeVar, _GenericAlias, _SpecialForm, _type_repr  # type: ignore
 
 from strongtyping._utils import install_st_m
-from strongtyping.utils import find_type_in_stack_trace
-from strongtyping.utils import get_type_hint
+from strongtyping.utils import find_type_in_stack_trace, get_type_hint
 
 install_st_m()
 
@@ -102,10 +102,7 @@ def get_origins(typ_to_check: Any) -> tuple:
     if hasattr(typ_to_check, "__annotations__") and hasattr(typ_to_check, "__total__"):
         return typ_to_check, typ_to_check.__class__.__name__
     if hasattr(typ_to_check, "__origin__") or hasattr(typ_to_check, "__orig_bases__"):
-        if (
-                hasattr(typ_to_check, "__origin__")
-                and hasattr(typ_to_check, "_name")
-        ):
+        if hasattr(typ_to_check, "__origin__") and hasattr(typ_to_check, "_name"):
             origin = typ_to_check._name
         elif hasattr(typ_to_check, "__origin__") or hasattr(typ_to_check, "__orig_bases__"):
             if hasattr(typ_to_check, "__origin__") and typ_to_check.__origin__ is not None:
@@ -162,19 +159,22 @@ def checking_typing_type(arg: Any, possible_types: tuple, *args, **kwargs):
     try:
         arguments = arg.__mro__
     except AttributeError:
-        types = [get_type_hint(possible_type.__forward_arg__, recursion_limit=10)
-                 if hasattr(possible_type, "__forward_arg__") else possible_type
-                 for possible_type in possible_types]
-        return any(
-            check_type(arg, possible_type, mro=False, **kwargs) for possible_type in types
-        )
+        types = [
+            get_type_hint(possible_type.__forward_arg__, recursion_limit=10)
+            if hasattr(possible_type, "__forward_arg__")
+            else possible_type
+            for possible_type in possible_types
+        ]
+        return any(check_type(arg, possible_type, mro=False, **kwargs) for possible_type in types)
     else:
-        types = [get_type_hint(possible_type.__forward_arg__, recursion_limit=10)
-                 if hasattr(possible_type, "__forward_arg__") else possible_type
-                 for possible_type in possible_types]
+        types = [
+            get_type_hint(possible_type.__forward_arg__, recursion_limit=10)
+            if hasattr(possible_type, "__forward_arg__")
+            else possible_type
+            for possible_type in possible_types
+        ]
         return any(
-            check_type(arguments, possible_type, mro=True, **kwargs)
-            for possible_type in types
+            check_type(arguments, possible_type, mro=True, **kwargs) for possible_type in types
         )
 
 
@@ -207,8 +207,9 @@ def checking_typing_callable(arg: Any, possible_types: tuple, *args, **kwargs):
         if required_parameter_type == Ellipsis:
             return True
         else:
-            return (get_type_hint(parameter_type) is required_parameter_type) \
-                   or (parameter_type == str(required_parameter_type).replace('typing.', ''))
+            return (get_type_hint(parameter_type) is required_parameter_type) or (
+                parameter_type == str(required_parameter_type).replace("typing.", "")
+            )
 
     insp = inspect.signature(arg)
     *required_params, return_val = possible_types
@@ -216,8 +217,9 @@ def checking_typing_callable(arg: Any, possible_types: tuple, *args, **kwargs):
     if return_name.lower() == "any":
         correct_return_val = True
     else:
-        correct_return_val = (get_type_hint(insp.return_annotation) is return_val) \
-                             or (insp.return_annotation == str(insp.return_val).replace('typing.', ''))
+        correct_return_val = (get_type_hint(insp.return_annotation) is return_val) or (
+            insp.return_annotation == str(insp.return_val).replace("typing.", "")
+        )
     params = insp.parameters
     return correct_return_val and all(
         callable_check(param.annotation, required_param)
@@ -335,9 +337,9 @@ def checking_typing_typeddict(arg: Any, possible_types: Any, *args, **kwargs):
 
 def module_checking_typing_list(arg: Any, possible_types: Any):
     if (
-            not hasattr(possible_types, "__args__")
-            or not possible_types.__args__
-            or all(isinstance(pt, TypeVar) for pt in possible_types.__args__)
+        not hasattr(possible_types, "__args__")
+        or not possible_types.__args__
+        or all(isinstance(pt, TypeVar) for pt in possible_types.__args__)
     ):
         return isinstance(arg, list)
     return bool(list_elements(arg, possible_types))
@@ -345,9 +347,9 @@ def module_checking_typing_list(arg: Any, possible_types: Any):
 
 def module_checking_typing_dict(arg: Any, possible_types: Any):
     if (
-            not hasattr(possible_types, "__args__")
-            or not possible_types.__args__
-            or all(isinstance(pt, TypeVar) for pt in possible_types.__args__)
+        not hasattr(possible_types, "__args__")
+        or not possible_types.__args__
+        or all(isinstance(pt, TypeVar) for pt in possible_types.__args__)
     ):
         return isinstance(arg, dict)
     return bool(dict_elements(arg, possible_types))
@@ -355,9 +357,9 @@ def module_checking_typing_dict(arg: Any, possible_types: Any):
 
 def module_checking_typing_set(arg: Any, possible_types: Any):
     if (
-            not hasattr(possible_types, "__args__")
-            or isinstance(possible_types.__args__[0], TypeVar)
-            or all(isinstance(pt, TypeVar) for pt in possible_types.__args__)
+        not hasattr(possible_types, "__args__")
+        or isinstance(possible_types.__args__[0], TypeVar)
+        or all(isinstance(pt, TypeVar) for pt in possible_types.__args__)
     ):
         return isinstance(arg, set)
     return bool(set_elements(arg, possible_types))
@@ -365,9 +367,9 @@ def module_checking_typing_set(arg: Any, possible_types: Any):
 
 def module_checking_typing_tuple(arg: Any, possible_types: Any):
     if (
-            not hasattr(possible_types, "__args__")
-            or not possible_types.__args__
-            or all(isinstance(pt, TypeVar) for pt in possible_types.__args__)
+        not hasattr(possible_types, "__args__")
+        or not possible_types.__args__
+        or all(isinstance(pt, TypeVar) for pt in possible_types.__args__)
     ):
         return isinstance(arg, tuple)
     return bool(tuple_elements(arg, possible_types))
@@ -433,9 +435,7 @@ def check_type(argument, type_of, mro=False, **kwargs):
         if isinstance(type_of, typing_base_class) or origin is not None:
             try:
                 return supported_typings[f"checking_typing_{origin_name}"](
-                    argument,
-                                                                           get_possible_types(type_of, origin_name),
-                                                                           mro, **kwargs
+                    argument, get_possible_types(type_of, origin_name), mro, **kwargs
                 )
             except AttributeError as err:
                 return isinstance(argument, type_of.__args__)

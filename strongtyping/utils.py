@@ -5,6 +5,7 @@
 @author: eisenmenger
 """
 from __future__ import annotations
+
 import inspect
 import sys
 from functools import lru_cache
@@ -29,10 +30,7 @@ def find_type_in_stack_trace(obj_name, func_globals, recursion_limit=RECURSION_L
             return stack_trace.f_globals[obj_name]
         return stack_trace.f_locals[obj_name]
     else:
-        return find_type_in_stack_trace(obj_name,
-                                        func_globals,
-                                        recursion_limit - 1,
-                                        level + 1)
+        return find_type_in_stack_trace(obj_name, func_globals, recursion_limit - 1, level + 1)
 
 
 def resolve_class_resolution(annotation_dict: dict) -> dict:
@@ -44,8 +42,10 @@ def resolve_class_resolution(annotation_dict: dict) -> dict:
             def foo(self, val: Union[int, float], other: 'Dummy'):
                 return val * other.attr
     """
-    final_dict = {key: annotation_dict[val] if val in annotation_dict else val
-                  for key, val in annotation_dict.items()}
+    final_dict = {
+        key: annotation_dict[val] if val in annotation_dict else val
+        for key, val in annotation_dict.items()
+    }
     return final_dict
 
 
@@ -62,10 +62,11 @@ def get_type_hints(func):
         for k, v in _annotations.items():
             if v[0] in list(punctuation):
                 _annotations[k] = v[1:-1]
-                addon_dict[v[1:-1]] = 'cls_'
+                addon_dict[v[1:-1]] = "cls_"
     _annotations = _annotations | addon_dict
-    _annotations = {k: find_type_in_stack_trace(v, func.__globals__)
-                    for k, v in _annotations.items()}
+    _annotations = {
+        k: find_type_in_stack_trace(v, func.__globals__) for k, v in _annotations.items()
+    }
     return arg_names, resolve_class_resolution(_annotations)
 
 

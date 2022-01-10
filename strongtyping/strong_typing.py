@@ -8,30 +8,30 @@ from __future__ import annotations
 
 import inspect
 import pprint
-from functools import wraps
 import warnings
+from functools import wraps
 
-from strongtyping.utils import get_type_hints
-
-from strongtyping.config import SEVERITY_LEVEL
-from strongtyping.strong_typing_utils import TypeMisMatch
-from strongtyping.strong_typing_utils import check_type
-
-from strongtyping._utils import action
-from strongtyping._utils import _get_new
-from strongtyping._utils import _severity_level
-from strongtyping._utils import remove_subclass
+from strongtyping._utils import _get_new, _severity_level, action, remove_subclass
 from strongtyping.cached_set import CachedSet
+from strongtyping.config import SEVERITY_LEVEL
 from strongtyping.strong_typing_utils import (
     TypeMisMatch,
     check_type,
     checking_typing_typedict_values,
     default_return_queue,
 )
+from strongtyping.utils import get_type_hints
 
 
-def match_typing(_func=None, *, excep_raise: Exception = TypeMisMatch, cache_size=0,
-                 subclass: bool = False, severity='env', **kwargs):
+def match_typing(
+    _func=None,
+    *,
+    excep_raise: Exception = TypeMisMatch,
+    cache_size=0,
+    subclass: bool = False,
+    severity="env",
+    **kwargs,
+):
     cached_set = None if cache_size == 0 else CachedSet(cache_size)
 
     def wrapper(func):
@@ -153,9 +153,9 @@ def match_class_typing(cls=None, **kwargs):
             func
             for func in dir(_cls)
             if callable(getattr(_cls, func))
-               and __has_annotations__(getattr(_cls, func))
-               and not hasattr(getattr(_cls, func), "__fe_strng_mtch__")
-               and not isinstance(getattr(_cls, func), classmethod)
+            and __has_annotations__(getattr(_cls, func))
+            and not hasattr(getattr(_cls, func), "__fe_strng_mtch__")
+            and not isinstance(getattr(_cls, func), classmethod)
         ]
 
     def __add_decorator(_cls):
