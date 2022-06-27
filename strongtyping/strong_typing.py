@@ -74,6 +74,7 @@ def match_typing(
                     for kwarg_name, kwarg in kwargs.items():
                         annotated_values[kwarg_name] = kwarg
 
+
                     msg_list = "\nIncorrect parameter: ".join(
                         f"[{name}] `{pprint.pformat(annotated_values[name], width=20, depth=2)}`"
                         f"\n\trequired: {annotations[name]}"
@@ -82,7 +83,7 @@ def match_typing(
                     msg = f"Incorrect parameter: {msg_list}"
 
                     if excep_raise is not None and severity_level == SEVERITY_LEVEL.ENABLED.value:
-                        raise excep_raise(msg) from None
+                        raise excep_raise(msg, failed_params, annotations) from None
                     else:
                         warnings.warn(msg, RuntimeWarning)
 
