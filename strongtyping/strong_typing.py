@@ -74,7 +74,7 @@ def match_typing(
                     for kwarg_name, kwarg in kwargs.items():
                         annotated_values[kwarg_name] = kwarg
 
-                    msg_list = "\nIncorrect parameter: ".join(
+                    msg_list = "\nIncorrect parameter type: ".join(
                         f"[{name}] `{pprint.pformat(annotated_values[name], width=20, depth=2)}`"
                         f"\n\trequired: {annotations[name]}"
                         for name in failed_params
