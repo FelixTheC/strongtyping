@@ -443,8 +443,8 @@ def test_with_dict():
         return f"{a}-{b}"
 
     assert (
-            func_a({"a": 5, "b": 2}, {("hello", "world"): 10, ("foo", "bar"): 6})
-            == "{'a': 5, 'b': 2}-{('hello', 'world'): 10, ('foo', 'bar'): 6}"
+        func_a({"a": 5, "b": 2}, {("hello", "world"): 10, ("foo", "bar"): 6})
+        == "{'a': 5, 'b': 2}-{('hello', 'world'): 10, ('foo', 'bar'): 6}"
     )
 
     with pytest.raises(TypeMisMatch):
@@ -772,6 +772,7 @@ def test_with_json():
 
 @pytest.mark.skip()
 def test_with_new_type():
+
     FruitType = NewType("FruitType", Tuple[str, str])
 
     @match_typing
@@ -1039,6 +1040,7 @@ def test_with_severity_param():
 
 
 def test_with_env_severity(monkeypatch):
+
     monkeypatch.setenv("ST_SEVERITY", "disable")
 
     @match_class_typing
@@ -1181,7 +1183,7 @@ def test_strongtyping_modules_integration():
         from strongtyping_modules.strongtyping_modules import list_elements
 
         with mock.patch(
-                "strongtyping.strong_typing_utils.list_elements", side_effect=list_elements
+            "strongtyping.strong_typing_utils.list_elements", side_effect=list_elements
         ) as mocked_list_module:
 
             @match_typing
