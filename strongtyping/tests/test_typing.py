@@ -312,8 +312,9 @@ def test_use_own_exception():
 
 
 def test_use_own_exception_inherit_type_mis_match_exception():
-    class MyException(TypeMisMatch):
+    class MyException(Exception):
         def __init__(self, message, failed_params=None, param_values=None, annotations=None):
+            super().__init(message)
             self.failed_params = failed_params
             self.param_values = param_values
             self.annotations = annotations
