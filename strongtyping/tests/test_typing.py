@@ -311,6 +311,28 @@ def test_use_own_exception():
         func_a(12)
 
 
+def test_use_own_exception_inherit_type_mis_match_exception():
+    class MyException(TypeMisMatch):
+        def __init__(self, message, failed_params=None, param_values=None, annotations=None):
+            self.failed_params = failed_params
+            self.param_values = param_values
+            self.annotations = annotations
+
+    @match_typing(excep_raise=MyException)
+    def func_a(a: str, b: int):
+        return True
+
+    try:
+        func_a(12, "abc")
+    except MyException as error:
+        assert error.failed_params[0] == 'a'
+        assert error.failed_params[1] == 'b'
+        assert error.param_values['a'] == 12
+        assert error.param_values['b'] == "abc"
+        assert error.annotations['a'] == str
+        assert error.annotations['b'] == int
+
+
 def test_use_str_repr_as_type():
     class A:
         @match_typing
@@ -421,8 +443,8 @@ def test_with_dict():
         return f"{a}-{b}"
 
     assert (
-        func_a({"a": 5, "b": 2}, {("hello", "world"): 10, ("foo", "bar"): 6})
-        == "{'a': 5, 'b': 2}-{('hello', 'world'): 10, ('foo', 'bar'): 6}"
+            func_a({"a": 5, "b": 2}, {("hello", "world"): 10, ("foo", "bar"): 6})
+            == "{'a': 5, 'b': 2}-{('hello', 'world'): 10, ('foo', 'bar'): 6}"
     )
 
     with pytest.raises(TypeMisMatch):
@@ -750,7 +772,6 @@ def test_with_json():
 
 @pytest.mark.skip()
 def test_with_new_type():
-
     FruitType = NewType("FruitType", Tuple[str, str])
 
     @match_typing
@@ -1018,7 +1039,6 @@ def test_with_severity_param():
 
 
 def test_with_env_severity(monkeypatch):
-
     monkeypatch.setenv("ST_SEVERITY", "disable")
 
     @match_class_typing
@@ -1161,7 +1181,7 @@ def test_strongtyping_modules_integration():
         from strongtyping_modules.strongtyping_modules import list_elements
 
         with mock.patch(
-            "strongtyping.strong_typing_utils.list_elements", side_effect=list_elements
+                "strongtyping.strong_typing_utils.list_elements", side_effect=list_elements
         ) as mocked_list_module:
 
             @match_typing
