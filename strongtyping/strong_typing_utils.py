@@ -31,7 +31,7 @@ default_return_queue = Queue()
 
 
 class TypeMisMatch(AttributeError):
-    def __init__(self, message, failed_params=None, param_values=None, annotations=None):
+    def __init__(self, message):
         super().__init__()
         print(message)
 

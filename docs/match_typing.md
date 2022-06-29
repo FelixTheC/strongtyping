@@ -49,29 +49,6 @@ class SomeException(Exception):
 def foo_bar(with_type_a: str, without_type_a, with_type_b: list, without_type_b):
     ...
 ```
-- Create your own error message - 
-create new exception and use the passed parameters to build a custom error message:
-```python
-# all params names that not have valid type
-failed_params: tuple[str, ...]
-
-# dict which maps parameter names to their values
-annotated_values: dict[str, any]
-
-# dict which maps parameter names to their types
-annotations: dict[str, any]
-```
-```python
-class SomeException(Exception):
-    def __init__(self, message, failed_params=None, param_values=None, annotations=None):
-        message = "Following parameters have wrong type: " 
-        + "\n".join(f"[{name}] - value = {param_values[name]},"
-        f" actual type: {type(param_values[name])},"
-        f" required type: {annotations[name]}"
-        for name in failed_params)
-        super().__init__(message)
-            
-```
 
 ### enable internal cache
 - with `cache_size` = 1
