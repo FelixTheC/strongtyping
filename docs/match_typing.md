@@ -70,6 +70,7 @@ class SomeException(Exception):
         super().__init__(message)
             
 ```
+
 ### enable internal cache
 - with `cache_size` = 1
 ```python
