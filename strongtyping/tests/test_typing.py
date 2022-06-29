@@ -311,6 +311,28 @@ def test_use_own_exception():
         func_a(12)
 
 
+def test_use_own_exception_parameters_check():
+    class MyException(Exception):
+        def __init__(self, message, failed_params=None, param_values=None, annotations=None):
+            self.failed_params = failed_params
+            self.param_values = param_values
+            self.annotations = annotations
+
+    @match_typing(excep_raise=MyException)
+    def func_a(a: str, b: int):
+        return True
+
+    try:
+        func_a(12, "abc")
+    except MyException as error:
+        assert error.failed_params[0] == "a"
+        assert error.failed_params[1] == "b"
+        assert error.param_values["a"] == 12
+        assert error.param_values["b"] == "abc"
+        assert error.annotations["a"] == str
+        assert error.annotations["b"] == int
+
+
 def test_use_str_repr_as_type():
     class A:
         @match_typing
