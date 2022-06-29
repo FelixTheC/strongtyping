@@ -311,10 +311,9 @@ def test_use_own_exception():
         func_a(12)
 
 
-def test_use_own_exception_inherit_type_mis_match_exception():
+def test_use_own_exception_parameters_check():
     class MyException(Exception):
         def __init__(self, message, failed_params=None, param_values=None, annotations=None):
-            super().__init(message)
             self.failed_params = failed_params
             self.param_values = param_values
             self.annotations = annotations
@@ -326,12 +325,12 @@ def test_use_own_exception_inherit_type_mis_match_exception():
     try:
         func_a(12, "abc")
     except MyException as error:
-        assert error.failed_params[0] == 'a'
-        assert error.failed_params[1] == 'b'
-        assert error.param_values['a'] == 12
-        assert error.param_values['b'] == "abc"
-        assert error.annotations['a'] == str
-        assert error.annotations['b'] == int
+        assert error.failed_params[0] == "a"
+        assert error.failed_params[1] == "b"
+        assert error.param_values["a"] == 12
+        assert error.param_values["b"] == "abc"
+        assert error.annotations["a"] == str
+        assert error.annotations["b"] == int
 
 
 def test_use_str_repr_as_type():

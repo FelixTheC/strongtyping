@@ -82,7 +82,9 @@ def match_typing(
                     msg = f"Incorrect parameter: {msg_list}"
 
                     if excep_raise is not None and severity_level == SEVERITY_LEVEL.ENABLED.value:
-                        raise excep_raise(msg, failed_params, annotated_values, annotations) from None
+                        raise excep_raise(
+                            msg, failed_params, annotated_values, annotations
+                        ) from None
                     else:
                         warnings.warn(msg, RuntimeWarning)
 
