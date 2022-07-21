@@ -84,6 +84,37 @@ def foo_bar(a: tuple, b: MyClass):
     ...
 ```
 
+### allow duck_typing
+- with `allow_duck_typing` = True
+```python
+from strongtyping.strong_typing import match_typing
+
+
+@match_typing(allow_duck_typing=True)
+def adder(x: int, y: float):
+    return x + y
+
+
+# passes 
+> adder(2, 2.5)
+> adder(2, 5)
+```
+```python
+from typing import MutableMapping
+
+from requests.structures import CaseInsensitiveDict
+from strongtyping.strong_typing import match_typing
+
+
+@match_typing(allow_duck_typing=True)
+def foobar(x: MutableMapping):
+    ...
+
+foobar(CaseInsensitiveDict())
+```
+- without `allow_duck_typing` or `allow_duck_typing=False` I will have an exact match of the types
+
+
 ### disable Exception
   - You can also __disable__ the raising of an __Exception__ and get a __warning__ instead.  This means your function will execute even when the parameters are wrong, but you're advised to only use this if you're sure you know what you're doing!
 ```python
