@@ -345,10 +345,13 @@ def validate_object(value, validation_func=None):
 
 
 def check_duck_typing(arg, possible_types, *args, **kwargs):
+    if isinstance(arg, possible_types):
+        return True
+
     if type(arg) in ORIGINAL_DUCK_TYPES:
         return possible_types in ORIGINAL_DUCK_TYPES[type(arg)]
 
-    if "mro" not in dir(arg):
+    if "__mro__" not in dir(arg.__class__):
         arg_mros = set(arg.__class__.mro()[:-1])  # to exclude `object`
     else:
         arg_mros = set(arg.mro()[:-1])

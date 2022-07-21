@@ -1,3 +1,4 @@
+from numbers import Integral, Real
 from typing import Container, MutableMapping
 
 import pytest
@@ -15,6 +16,9 @@ def test_int_float_duck_typing():
     assert adder(2, 2.5) == 4.5
     assert adder(2, 5) == 7
 
+    with pytest.raises(TypeMisMatch):
+        adder(2.5, 5)
+
 
 def test_complex_duck_typing():
     @match_typing(allow_duck_typing=True)
@@ -23,6 +27,18 @@ def test_complex_duck_typing():
 
     assert adder(2.5, 2.5) == 5
     assert adder(3.5, 1.5) == 5
+
+
+def test_integral_real_duck_typing():
+    @match_typing(allow_duck_typing=True)
+    def adder(x: Integral, y: Real):
+        return x + y
+
+    assert adder(2, 2.5) == 4.5
+    assert adder(2, 5) == 7
+
+    with pytest.raises(TypeMisMatch):
+        adder(2.5, 5)
 
 
 def test_bytearray_duck_typing():
