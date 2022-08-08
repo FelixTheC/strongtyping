@@ -14,6 +14,12 @@ from strongtyping.config import SEVERITY_LEVEL
 
 logger = logging.getLogger(__name__)
 
+ORIGINAL_DUCK_TYPES = {
+    int: [int, float, complex],
+    float: [float, complex],
+    bytearray: [bytearray, bytes],
+}
+
 
 def remove_subclass(args, subclass):
     if len(args) == 1:

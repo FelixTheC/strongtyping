@@ -4,7 +4,6 @@
 @created: 28.04.20
 @author: felix
 """
-import functools
 import inspect
 import pprint
 import sys
@@ -33,6 +32,7 @@ def match_typing(
 ):
     cached_enabled: int = kwargs.get("cache_size", 1)
     cached_set = CachedSet(cached_enabled) if cached_enabled > 0 else None
+    check_duck_typing = kwargs.get("allow_duck_typing", False)
 
     def wrapper(func):
         # needed in py 3.10
@@ -57,12 +57,22 @@ def match_typing(
                 failed_params = tuple(
                     arg_name
                     for arg, arg_name in zip(args, arg_names)
-                    if not check_type(arg, annotations.get(arg_name))
+                    if not check_type(
+                        arg,
+                        annotations.get(arg_name),
+                        mro=False,
+                        check_duck_typing=check_duck_typing,
+                    )
                 )
                 failed_params += tuple(
                     kwarg_name
                     for kwarg_name, kwarg in kwargs.items()
-                    if not check_type(kwarg, annotations.get(kwarg_name))
+                    if not check_type(
+                        kwarg,
+                        annotations.get(kwarg_name),
+                        mro=False,
+                        check_duck_typing=check_duck_typing,
+                    )
                 )
 
                 if not default_return_queue.empty():
