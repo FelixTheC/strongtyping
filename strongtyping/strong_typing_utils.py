@@ -390,7 +390,7 @@ def check_type(argument, type_of, mro=False, **kwargs):
         except KeyError:
             pass
 
-        if kwargs.get("check_duck_typing"):
+        if kwargs.pop("check_duck_typing", None):
             return check_duck_typing(argument, type_of)
 
         if isinstance(type_of, typing_base_class) or origin is not None:
