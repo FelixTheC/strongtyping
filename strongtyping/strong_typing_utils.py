@@ -12,7 +12,7 @@ from functools import lru_cache, partial
 from queue import Queue
 from typing import Any, TypeVar, _GenericAlias, _SpecialForm, _type_repr  # type: ignore
 
-from strongtyping._utils import install_st_m
+from strongtyping._utils import ORIGINAL_DUCK_TYPES, install_st_m
 
 install_st_m()
 
@@ -382,6 +382,22 @@ def validate_object(value, validation_func=None):
     return True
 
 
+def check_duck_typing(arg, possible_types, *args, **kwargs):
+    if isinstance(arg, possible_types):
+        return True
+
+    if type(arg) in ORIGINAL_DUCK_TYPES:
+        return possible_types in ORIGINAL_DUCK_TYPES[type(arg)]
+
+    if "__mro__" not in dir(arg.__class__):
+        arg_mros = set(arg.__class__.mro()[:-1])  # to exclude `object`
+    else:
+        arg_mros = set(arg.mro()[:-1])
+
+    required_mros = set(possible_types.mro()[:-1])
+    return arg_mros.issuperset(required_mros)
+
+
 supported_typings = vars()
 if extension_module:
     m = [f"module_checking_typing_{t}" for t in ("list", "dict", "set", "tuple", "validator")]
@@ -416,6 +432,9 @@ def check_type(argument, type_of, mro=False, **kwargs):
             type_of = type_of.__supertype__
             origin, origin_name = get_origins(type_of)
             origin_name = origin_name.lower()
+
+        if kwargs.pop("check_duck_typing", None):
+            return check_duck_typing(argument, type_of)
 
         if isinstance(type_of, typing_base_class) or (py_version >= 9 and origin is not None):
             try:
