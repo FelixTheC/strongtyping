@@ -441,9 +441,7 @@ def check_type(argument, type_of, mro=False, **kwargs):
             )
         elif origin in (list, typing.MutableSequence, typing.Deque, deque):
             if extension_module:
-                return module_checking_typing_list(
-                    argument, get_possible_types(type_of, origin_name)
-                )
+                return module_checking_typing_list(argument, type_of)
             return checking_typing_list(
                 argument, get_possible_types(type_of, origin_name), mro, **kwargs
             )
@@ -453,17 +451,13 @@ def check_type(argument, type_of, mro=False, **kwargs):
             )
         elif origin is set:
             if extension_module:
-                return module_checking_typing_set(
-                    argument, get_possible_types(type_of, origin_name)
-                )
+                return module_checking_typing_set(argument, type_of)
             return checking_typing_set(
                 argument, get_possible_types(type_of, origin_name), mro, **kwargs
             )
         elif origin is tuple:
             if extension_module:
-                return module_checking_typing_tuple(
-                    argument, get_possible_types(type_of, origin_name)
-                )
+                return module_checking_typing_tuple(argument, type_of)
             return checking_typing_tuple(
                 argument, get_possible_types(type_of, origin_name), mro, **kwargs
             )
@@ -477,12 +471,8 @@ def check_type(argument, type_of, mro=False, **kwargs):
             typing.ChainMap,
         ):
             if extension_module:
-                return module_checking_typing_dict(
-                    argument, get_possible_types(type_of, origin_name)
-                )
-            return checking_typing_dict(
-                argument, get_possible_types(type_of, origin_name), mro, **kwargs
-            )
+                return module_checking_typing_dict(argument, type_of)
+            return checking_typing_dict(argument, type_of)
         elif origin in (typing.Callable, Callable):
             return checking_typing_callable(
                 argument, get_possible_types(type_of, origin_name), mro, **kwargs
@@ -493,9 +483,7 @@ def check_type(argument, type_of, mro=False, **kwargs):
             )
         elif origin is Validator:
             if extension_module:
-                return module_checking_typing_validator(
-                    argument, get_possible_types(type_of, origin_name)
-                )
+                return module_checking_typing_validator(argument, type_of)
             return checking_typing_validator(
                 argument, get_possible_types(type_of, origin_name), mro, **kwargs
             )
