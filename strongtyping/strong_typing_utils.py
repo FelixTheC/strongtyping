@@ -472,7 +472,9 @@ def check_type(argument, type_of, mro=False, **kwargs):
         ):
             if extension_module:
                 return module_checking_typing_dict(argument, type_of)
-            return checking_typing_dict(argument, type_of)
+            return checking_typing_dict(
+                argument, get_possible_types(type_of, origin_name), mro, **kwargs
+            )
         elif origin in (typing.Callable, Callable):
             return checking_typing_callable(
                 argument, get_possible_types(type_of, origin_name), mro, **kwargs
