@@ -8,6 +8,9 @@ import inspect
 import os
 import sys
 import typing
+from collections import Callable
+from collections import Iterable
+from collections import deque
 from functools import lru_cache, partial
 from queue import Queue
 from typing import Any, TypeVar, _GenericAlias, _SpecialForm, _type_repr  # type: ignore
@@ -76,8 +79,6 @@ def get_possible_types(typ_to_check, origin_name: str = "") -> typing.Union[tupl
 
 
 def get_origins(typ_to_check: Any) -> tuple:
-    from strongtyping.strong_typing import match_class_typing
-
     """
     :param typ_to_check: typ_to_check: some typing like List[str], Dict[str, int], Tuple[Union[str, int], List[int]]
     :return: the class, alias_class and the class name
@@ -95,12 +96,10 @@ def get_origins(typ_to_check: Any) -> tuple:
         return typ_to_check, typ_to_check.__class__.__name__
 
     if hasattr(typ_to_check, "__origin__") or hasattr(typ_to_check, "__orig_bases__"):
-        if (
-            py_version >= 9
-            and hasattr(typ_to_check, "__origin__")
+        if (hasattr(typ_to_check, "__origin__")
             and hasattr(typ_to_check.__origin__, "__name__")
         ):
-            origin = typ_to_check.__origin__.__name__
+            origin = typ_to_check.__origin__
         elif hasattr(typ_to_check, "__origin__") or hasattr(typ_to_check, "__orig_bases__"):
             if hasattr(typ_to_check, "__origin__") and typ_to_check.__origin__ is not None:
                 origin = typ_to_check.__origin__
@@ -219,6 +218,13 @@ def checking_typing_list(arg: Any, possible_types: tuple, *args, **kwargs):
         return False
     if isinstance(arg, list) and not possible_types:
         return True
+    possible_type = possible_types[0]
+    return all(check_type(argument, possible_type, **kwargs) for argument in arg)
+
+
+def checking_typing_iterable(arg: Any, possible_types: tuple, *args, **kwargs):
+    if not hasattr(arg, '__iter__'):
+        return False
     possible_type = possible_types[0]
     return all(check_type(argument, possible_type, **kwargs) for argument in arg)
 
@@ -407,6 +413,8 @@ else:
 
 
 def check_type(argument, type_of, mro=False, **kwargs):
+    from strongtyping.types import Validator, IterValidator
+
     # if int(py_version) >= 10 and isinstance(type_of, (str, bytes)):
     #     type_of = eval(type_of, locals(), globals())
     if checking_typing_generator(argument, type_of):
@@ -418,16 +426,6 @@ def check_type(argument, type_of, mro=False, **kwargs):
         origin, origin_name = get_origins(type_of)
         origin_name = origin_name.lower()
 
-        if "any" in origin_name:
-            return validate_object(argument, kwargs.get("validation_with"))
-        if "json" in origin_name or "json" in str(type_of):
-            return supported_typings["checking_typing_json"](argument, type_of, mro)
-
-        try:
-            return supported_modules[f"module_checking_typing_{origin_name}"](argument, type_of)
-        except KeyError:
-            pass
-
         if "new_type" in origin_name:
             type_of = type_of.__supertype__
             origin, origin_name = get_origins(type_of)
@@ -436,16 +434,66 @@ def check_type(argument, type_of, mro=False, **kwargs):
         if kwargs.pop("check_duck_typing", None):
             return check_duck_typing(argument, type_of)
 
-        if isinstance(type_of, typing_base_class) or (py_version >= 9 and origin is not None):
-            try:
-                return supported_typings[f"checking_typing_{origin_name}"](
-                    argument, get_possible_types(type_of, origin_name), mro, **kwargs
-                )
-            except AttributeError:
-                return isinstance(argument, type_of.__args__)
+        if "any" in origin_name:
+            return validate_object(argument, kwargs.get("validation_with"))
+        if "json" in origin_name or "json" in str(type_of):
+            return checking_typing_json(argument, type_of, mro)
+
+        if origin is typing.Union:
+            return checking_typing_union(
+                argument, get_possible_types(type_of, origin_name), mro, **kwargs
+            )
+        elif origin in (list, typing.MutableSequence, typing.Deque, deque):
+            return checking_typing_list(
+                argument, get_possible_types(type_of, origin_name), mro, **kwargs
+            )
+        elif origin in (typing.Iterable, Iterable):
+            return checking_typing_iterable(
+                argument, get_possible_types(type_of, origin_name), mro, **kwargs
+            )
+        elif origin is set:
+            return checking_typing_set(
+                argument, get_possible_types(type_of, origin_name), mro, **kwargs
+            )
+        elif origin is tuple:
+            return checking_typing_tuple(
+                argument, get_possible_types(type_of, origin_name), mro, **kwargs
+            )
+        elif origin in (
+            dict,
+            typing.MutableMapping,
+            typing.Dict,
+            typing.DefaultDict,
+            typing.OrderedDict,
+            typing.Counter,
+            typing.ChainMap,
+        ):
+            return checking_typing_dict(
+                argument, get_possible_types(type_of, origin_name), mro, **kwargs
+            )
+        elif origin in (typing.Callable, Callable):
+            return checking_typing_callable(
+                argument, get_possible_types(type_of, origin_name), mro, **kwargs
+            )
+        elif origin is type:
+            return checking_typing_type(
+                argument, get_possible_types(type_of, origin_name), mro, **kwargs
+            )
+        elif origin is Validator:
+            return checking_typing_validator(
+                argument, get_possible_types(type_of, origin_name), mro, **kwargs
+            )
+        elif origin is IterValidator:
+            return checking_typing_itervalidator(
+                argument, get_possible_types(type_of, origin_name), mro, **kwargs
+            )
+        elif origin is typing.Literal:
+            return checking_typing_literal(
+                argument, get_possible_types(type_of, origin_name), mro, **kwargs
+            )
         elif isinstance(type_of, str):
             return argument.__class__.__name__ == type_of
-        elif origin_name in ("_typeddictmeta", "matchtypeddict"):
+        elif origin_name in ("_typeddictmeta", "matchtypeddict", "typeddict"):
             return checking_typing_typeddict(argument, get_possible_types(type_of, "typeddict"))
         elif mro:
             if origin_name == "union":
@@ -457,7 +505,7 @@ def check_type(argument, type_of, mro=False, **kwargs):
         else:
             try:
                 is_instance = isinstance(argument, type_of) or argument == type_of
-            except TypeError:
+            except (TypeError, AttributeError):
                 return isinstance(argument, type_of._subs_tree()[1:])
             else:
                 if not is_instance:
