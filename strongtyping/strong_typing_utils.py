@@ -8,9 +8,7 @@ import inspect
 import os
 import sys
 import typing
-from collections import Callable
-from collections import Iterable
-from collections import deque
+from collections import Callable, Iterable, deque
 from functools import lru_cache, partial
 from queue import Queue
 from typing import Any, TypeVar, _GenericAlias, _SpecialForm, _type_repr  # type: ignore
@@ -96,9 +94,7 @@ def get_origins(typ_to_check: Any) -> tuple:
         return typ_to_check, typ_to_check.__class__.__name__
 
     if hasattr(typ_to_check, "__origin__") or hasattr(typ_to_check, "__orig_bases__"):
-        if (hasattr(typ_to_check, "__origin__")
-            and hasattr(typ_to_check.__origin__, "__name__")
-        ):
+        if hasattr(typ_to_check, "__origin__") and hasattr(typ_to_check.__origin__, "__name__"):
             origin = typ_to_check.__origin__
         elif hasattr(typ_to_check, "__origin__") or hasattr(typ_to_check, "__orig_bases__"):
             if hasattr(typ_to_check, "__origin__") and typ_to_check.__origin__ is not None:
@@ -223,7 +219,7 @@ def checking_typing_list(arg: Any, possible_types: tuple, *args, **kwargs):
 
 
 def checking_typing_iterable(arg: Any, possible_types: tuple, *args, **kwargs):
-    if not hasattr(arg, '__iter__'):
+    if not hasattr(arg, "__iter__"):
         return False
     possible_type = possible_types[0]
     return all(check_type(argument, possible_type, **kwargs) for argument in arg)
@@ -413,7 +409,7 @@ else:
 
 
 def check_type(argument, type_of, mro=False, **kwargs):
-    from strongtyping.types import Validator, IterValidator
+    from strongtyping.types import IterValidator, Validator
 
     # if int(py_version) >= 10 and isinstance(type_of, (str, bytes)):
     #     type_of = eval(type_of, locals(), globals())
