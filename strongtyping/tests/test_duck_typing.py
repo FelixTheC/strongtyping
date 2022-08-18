@@ -2,7 +2,13 @@ from numbers import Integral, Real
 from typing import Container, MutableMapping
 
 import pytest
-from requests.structures import CaseInsensitiveDict
+
+UNIMPORTED = object()
+
+try:
+    from requests.structures import CaseInsensitiveDict
+except ImportError:
+    CaseInsensitiveDict = UNIMPORTED
 
 from strongtyping.strong_typing import match_typing
 from strongtyping.strong_typing_utils import TypeMisMatch
@@ -55,6 +61,7 @@ def test_bytearray_duck_typing():
         adder(bytes([1, 2, 3]), bytearray([1, 2, 3]))
 
 
+@pytest.mark.skipif(CaseInsensitiveDict is UNIMPORTED, reason="CaseInsensitiveDict is required")
 def test_mro_compatibility_duck_typing():
     @match_typing(allow_duck_typing=True)
     def dummy(x: MutableMapping):
