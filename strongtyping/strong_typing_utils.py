@@ -7,9 +7,8 @@
 import inspect
 import os
 import typing
-from collections.abc import Callable
-from collections.abc import Iterable
 from collections import deque
+from collections.abc import Callable, Iterable
 from functools import lru_cache, partial
 from queue import Queue
 from typing import Any, TypeVar, _GenericAlias, _SpecialForm, _type_repr  # type: ignore
@@ -421,13 +420,13 @@ def check_type(argument, type_of, mro=False, **kwargs):
                 argument, get_possible_types(type_of, origin_name), mro, **kwargs
             )
         elif origin in (
-                dict,
-                typing.MutableMapping,
-                typing.Dict,
-                typing.DefaultDict,
-                typing.OrderedDict,
-                typing.Counter,
-                typing.ChainMap,
+            dict,
+            typing.MutableMapping,
+            typing.Dict,
+            typing.DefaultDict,
+            typing.OrderedDict,
+            typing.Counter,
+            typing.ChainMap,
         ):
             if extension_module:
                 return module_checking_typing_dict(argument, type_of)
