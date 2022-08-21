@@ -18,7 +18,7 @@ packages = find_packages(exclude=["test_*", "*.tests"])
 
 setup(
     name="strongtyping",
-    version="3.10.1",
+    version="3.10.2",
     description="Decorator which checks whether the function is called with the correct type of parameters",
     long_description=README,
     long_description_content_type="text/markdown",
