@@ -7,7 +7,7 @@ coverage==5.5
 future==0.18.2
 idna==2.10
 Jinja2==3.0.1
-joblib==1.0.1
+joblib==1.2.0
 livereload==2.6.3
 lunr==0.5.8
 Markdown==3.3.4
