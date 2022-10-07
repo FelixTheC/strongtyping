@@ -4,7 +4,6 @@
 @created: 03.06.21
 @author: felix
 """
-import sys
 from typing import List, Union
 
 import pytest
@@ -13,7 +12,6 @@ from strongtyping.strong_typing import match_class_typing, match_typing
 from strongtyping.strong_typing_utils import TypeMisMatch, ValidationError
 
 
-@pytest.mark.skipif(sys.version_info.minor < 8, reason="TypedDict only available since 3.8")
 def test_typedict():
     from typing import TypedDict
 
@@ -29,7 +27,6 @@ def test_typedict():
         SalesSummary({"sales": "Foo", "country": 10, "product_codes": [1, 2, 3]})
 
 
-@pytest.mark.skipif(sys.version_info.minor < 8, reason="TypedDict only available since 3.8")
 def test_typedict_with_total():
     from typing import TypedDict
 
@@ -45,7 +42,6 @@ def test_typedict_with_total():
         SalesSummary({"sales": "Foo", "product_codes": [1, 2, 3]})
 
 
-@pytest.mark.skipif(sys.version_info.minor < 8, reason="TypedDict only available since 3.8")
 def test_typedict_with_validator():
     from typing import TypedDict
 
@@ -76,7 +72,6 @@ def test_typedict_with_validator():
         cluster({"sales": 10, "country": "Europe", "product_codes": list(range(10))})
 
 
-@pytest.mark.skipif(sys.version_info.minor < 8, reason="TypedDict only available since 3.8")
 def test_typedict_with_validator_and_total():
     from typing import TypedDict
 
@@ -107,7 +102,6 @@ def test_typedict_with_validator_and_total():
         cluster({"product_codes": list(range(10))})
 
 
-@pytest.mark.skipif(sys.version_info.minor < 8, reason="TypedDict only available since 3.8")
 def test_use_typed_dict_total_true_class_as_function_parameter_to_validate():
     from typing import TypedDict
 
@@ -128,7 +122,6 @@ def test_use_typed_dict_total_true_class_as_function_parameter_to_validate():
         move_to({"y": 2.1})
 
 
-@pytest.mark.skipif(sys.version_info.minor < 8, reason="TypedDict only available since 3.8")
 def test_use_typed_dict_total_false_class_as_function_parameter_to_validate():
     from typing import TypedDict
 
@@ -146,7 +139,6 @@ def test_use_typed_dict_total_false_class_as_function_parameter_to_validate():
     assert move_to({"x": 1.0, "y": 2.0})
 
 
-@pytest.mark.skipif(sys.version_info.minor < 8, reason="TypedDict only available since 3.8")
 def test_nested_typeddicts():
     from typing import TypedDict
 
@@ -174,7 +166,6 @@ def test_nested_typeddicts():
         make_move({"position": {"x": 1.0, "y": 2.0, "z": 0.25}})
 
 
-@pytest.mark.skipif(sys.version_info.minor < 8, reason="TypedDict only available since 3.8")
 def test_calling_a_typeddict_class_without_dict():
     from typing import TypedDict
 
