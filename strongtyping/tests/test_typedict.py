@@ -7,6 +7,7 @@
 from typing import List, Union
 
 import pytest
+from typing_extensions import NotRequired, Required
 
 from strongtyping.strong_typing import match_class_typing, match_typing
 from strongtyping.strong_typing_utils import TypeMisMatch, ValidationError
@@ -177,6 +178,79 @@ def test_calling_a_typeddict_class_without_dict():
 
     new_obj = Example(x=1.0, y=2.0, z=3.0)
     assert new_obj
+
+
+def test_typeddict_with_required():
+    from typing import TypedDict
+
+    @match_class_typing
+    class Movie(TypedDict, total=False):
+        title: Required[str]
+        year: int
+
+    new_obj = Movie(title="Prisoner of azkaban")
+    assert new_obj
+
+
+def test_typeddict_with_not_required():
+    from typing import TypedDict
+
+    @match_class_typing
+    class Movie(TypedDict):  # implicitly total=True
+        title: str
+        year: NotRequired[int]
+
+    new_obj = Movie(title="Prisoner of azkaban")
+    assert new_obj
+
+
+def test_typeddict_with_required_and_not_required():
+    from typing import TypedDict
+
+    @match_class_typing
+    class Movie(TypedDict):
+        title: Required[str]  # redundant
+        year: NotRequired[int]
+
+    new_obj = Movie(title="Prisoner of azkaban")
+    assert new_obj
+
+    new_obj = Movie(title="Prisoner of azkaban", year=2004)
+    assert new_obj
+
+
+def test_typeddict_with_not_required_required_fails():
+    from typing import TypedDict
+
+    @match_class_typing
+    class Movie(TypedDict):
+        title: str
+        year: NotRequired[NotRequired[Required[int]]]
+
+    with pytest.raises(TypeError):
+        Movie(title="Prisoner of azkaban")
+
+
+def test_typeddict_with_not_required_cannot_before_required():
+    from typing import TypedDict
+
+    @match_class_typing
+    class Movie(TypedDict):
+        year: NotRequired[int]
+        title: str
+
+    with pytest.raises(TypeError):
+        Movie(title="Prisoner of azkaban")
+
+    @match_class_typing
+    class Movie(TypedDict):
+        title: str
+        regisseur: Required[str]
+        month: NotRequired[int]
+        year: Required[int]
+
+    with pytest.raises(TypeError):
+        Movie(title="Prisoner of azkaban", regisseur="Alfonso Cuarón", year=2004)
 
 
 if __name__ == "__main__":

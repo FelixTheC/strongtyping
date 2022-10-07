@@ -9,7 +9,9 @@ import pprint
 import sys
 import warnings
 from functools import wraps
-from typing import Type
+from typing import Type, get_args, get_origin
+
+from typing_extensions import NotRequired, Required
 
 from strongtyping._utils import _severity_level, action, remove_subclass
 from strongtyping.cached_set import CachedSet
@@ -144,9 +146,35 @@ class MatchTypedDict:
             f"\n\trequired: {self.__annotations__}"
         )
 
+    def _no_required_inside(self, val):
+        if get_origin(val) is Required:
+            return False
+        try:
+            new_val = get_args(val)[0]
+        except IndexError:
+            return True
+        else:
+            return self._no_required_inside(new_val)
+
+    def check_annotations(self):
+        last_non_required = None
+        for idx, val in enumerate(self.__annotations__.values()):
+            if get_origin(val) is NotRequired:
+                if idx == 0 and self.__total__:
+                    raise TypeError("NotRequired cannot before required")
+                if not self._no_required_inside(get_args(val)[0]):
+                    return False
+                last_non_required = idx
+            else:
+                if last_non_required is not None and last_non_required < idx:
+                    raise TypeError("NotRequired cannot before required")
+        return True
+
     def __call__(self, *args, **kwargs):
         if self.is_typed_dict:
             arguments = kwargs if kwargs else args[0]
+            if not self.check_annotations():
+                raise TypeError("A NotRequired field can not contain Required")
             if not checking_typing_typedict_values(arguments, self.__annotations__, self.__total__):
                 raise self.excep_raise(self.create_error_msg(arguments))
         if self.cls:
