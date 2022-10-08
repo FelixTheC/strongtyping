@@ -253,5 +253,34 @@ def test_typeddict_with_not_required_cannot_before_required():
         Movie(title="Prisoner of azkaban", regisseur="Alfonso Cuarón", year=2004)
 
 
+def test_typeddict_with_required_and_not_required_and_sub_typeddict():
+    from typing_extensions import TypedDict
+
+    @match_class_typing
+    class Movie(TypedDict):
+        title: str
+        year: NotRequired[int]
+
+    @match_class_typing
+    class Additional(TypedDict):
+        name: str
+        val: NotRequired[str]
+
+    @match_class_typing
+    class Regisseur(TypedDict):
+        name: str
+        movie: Required[dict[Movie]]
+        year: Required[int]
+        info: NotRequired[dict[Additional]]
+
+    assert Regisseur(name="Alfonso Cuarón", movie=Movie(title="Hallow"), year=2004)
+
+    with pytest.raises(TypeMisMatch):
+        Regisseur(name="Alfonso Cuarón", movie=Movie, year=2004)
+
+    with pytest.raises(TypeMisMatch):
+        Regisseur(name="Alfonso Cuarón", year=2004)
+
+
 if __name__ == "__main__":
     pytest.main(["-vv", "-s", __file__])

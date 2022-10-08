@@ -139,6 +139,10 @@ class MatchTypedDict:
     def is_typed_dict(self):
         if hasattr(self.cls, "__orig_bases__"):
             return any(obj.__name__ == "TypedDict" for obj in self.cls.__orig_bases__)
+        try:
+            return self.cls.__class__.__name__ == "_TypedDictMeta"
+        except AttributeError:
+            pass
 
     def create_error_msg(self, args: dict):
         return (
@@ -232,11 +236,17 @@ def match_class_typing(cls=None, **kwargs):
         return inner
 
     if cls is not None:
-        if sys.version_info.major >= 3 and sys.version_info.minor > 7:
-            from typing import Type, _TypedDictMeta
+        from typing import Type, _TypedDictMeta
 
+        try:
+            from typing_extensions import _TypedDictMeta as _TypedDictMetaExtension
+        except ImportError:
             if isinstance(cls, _TypedDictMeta):
                 return MatchTypedDict(cls)
+        else:
+            if isinstance(cls, _TypedDictMeta) or isinstance(cls, _TypedDictMetaExtension):
+                return MatchTypedDict(cls)
+
         __add_decorator(cls)
         cls._matches_class = True
         return cls
