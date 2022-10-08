@@ -4,16 +4,15 @@
 @created: 03.06.21
 @author: felix
 """
-import sys
 from typing import List, Union
 
 import pytest
+from typing_extensions import NotRequired, Required
 
 from strongtyping.strong_typing import match_class_typing, match_typing
 from strongtyping.strong_typing_utils import TypeMisMatch, ValidationError
 
 
-@pytest.mark.skipif(sys.version_info.minor < 8, reason="TypedDict only available since 3.8")
 def test_typedict():
     from typing import TypedDict
 
@@ -29,7 +28,6 @@ def test_typedict():
         SalesSummary({"sales": "Foo", "country": 10, "product_codes": [1, 2, 3]})
 
 
-@pytest.mark.skipif(sys.version_info.minor < 8, reason="TypedDict only available since 3.8")
 def test_typedict_with_total():
     from typing import TypedDict
 
@@ -45,7 +43,6 @@ def test_typedict_with_total():
         SalesSummary({"sales": "Foo", "product_codes": [1, 2, 3]})
 
 
-@pytest.mark.skipif(sys.version_info.minor < 8, reason="TypedDict only available since 3.8")
 def test_typedict_with_validator():
     from typing import TypedDict
 
@@ -76,7 +73,6 @@ def test_typedict_with_validator():
         cluster({"sales": 10, "country": "Europe", "product_codes": list(range(10))})
 
 
-@pytest.mark.skipif(sys.version_info.minor < 8, reason="TypedDict only available since 3.8")
 def test_typedict_with_validator_and_total():
     from typing import TypedDict
 
@@ -107,7 +103,6 @@ def test_typedict_with_validator_and_total():
         cluster({"product_codes": list(range(10))})
 
 
-@pytest.mark.skipif(sys.version_info.minor < 8, reason="TypedDict only available since 3.8")
 def test_use_typed_dict_total_true_class_as_function_parameter_to_validate():
     from typing import TypedDict
 
@@ -128,7 +123,6 @@ def test_use_typed_dict_total_true_class_as_function_parameter_to_validate():
         move_to({"y": 2.1})
 
 
-@pytest.mark.skipif(sys.version_info.minor < 8, reason="TypedDict only available since 3.8")
 def test_use_typed_dict_total_false_class_as_function_parameter_to_validate():
     from typing import TypedDict
 
@@ -146,7 +140,6 @@ def test_use_typed_dict_total_false_class_as_function_parameter_to_validate():
     assert move_to({"x": 1.0, "y": 2.0})
 
 
-@pytest.mark.skipif(sys.version_info.minor < 8, reason="TypedDict only available since 3.8")
 def test_nested_typeddicts():
     from typing import TypedDict
 
@@ -174,7 +167,6 @@ def test_nested_typeddicts():
         make_move({"position": {"x": 1.0, "y": 2.0, "z": 0.25}})
 
 
-@pytest.mark.skipif(sys.version_info.minor < 8, reason="TypedDict only available since 3.8")
 def test_calling_a_typeddict_class_without_dict():
     from typing import TypedDict
 
@@ -186,6 +178,108 @@ def test_calling_a_typeddict_class_without_dict():
 
     new_obj = Example(x=1.0, y=2.0, z=3.0)
     assert new_obj
+
+
+def test_typeddict_with_required():
+    from typing import TypedDict
+
+    @match_class_typing
+    class Movie(TypedDict, total=False):
+        title: Required[str]
+        year: int
+
+    new_obj = Movie(title="Prisoner of azkaban")
+    assert new_obj
+
+
+def test_typeddict_with_not_required():
+    from typing import TypedDict
+
+    @match_class_typing
+    class Movie(TypedDict):  # implicitly total=True
+        title: str
+        year: NotRequired[int]
+
+    new_obj = Movie(title="Prisoner of azkaban")
+    assert new_obj
+
+
+def test_typeddict_with_required_and_not_required():
+    from typing import TypedDict
+
+    @match_class_typing
+    class Movie(TypedDict):
+        title: Required[str]  # redundant
+        year: NotRequired[int]
+
+    new_obj = Movie(title="Prisoner of azkaban")
+    assert new_obj
+
+    new_obj = Movie(title="Prisoner of azkaban", year=2004)
+    assert new_obj
+
+
+def test_typeddict_with_not_required_required_fails():
+    from typing import TypedDict
+
+    @match_class_typing
+    class Movie(TypedDict):
+        title: str
+        year: NotRequired[NotRequired[Required[int]]]
+
+    with pytest.raises(TypeError):
+        Movie(title="Prisoner of azkaban")
+
+
+def test_typeddict_with_not_required_cannot_before_required():
+    from typing import TypedDict
+
+    @match_class_typing
+    class Movie(TypedDict):
+        year: NotRequired[int]
+        title: str
+
+    with pytest.raises(TypeError):
+        Movie(title="Prisoner of azkaban")
+
+    @match_class_typing
+    class Movie(TypedDict):
+        title: str
+        regisseur: Required[str]
+        month: NotRequired[int]
+        year: Required[int]
+
+    with pytest.raises(TypeError):
+        Movie(title="Prisoner of azkaban", regisseur="Alfonso Cuarón", year=2004)
+
+
+def test_typeddict_with_required_and_not_required_and_sub_typeddict():
+    from typing_extensions import TypedDict
+
+    @match_class_typing
+    class Movie(TypedDict):
+        title: str
+        year: NotRequired[int]
+
+    @match_class_typing
+    class Additional(TypedDict):
+        name: str
+        val: NotRequired[str]
+
+    @match_class_typing
+    class Regisseur(TypedDict):
+        name: str
+        movie: Required[dict[Movie]]
+        year: Required[int]
+        info: NotRequired[dict[Additional]]
+
+    assert Regisseur(name="Alfonso Cuarón", movie=Movie(title="Hallow"), year=2004)
+
+    with pytest.raises(TypeMisMatch):
+        Regisseur(name="Alfonso Cuarón", movie=Movie, year=2004)
+
+    with pytest.raises(TypeMisMatch):
+        Regisseur(name="Alfonso Cuarón", year=2004)
 
 
 if __name__ == "__main__":

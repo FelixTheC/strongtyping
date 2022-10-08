@@ -265,7 +265,7 @@ def checking_typing_iterable(arg: Any, possible_types: tuple, *args, **kwargs):
 
 def checking_typing_typedict_values(args: dict, required_types: dict, total: bool):
     if total:
-        return all(check_type(args[key], val) for key, val in required_types.items())
+        return all(check_type(args.get(key), val) for key, val in required_types.items())
     fields_to_check = {key: val for key, val in required_types.items() if key in args}
     return all(check_type(args[key], val) for key, val in fields_to_check.items())
 
@@ -281,6 +281,16 @@ def checking_typing_typeddict(arg: Any, possible_types: Any, *args, **kwargs):
         if not all(field in arg for field in required_fields):
             return False
     return checking_typing_typedict_values(arg, required_fields, total)
+
+
+def checking_typing_typeddict_required(arg: Any, possible_types: Any, *args, **kwargs):
+    return check_type(arg, possible_types[0])
+
+
+def checking_typing_typeddict_notrequired(arg: Any, possible_types: Any, *args, **kwargs):
+    if arg is None:
+        return True
+    return check_type(arg, possible_types[0])
 
 
 def module_checking_typing_list(arg: Any, possible_types: Any):
@@ -459,6 +469,14 @@ def check_type(argument, type_of, mro=False, **kwargs):
             return argument.__class__.__name__ == type_of
         elif origin_name in ("_typeddictmeta", "matchtypeddict", "typeddict"):
             return checking_typing_typeddict(argument, get_possible_types(type_of, "typeddict"))
+        elif origin_name == "required":
+            return checking_typing_typeddict_required(
+                argument, get_possible_types(type_of, origin_name)
+            )
+        elif origin_name == "notrequired":
+            return checking_typing_typeddict_notrequired(
+                argument, get_possible_types(type_of, origin_name)
+            )
         elif mro:
             if origin_name == "union":
                 possible_types = get_possible_types(type_of)

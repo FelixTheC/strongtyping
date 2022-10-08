@@ -9,7 +9,9 @@ import pprint
 import sys
 import warnings
 from functools import wraps
-from typing import Type
+from typing import Type, get_args, get_origin
+
+from typing_extensions import NotRequired, Required
 
 from strongtyping._utils import _severity_level, action, remove_subclass
 from strongtyping.cached_set import CachedSet
@@ -137,6 +139,10 @@ class MatchTypedDict:
     def is_typed_dict(self):
         if hasattr(self.cls, "__orig_bases__"):
             return any(obj.__name__ == "TypedDict" for obj in self.cls.__orig_bases__)
+        try:
+            return self.cls.__class__.__name__ == "_TypedDictMeta"
+        except AttributeError:
+            pass
 
     def create_error_msg(self, args: dict):
         return (
@@ -144,9 +150,35 @@ class MatchTypedDict:
             f"\n\trequired: {self.__annotations__}"
         )
 
+    def _no_required_inside(self, val):
+        if get_origin(val) is Required:
+            return False
+        try:
+            new_val = get_args(val)[0]
+        except IndexError:
+            return True
+        else:
+            return self._no_required_inside(new_val)
+
+    def check_annotations(self):
+        last_non_required = None
+        for idx, val in enumerate(self.__annotations__.values()):
+            if get_origin(val) is NotRequired:
+                if idx == 0 and self.__total__:
+                    raise TypeError("NotRequired cannot before required")
+                if not self._no_required_inside(get_args(val)[0]):
+                    return False
+                last_non_required = idx
+            else:
+                if last_non_required is not None and last_non_required < idx:
+                    raise TypeError("NotRequired cannot before required")
+        return True
+
     def __call__(self, *args, **kwargs):
         if self.is_typed_dict:
             arguments = kwargs if kwargs else args[0]
+            if not self.check_annotations():
+                raise TypeError("A NotRequired field can not contain Required")
             if not checking_typing_typedict_values(arguments, self.__annotations__, self.__total__):
                 raise self.excep_raise(self.create_error_msg(arguments))
         if self.cls:
@@ -204,11 +236,17 @@ def match_class_typing(cls=None, **kwargs):
         return inner
 
     if cls is not None:
-        if sys.version_info.major >= 3 and sys.version_info.minor > 7:
-            from typing import Type, _TypedDictMeta
+        from typing import Type, _TypedDictMeta
 
+        try:
+            from typing_extensions import _TypedDictMeta as _TypedDictMetaExtension
+        except ImportError:
             if isinstance(cls, _TypedDictMeta):
                 return MatchTypedDict(cls)
+        else:
+            if isinstance(cls, _TypedDictMeta) or isinstance(cls, _TypedDictMetaExtension):
+                return MatchTypedDict(cls)
+
         __add_decorator(cls)
         cls._matches_class = True
         return cls
