@@ -1,9 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-@created: 30.04.20
-@author: felix
-"""
 import pathlib
 
 from setuptools import find_packages, setup
@@ -18,7 +12,7 @@ packages = find_packages(exclude=["test_*", "*.tests"])
 
 setup(
     name="strongtyping",
-    version="3.10.2",
+    version="3.10.3",
     description="Decorator which checks whether the function is called with the correct type of parameters",
     long_description=README,
     long_description_content_type="text/markdown",
