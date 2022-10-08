@@ -10,6 +10,16 @@ assignees: ''
 **Describe the bug**
 A clear and concise description of what the bug is.
 
+
+**Python Version used**
+Python 3.XX
+
+**Package Version used**
+strongtyping X.XX
+
+**Addon in use**
+strongtyping_modules [yes/no]
+
 **To Reproduce**
 Steps to reproduce the behavior:
 1. Go to '...'
