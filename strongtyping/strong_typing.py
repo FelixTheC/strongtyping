@@ -1,10 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-@created: 28.04.20
-@author: felix
-"""
-import functools
 import inspect
 import pprint
 import sys
@@ -22,6 +15,8 @@ from strongtyping.strong_typing_utils import (
     default_return_queue,
     py_version,
 )
+
+IGNORE_FUNCS = ("__init__", "__repr__", "__str__", "__new__")
 
 
 def match_typing(
@@ -49,7 +44,7 @@ def match_typing(
             if arg_names and severity_level > SEVERITY_LEVEL.DISABLED.value:
 
                 args = remove_subclass(args, subclass)
-                if cached_set is not None and func.__name__ not in ("__init__",):
+                if cached_set is not None and func.__name__ not in IGNORE_FUNCS:
                     # check if func with args and kwargs was checked once before with positive result
                     cached_key = (func, args.__str__(), kwargs.__str__())
                     if cached_key in cached_set:
@@ -99,7 +94,7 @@ def match_typing(
                     else:
                         warnings.warn(msg, RuntimeWarning)
 
-                if cached_set is not None and func.__name__ not in ("__init__",):
+                if cached_set is not None and func.__name__ not in IGNORE_FUNCS:
                     cached_set.add(cached_key)
             return func(*args, **kwargs)
 

@@ -1,9 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-@created: 19.11.20
-@author: felix
-"""
 import inspect
 import os
 import sys
