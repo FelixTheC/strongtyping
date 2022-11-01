@@ -4,10 +4,9 @@
 @created: 03.06.21
 @author: felix
 """
-from typing import List, Union
+from typing import List, NotRequired, Required, Union
 
 import pytest
-from typing_extensions import NotRequired, Required
 
 from strongtyping.strong_typing import match_class_typing, match_typing
 from strongtyping.strong_typing_utils import TypeMisMatch, ValidationError

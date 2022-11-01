@@ -4,6 +4,7 @@ on:
   push:
     branches-ignore:
       - 'py_3_10'
+      - 'py_3_11'
 
 jobs:
   build:

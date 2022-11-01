@@ -6,12 +6,9 @@
 """
 import inspect
 import pprint
-import sys
 import warnings
 from functools import wraps
-from typing import Type, get_args, get_origin
-
-from typing_extensions import NotRequired, Required
+from typing import NotRequired, Required, Type, get_args, get_origin
 
 from strongtyping._utils import _severity_level, action, remove_subclass
 from strongtyping.cached_set import CachedSet
