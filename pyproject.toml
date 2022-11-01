@@ -19,3 +19,23 @@ target-version = ['py39']
 combine_as_imports = true
 line_length = 100
 profile = "black"
+
+[tool.poetry]
+name = "strongtyping"
+version = "3.11.0"
+description = "Decorator which checks whether the function is called with the correct type of parameters"
+authors = ["FelixTheC <felixeisenmenger@gmx.net>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = ">=3.10,<4.0"
+pytest = "^7.2.0"
+ujson = "^5.5.0"
+pytest-cov = "^4.0.0"
+codecov = "^2.1.12"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

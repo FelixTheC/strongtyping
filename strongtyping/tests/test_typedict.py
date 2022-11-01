@@ -4,31 +4,10 @@
 @created: 03.06.21
 @author: felix
 """
-import sys
+from typing import List, NotRequired, Required
 from typing import List, Union
 
-try:
-    from typing_extensions import NotRequired, Required
-except ImportError:
-    if sys.version_info.minor == 11:
-        from typing import NotRequired, Required
-    else:
-        NotRequired = object()
-        Required = object()
-
 import pytest
-
-try:
-    from typing_extensions import NotRequired, Required, TypedDict
-except ImportError:
-    from typing import TypedDict
-
-    if sys.version_info.minor == 11:
-        from typing import NotRequired, Required
-    else:
-        NotRequired = object()
-        Required = object()
-
 
 from strongtyping.strong_typing import match_class_typing, match_typing
 from strongtyping.strong_typing_utils import TypeMisMatch, ValidationError

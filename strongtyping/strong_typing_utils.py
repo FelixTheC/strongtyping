@@ -11,14 +11,7 @@ from collections import deque
 from collections.abc import Callable, Iterable
 from functools import lru_cache, partial
 from queue import Queue
-from typing import Any, TypeVar  # type: ignore
-
-try:
-    from typing import _AnyMeta
-
-    new_any = True
-except ImportError:
-    new_any = False
+from typing import Any, TypeVar, _AnyMeta, _GenericAlias, _SpecialForm, _type_repr  # type: ignore
 
 from strongtyping._utils import ORIGINAL_DUCK_TYPES, install_st_m
 
@@ -104,6 +97,9 @@ def get_origins(typ_to_check: Any) -> tuple:
         return typ_to_check, orig_base
 
     if typing.is_typeddict(typ_to_check):
+        return typ_to_check, typ_to_check.__class__.__name__
+
+    if isinstance(typ_to_check, _AnyMeta):
         return typ_to_check, typ_to_check.__class__.__name__
 
     if new_any:
