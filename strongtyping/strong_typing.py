@@ -4,6 +4,7 @@
 @created: 28.04.20
 @author: felix
 """
+import copy
 import inspect
 import pprint
 import warnings
@@ -141,10 +142,21 @@ class MatchTypedDict:
         except AttributeError:
             pass
 
+    def __match_class_repr__(self):
+        required_values = copy.deepcopy(self.__annotations__)
+        for key, val in required_values.items():
+            if hasattr(val, "__match_class_repr__"):
+                required_values[key] = val.__match_class_repr__()
+        return f"{self.cls.__name__}[{required_values}"
+
     def create_error_msg(self, args: dict):
+        required_values = copy.deepcopy(self.__annotations__)
+        for key, val in required_values.items():
+            if hasattr(val, "__match_class_repr__"):
+                required_values[key] = val.__match_class_repr__()
         return (
-            f"Incorrect parameter: `{pprint.pformat(args, width=20, depth=2)}`"
-            f"\n\trequired: {self.__annotations__}"
+            f"Incorrect parameter:\n\t`{pprint.pformat(args, depth=2)}`"
+            f"\nRequired parameter:\n`{pprint.pformat(required_values, depth=4)}`"
         )
 
     def _no_required_inside(self, val):
