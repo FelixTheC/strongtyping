@@ -1,12 +1,5 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-@created: 28.04.20
-@author: felix
-"""
 import inspect
 import pprint
-import sys
 import warnings
 from functools import wraps
 from typing import Type, get_args, get_origin
