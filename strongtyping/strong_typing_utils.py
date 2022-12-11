@@ -74,6 +74,7 @@ def get_possible_types(typ_to_check, origin_name: str = "") -> typing.Union[tupl
 
 
 def get_origins(typ_to_check: Any) -> tuple:
+    from strongtyping.strong_typing import MatchTypedDict
     """
     :param typ_to_check: typ_to_check: some typing like List[str], Dict[str, int], Tuple[Union[str, int], List[int]]
     :return: the class, alias_class and the class name
@@ -84,8 +85,15 @@ def get_origins(typ_to_check: Any) -> tuple:
     """
     origin, origin_name = None, ""
 
+    if isinstance(typ_to_check, MatchTypedDict):
+        return typ_to_check, typ_to_check.__class__.__name__
+
     if hasattr(typ_to_check, "__annotations__") and hasattr(typ_to_check, "__orig_bases__"):
-        return typ_to_check, typ_to_check.__orig_bases__[0].__name__
+        if typ_to_check.__orig_bases__:
+            orig_base = typ_to_check.__orig_bases__[0].__name__
+        else:
+            orig_base = typ_to_check.cls.__class__.__name__
+        return typ_to_check, orig_base
 
     if typing.is_typeddict(typ_to_check):
         return typ_to_check, typ_to_check.__class__.__name__
