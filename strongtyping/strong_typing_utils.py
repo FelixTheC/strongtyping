@@ -25,15 +25,20 @@ default_return_queue = Queue()
 
 
 class TypeMisMatch(AttributeError):
-    def __init__(self, message, failed_params=None, param_values=None, annotations=None):
-        super().__init__()
-        print(message)
+    def __init__(self, message: str, failed_params=None, param_values=None, annotations=None):
+        super().__init__(message)
+
+        message = message
+        failed_params = failed_params
+        param_values = param_values
+        annotations = annotations
 
 
 class ValidationError(Exception):
-    def __init__(self, message):
-        super().__init__()
-        print(message)
+    def __init__(self, message: str):
+        super().__init__(message)
+
+        message = message
 
 
 py_version = sys.version_info.minor
