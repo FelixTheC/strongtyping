@@ -49,3 +49,16 @@ m: Any
 supported_modules: Any
 
 def check_type(argument: Any, type_of: Any, mro: bool = ..., **kwargs: Any): ...
+
+
+class ExceptionInformation:
+    def __init__(self, func: Any):
+        self.func = func
+        self.level = None
+        self.issues = None
+
+    def set_level(self, val: int):
+        ...
+
+    def add_exception(self, wrong_value: Any, required_type: Any):
+        ...

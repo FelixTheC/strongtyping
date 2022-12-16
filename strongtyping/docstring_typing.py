@@ -199,7 +199,7 @@ def match_docstring(
                 if failed_params:
                     msg = f'Incorrect parameters: {", ".join(f"{name}: {docstring_types[name]}" for name in failed_params)}'
                     if excep_raise is not None and severity_level == 1:
-                        raise excep_raise(msg)
+                        raise excep_raise(msg, None, failed_params, args, docstring_types)
                     else:
                         warnings.warn(msg, RuntimeWarning)
 

@@ -10,6 +10,7 @@ from strongtyping._utils import _severity_level, action, remove_subclass
 from strongtyping.cached_set import CachedSet
 from strongtyping.config import SEVERITY_LEVEL
 from strongtyping.strong_typing_utils import (
+    ExceptionInformation,
     TypeMisMatch,
     check_type,
     checking_typing_typedict_values,
@@ -48,6 +49,8 @@ def match_typing(
                     if cached_key in cached_set:
                         return func(*args, **kwargs)
 
+                exception_info = ExceptionInformation(func)
+
                 # Thanks to Ruud van der Ham who find a better and more stable solution for check_args
                 failed_params = tuple(
                     arg_name
@@ -57,6 +60,9 @@ def match_typing(
                         annotations.get(arg_name),
                         mro=False,
                         check_duck_typing=check_duck_typing,
+                        exception_info=exception_info,
+                        exception_level=0,
+                        arg_name=arg_name,
                     )
                 )
                 failed_params += tuple(
@@ -67,6 +73,9 @@ def match_typing(
                         annotations.get(kwarg_name),
                         mro=False,
                         check_duck_typing=check_duck_typing,
+                        exception_info=exception_info,
+                        exception_level=0,
+                        arg_name=kwarg_name,
                     )
                 )
 
@@ -75,22 +84,12 @@ def match_typing(
 
                 if failed_params:
                     annotated_values = {arg_name: arg for arg, arg_name in zip(args, arg_names)}
-                    for kwarg_name, kwarg in kwargs.items():
-                        annotated_values[kwarg_name] = kwarg
-
-                    msg_list = "\nIncorrect parameter: ".join(
-                        f"[{name}] `{pprint.pformat(annotated_values[name], width=20, depth=2)}`"
-                        f"\n\trequired: {annotations[name]}"
-                        for name in failed_params
-                    )
-                    msg = f"Incorrect parameter: {msg_list}"
-
                     if excep_raise is not None and severity_level == SEVERITY_LEVEL.ENABLED.value:
                         raise excep_raise(
-                            msg, failed_params, annotated_values, annotations
+                            "msg", exception_info, failed_params, annotated_values, annotations
                         ) from None
                     else:
-                        warnings.warn(msg, RuntimeWarning)
+                        warnings.warn("msg", RuntimeWarning)
 
                 if cached_set is not None and func.__name__ not in ("__init__",):
                     cached_set.add(cached_key)
@@ -137,12 +136,6 @@ class MatchTypedDict:
         except AttributeError:
             pass
 
-    def create_error_msg(self, args: dict):
-        return (
-            f"Incorrect parameter: `{pprint.pformat(args, width=20, depth=2)}`"
-            f"\n\trequired: {self.__annotations__}"
-        )
-
     def _no_required_inside(self, val):
         if get_origin(val) is Required:
             return False
@@ -172,13 +165,29 @@ class MatchTypedDict:
             arguments = kwargs if kwargs else args[0]
             if not self.check_annotations():
                 raise TypeError("A NotRequired field can not contain Required")
-            if not checking_typing_typedict_values(arguments, self.__annotations__, self.__total__):
-                raise self.excep_raise(self.create_error_msg(arguments))
+            exception_info = ExceptionInformation(self)
+            if not checking_typing_typedict_values(
+                arguments,
+                self.__annotations__,
+                self.__total__,
+                exception_info=exception_info,
+                exception_level=0,
+            ):
+                raise self.excep_raise(
+                    "",
+                    exception_info,
+                    arguments,
+                    self.__annotations__.keys(),
+                    self.__annotations__.values(),
+                )
         if self.cls:
             cls = self.cls(*args, **kwargs)
         else:
             cls = args[0]
         return cls
+
+    def __str__(self):
+        return str(self.cls)
 
 
 def match_class_typing(cls=None, **kwargs):

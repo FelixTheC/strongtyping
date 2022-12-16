@@ -1,13 +1,8 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-@created: 19.11.20
-@author: felix
-"""
+import functools
 import inspect
 import os
 import typing
-from collections import deque
+from collections import defaultdict, deque
 from collections.abc import Callable, Iterable
 from functools import lru_cache, partial
 from queue import Queue
@@ -32,16 +27,91 @@ empty = object()
 default_return_queue = Queue()
 
 
+class ExceptionInformation:
+    __slots__ = ("func", "level", "issues")
+
+    def __init__(self, func: Any):
+        self.func = func
+        self.level = 0
+        self.issues = defaultdict(dict)
+
+    def set_level(self, val: int):
+        if val < 0:
+            val = 0
+        self.level = val
+
+    def add_exception(self, arg_name, wrong_value, required_type):
+        if not self.issues[arg_name].get(self.level):
+            self.issues[arg_name][self.level] = []
+        self.issues[arg_name][self.level].append((wrong_value, required_type))
+
+    def __str__(self):
+        error_msg = f"\n\n{self.func}\n"
+        tab = "    "
+        for argument, val in self.issues.items():
+            error_msg += f"{tab}parameter `{argument}` is invalid:\n"
+            for level, type_issue in val.items():
+                type_val, type_expected = type_issue[0]
+                error_msg += f"{tab * (level + 1)}it contains value `{str(type_val)}` which is not of type `{type_expected!r}`"
+
+        return error_msg
+
+    def __repr__(self):
+        return self.__str__()
+
+
 class TypeMisMatch(AttributeError):
-    def __init__(self, message, failed_params=None, param_values=None, annotations=None):
-        super().__init__()
-        print(message)
+    def __init__(
+        self,
+        message,
+        exception_info: typing.Optional[ExceptionInformation] = None,
+        failed_params=None,
+        param_values=None,
+        annotations=None,
+    ):
+        self.exception_info = exception_info
+        self.message = message
+        self.failed_params = failed_params
+        self.param_values = param_values
+        self.annotations = annotations
+        super().__init__(message)
+
+    def __str__(self):
+        if self.exception_info:
+            return str(self.exception_info)
+        return self.message
 
 
 class ValidationError(Exception):
     def __init__(self, message):
-        super().__init__()
-        print(message)
+        self.message = message
+        super().__init__(message)
+
+    def __str__(self):
+        return self.message
+
+
+def increase_exception_level(func):
+    @functools.wraps(func)
+    def inner(*args, **kwargs):
+        if "exception_level" in kwargs:
+            kwargs["exception_level"] += 1
+        return func(*args, **kwargs)
+
+    return inner
+
+
+def store_exception_information(func):
+    @functools.wraps(func)
+    def inner(arg: Any, possible_types: tuple, *args, **kwargs):
+        result = func(arg, possible_types, *args, **kwargs)
+        if result is False:
+            if exception_info := kwargs.get("exception_info"):
+                exception_info.add_exception(kwargs["arg_name"], arg, possible_types)
+                exception_info.set_level(exception_info.level - 1)
+        return result
+
+    return inner
 
 
 typing_base_class = typing._GenericAlias  # type: ignore
@@ -117,7 +187,8 @@ def get_origins(typ_to_check: Any) -> tuple:
     return origin, origin_name
 
 
-def checking_typing_dict(arg: Any, possible_types: tuple, *args):
+@increase_exception_level
+def checking_typing_dict(arg: Any, possible_types: tuple, *args, **kwargs):
     if not isinstance(arg, dict):
         return False
     if isinstance(arg, dict) and not possible_types:
@@ -128,16 +199,17 @@ def checking_typing_dict(arg: Any, possible_types: tuple, *args):
         return isinstance(arg, dict)
     else:
         try:
-            result_key = all(check_type(a, key) for a in arg.keys())
+            result_key = all(check_type(a, key, **kwargs) for a in arg.keys())
         except AttributeError:
             result_key = all(isinstance(k, key) for k in arg.keys())
         try:
-            result_val = all(check_type(a, val) for a in arg.values())
+            result_val = all(check_type(a, val, **kwargs) for a in arg.values())
         except AttributeError:
             result_val = all(isinstance(v, val) for v in arg.values())
         return result_key and result_val
 
 
+@increase_exception_level
 def checking_typing_set(arg: Any, possible_types: tuple, *args, **kwargs):
     if not possible_types:
         return isinstance(arg, set)
@@ -190,6 +262,7 @@ def checking_typing_callable(arg: Any, possible_types: tuple, *args, **kwargs):
     return return_val and all(p.annotation == pt for p, pt in zip(params.values(), possible_types))
 
 
+@increase_exception_level
 def checking_typing_tuple(arg: Any, possible_types: tuple, *args, **kwargs):
     if not possible_types:
         return isinstance(arg, tuple)
@@ -202,6 +275,7 @@ def checking_typing_tuple(arg: Any, possible_types: tuple, *args, **kwargs):
     return all(check_type(argument, typ, **kwargs) for argument, typ in zip(arg, possible_types))
 
 
+@increase_exception_level
 def checking_typing_list(arg: Any, possible_types: tuple, *args, **kwargs):
     if not isinstance(arg, list):
         return False
@@ -265,6 +339,7 @@ def checking_typing_itervalidator(arg, possible_types, *args, **kwargs):
     return check_type(arg, required_type, validation_with=validation, **kwargs)
 
 
+@increase_exception_level
 def checking_typing_iterable(arg: Any, possible_types: tuple, *args, **kwargs):
     if not hasattr(arg, "__iter__"):
         return False
@@ -272,17 +347,26 @@ def checking_typing_iterable(arg: Any, possible_types: tuple, *args, **kwargs):
     return all(check_type(argument, pssble_type, **kwargs) for argument in arg)
 
 
-def checking_typing_typedict_values(args: dict, required_types: dict, total: bool):
+def checking_typing_typedict_values(
+    args: dict, required_types: dict, total: bool, *args_, **kwargs
+):
     if total:
-        return all(check_type(args.get(key), val) for key, val in required_types.items())
+        return all(
+            check_type(args.get(key), val, arg_name=key, *args_, **kwargs)
+            for key, val in required_types.items()
+        )
     fields_to_check = {key: val for key, val in required_types.items() if key in args}
-    return all(check_type(args[key], val) for key, val in fields_to_check.items())
+    return all(
+        check_type(args[key], val, arg_name=key, *args_, **kwargs)
+        for key, val in fields_to_check.items()
+    )
 
 
 def checking_typing_class(arg: Any, possible_types: tuple, *args, **kwargs):
     return isinstance(arg, possible_types)
 
 
+@increase_exception_level
 def checking_typing_typeddict(arg: Any, possible_types: Any, *args, **kwargs):
     total = possible_types.__total__
     required_fields = possible_types.__annotations__
@@ -385,8 +469,13 @@ def check_duck_typing(arg, possible_types, *args, **kwargs):
 supported_typings = vars()
 
 
+@store_exception_information
 def check_type(argument, type_of, mro=False, **kwargs):
     from strongtyping.types import IterValidator, Validator
+
+    if "exception_info" in kwargs:
+        exception_info = kwargs["exception_info"]
+        exception_info.set_level(kwargs.get("exception_level", 0))
 
     # if int(py_version) >= 10 and isinstance(type_of, (str, bytes)):
     #     type_of = eval(type_of, locals(), globals())
