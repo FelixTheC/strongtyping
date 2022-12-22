@@ -1,4 +1,4 @@
-name: Python tox 3.10
+name: Python tox 3.10 + 3.11
 
 on:
   push:
