@@ -13,6 +13,13 @@ from functools import lru_cache, partial
 from queue import Queue
 from typing import Any, TypeVar, _GenericAlias, _SpecialForm, _type_repr  # type: ignore
 
+try:
+    from typing import _AnyMeta
+
+    new_any = True
+except ImportError:
+    new_any = False
+
 from strongtyping._utils import ORIGINAL_DUCK_TYPES, install_st_m
 
 install_st_m()
@@ -98,6 +105,10 @@ def get_origins(typ_to_check: Any) -> tuple:
 
     if typing.is_typeddict(typ_to_check):
         return typ_to_check, typ_to_check.__class__.__name__
+
+    if new_any:
+        if isinstance(typ_to_check, _AnyMeta):
+            return typ_to_check, typ_to_check.__class__.__name__
 
     if hasattr(typ_to_check, "__origin__") or hasattr(typ_to_check, "__orig_bases__"):
         if hasattr(typ_to_check, "__origin__") and hasattr(typ_to_check.__origin__, "__name__"):
