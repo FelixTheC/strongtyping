@@ -4,7 +4,12 @@ import warnings
 from functools import wraps
 from typing import Type, get_args, get_origin
 
-from typing_extensions import NotRequired, Required
+try:
+    from typing_extensions import NotRequired, Required
+except ImportError:
+    NotRequired = object()
+    Required = object()
+
 
 from strongtyping._utils import _severity_level, action, remove_subclass
 from strongtyping.cached_set import CachedSet
