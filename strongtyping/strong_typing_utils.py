@@ -447,11 +447,12 @@ def check_type(argument, type_of, mro=False, **kwargs):
             typing.Counter,
             typing.ChainMap,
         ):
-            if extension_module:
+            from strongtyping.strong_typing import MatchTypedDict
+
+            possible_type = get_possible_types(type_of, origin_name)
+            if extension_module and not isinstance(possible_type[0], MatchTypedDict):
                 return module_checking_typing_dict(argument, type_of)
-            return checking_typing_dict(
-                argument, get_possible_types(type_of, origin_name), mro, **kwargs
-            )
+            return checking_typing_dict(argument, possible_type, mro, **kwargs)
         elif origin in (typing.Callable, Callable):
             return checking_typing_callable(
                 argument, get_possible_types(type_of, origin_name), mro, **kwargs
