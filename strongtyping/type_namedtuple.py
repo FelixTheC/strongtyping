@@ -17,7 +17,7 @@ use_match_typing = {True: check_type, False: check_doc_str_type}
 @match_typing
 def typed_namedtuple(
     typename: str,
-    field_names: Union[List[str], str, List[Tuple[str, Any]]],
+    field_names: Union[List[str], str, List[Tuple[str, object]]],
     *,
     rename: bool = False,
     defaults: Union[list, tuple] = None,
