@@ -710,7 +710,6 @@ def test_with_json():
 
 @pytest.mark.skip()
 def test_with_new_type():
-
     FruitType = NewType("FruitType", Tuple[str, str])
 
     @match_typing
@@ -978,7 +977,6 @@ def test_with_severity_param():
 
 
 def test_with_env_severity(monkeypatch):
-
     monkeypatch.setenv("ST_SEVERITY", "disable")
 
     @match_class_typing

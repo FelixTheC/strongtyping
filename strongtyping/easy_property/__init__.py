@@ -10,7 +10,6 @@ from strongtyping.strong_typing import match_typing
 
 
 def action(f, frefs):
-
     """
     This code is original from Ruud van der Ham https://github.com/salabim/easy_property
     """

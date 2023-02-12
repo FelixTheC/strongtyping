@@ -172,7 +172,6 @@ def match_docstring(
         @functools.wraps(func)
         def inner(*args, **kwargs):
             if severity_level > 0:
-
                 args = remove_subclass(args, subclass)
 
                 if cached_set is not None:
@@ -226,7 +225,6 @@ def match_class_docstring(
     **kwargs,
 ):
     def wrapper(cls):
-
         severity_level = _severity_level(severity)
 
         def inner(*args, **kwargs):

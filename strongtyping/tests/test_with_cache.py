@@ -80,7 +80,6 @@ data_1 = list(range(100))
 
 
 def test_cache_enabled_will_boost():
-
     assert timeit.timeit("foo(data_1)", globals=globals(), number=1000) > timeit.timeit(
         "foo_cached(data_1)", globals=globals(), number=1000
     )
