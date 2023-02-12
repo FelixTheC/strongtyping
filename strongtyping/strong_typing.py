@@ -260,7 +260,7 @@ def match_class_typing(cls=None, **kwargs):
         return inner
 
     if cls is not None:
-        from typing import Type, _TypedDictMeta
+        from typing import _TypedDictMeta
 
         try:
             from typing_extensions import _TypedDictMeta as _TypedDictMetaExtension

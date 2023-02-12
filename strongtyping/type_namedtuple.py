@@ -6,7 +6,7 @@
 """
 from collections import namedtuple
 from keyword import iskeyword
-from typing import Any, List, Tuple, Union
+from typing import List, Tuple, Union
 
 from strongtyping.docstring_typing import check_doc_str_type
 from strongtyping.strong_typing import check_type, match_typing

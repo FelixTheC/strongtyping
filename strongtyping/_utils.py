@@ -4,11 +4,10 @@
 @created: 20.07.20
 @author: felix
 """
-import inspect
 import logging
 import os
 from types import MethodType
-from typing import Any, Type, Union
+from typing import Type, Union
 
 from strongtyping.config import SEVERITY_LEVEL
 
@@ -109,7 +108,7 @@ def action(f, frefs, type_function):  # type: ignore
     """
     if f.__qualname__ == action.qualname:
         if any(action.f[fref] is not None for fref in frefs.split("_")):
-            raise AttributeError(f"decorator defined twice")
+            raise AttributeError("decorator defined twice")
     else:
         action.f.update({}.fromkeys(action.f, None))  # reset all values to None
         action.qualname = f.__qualname__

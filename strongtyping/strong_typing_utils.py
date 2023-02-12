@@ -11,7 +11,7 @@ from collections import deque
 from collections.abc import Callable, Iterable
 from functools import lru_cache, partial
 from queue import Queue
-from typing import Any, TypeVar, _GenericAlias, _SpecialForm, _type_repr  # type: ignore
+from typing import Any, TypeVar  # type: ignore
 
 try:
     from typing import _AnyMeta
@@ -29,7 +29,7 @@ try:
     from strongtyping_modules.strongtyping_modules import list_elements  # type: ignore
     from strongtyping_modules.strongtyping_modules import set_elements  # type: ignore
     from strongtyping_modules.strongtyping_modules import tuple_elements  # type: ignore
-except ImportError as e:
+except ImportError:
     extension_module: bool = False
 else:
     extension_module = bool(int(os.environ["ST_MODULES_INSTALLED"]))
