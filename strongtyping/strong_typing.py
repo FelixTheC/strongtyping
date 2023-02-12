@@ -28,6 +28,9 @@ from strongtyping.strong_typing_utils import (
     default_return_queue,
 )
 
+# CACHE_IGNORE_CLASS_FUNCTIONS = ("__init__", "__str__", "__repr__")
+CACHE_IGNORE_CLASS_FUNCTIONS = ("__init__",)
+
 
 def match_typing(
     _func=None,
@@ -52,11 +55,14 @@ def match_typing(
         @wraps(func)
         def inner(*args, **kwargs):
             if arg_names and severity_level > SEVERITY_LEVEL.DISABLED.value:
-
                 args = remove_subclass(args, subclass)
-                if cached_set is not None and func.__name__ not in ("__init__",):
+
+                if cached_set is not None and func.__name__ not in CACHE_IGNORE_CLASS_FUNCTIONS:
                     # check if func with args and kwargs was checked once before with positive result
-                    cached_key = (func, args.__str__(), kwargs.__str__())
+                    arg_vals = args.__str__() if args else None
+                    kwarg_vals = kwargs.__str__() if args else None
+                    cached_key = (func, arg_vals, kwarg_vals)
+
                     if cached_key in cached_set:
                         return func(*args, **kwargs)
 
@@ -104,7 +110,7 @@ def match_typing(
                     else:
                         warnings.warn(msg, RuntimeWarning)
 
-                if cached_set is not None and func.__name__ not in ("__init__",):
+                if cached_set is not None and func.__name__ not in CACHE_IGNORE_CLASS_FUNCTIONS:
                     cached_set.add(cached_key)
             return func(*args, **kwargs)
 
@@ -220,6 +226,8 @@ def match_class_typing(cls=None, **kwargs):
             and __has_annotations__(getattr(_cls, func))
             and not hasattr(getattr(_cls, func), "__fe_strng_mtch__")
             and not isinstance(getattr(_cls, func), classmethod)
+            and len(list(inspect.signature(getattr(_cls, func)).parameters.keys()))
+            > 1  # if it is a function without parameter there is no need to wrap it
         ]
 
     def __add_decorator(_cls):
