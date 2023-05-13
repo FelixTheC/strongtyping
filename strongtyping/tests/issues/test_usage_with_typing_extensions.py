@@ -1,20 +1,8 @@
-import sys
+from typing import NotRequired, Required, TypedDict
 
 import pytest
 
-try:
-    from typing_extensions import NotRequired, Required, TypedDict
-except ImportError:
-    from typing import TypedDict
-
-    if sys.version_info.minor == 11:
-        from typing import NotRequired, Required
-    else:
-        NotRequired = object()
-        Required = object()
-
 from strongtyping.strong_typing import match_class_typing
-from strongtyping.strong_typing_utils import TypeMisMatch
 
 
 def test_nested_typed_dicts():

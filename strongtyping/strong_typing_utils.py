@@ -102,10 +102,6 @@ def get_origins(typ_to_check: Any) -> tuple:
     if isinstance(typ_to_check, _AnyMeta):
         return typ_to_check, typ_to_check.__class__.__name__
 
-    if new_any:
-        if isinstance(typ_to_check, _AnyMeta):
-            return typ_to_check, typ_to_check.__class__.__name__
-
     if hasattr(typ_to_check, "__origin__") or hasattr(typ_to_check, "__orig_bases__"):
         if hasattr(typ_to_check, "__origin__") and hasattr(typ_to_check.__origin__, "__name__"):
             origin = typ_to_check.__origin__

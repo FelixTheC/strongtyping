@@ -11,3 +11,7 @@ exclude_builtins: Any
 
 def install_st_m() -> None: ...
 def action(f: Any, frefs: Any, type_function: Any): ...
+
+
+def ORIGINAL_DUCK_TYPES():
+    return None

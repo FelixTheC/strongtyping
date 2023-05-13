@@ -4,8 +4,7 @@
 @created: 03.06.21
 @author: felix
 """
-from typing import List, NotRequired, Required
-from typing import List, Union
+from typing import List, NotRequired, Required, Union
 
 import pytest
 
