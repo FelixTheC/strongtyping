@@ -27,10 +27,15 @@ target-version = "py310"
 
 [tool.poetry]
 name = "strongtyping"
-version = "3.11.0"
+version = "3.11.3"
 description = "Decorator which checks whether the function is called with the correct type of parameters"
 authors = ["FelixTheC <felixeisenmenger@gmx.net>"]
 license = "MIT"
+packages = [
+    {include = "strongtyping"},
+    {include = "strongtyping-stubs"},
+]
+exclude = ["strongtyping/tests"]
 
 [tool.poetry.dependencies]
 python = ">=3.10,<4.0"

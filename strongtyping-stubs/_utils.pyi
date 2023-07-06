@@ -1,17 +1,13 @@
-from typing import Any
-
+from _typeshed import Incomplete
 from strongtyping.config import SEVERITY_LEVEL as SEVERITY_LEVEL
 
-logger: Any
+logger: Incomplete
+ORIGINAL_DUCK_TYPES: Incomplete
 
-def remove_subclass(args: Any, subclass: Any): ...
+def remove_subclass(args, subclass): ...
 
-SEVERITY_CONFIG: Any
-exclude_builtins: Any
+SEVERITY_CONFIG: Incomplete
+exclude_builtins: Incomplete
 
 def install_st_m() -> None: ...
-def action(f: Any, frefs: Any, type_function: Any): ...
-
-
-def ORIGINAL_DUCK_TYPES():
-    return None
+def action(f, frefs, type_function): ...
