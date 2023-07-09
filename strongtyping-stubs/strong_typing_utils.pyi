@@ -1,11 +1,12 @@
 import typing
 from _typeshed import Incomplete
+from queue import Queue
 from strongtyping._utils import ORIGINAL_DUCK_TYPES as ORIGINAL_DUCK_TYPES, install_st_m as install_st_m
 from typing import Any
 
 extension_module: bool
 empty: Incomplete
-default_return_queue: Incomplete
+default_return_queue: Queue
 
 class TypeMisMatch(AttributeError):
     def __init__(self, message, failed_params: Incomplete | None = ..., param_values: Incomplete | None = ..., annotations: Incomplete | None = ...) -> None: ...

@@ -8,7 +8,7 @@ import inspect
 import json
 import weakref
 from functools import partial
-from typing import Any, _GenericAlias, _SpecialForm, _type_repr
+from typing import Any, _GenericAlias, _SpecialForm, _type_repr  # type: ignore
 
 
 class _Validator(_GenericAlias, _root=True):  # type: ignore

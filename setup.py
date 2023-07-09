@@ -8,11 +8,11 @@ HERE = pathlib.Path(__file__).parent
 # The text of the README file
 README = (HERE / "README.md").read_text()
 
-packages = find_packages(exclude=["test_*", "*.tests"])
+packages = find_packages(exclude=["test_*", "*.tests"], include="strongtyping-stubs")
 
 setup(
     name="strongtyping",
-    version="3.11.3",
+    version="3.11.4",
     description="Decorator which checks whether the function is called with the correct type of parameters",
     long_description=README,
     long_description_content_type="text/markdown",

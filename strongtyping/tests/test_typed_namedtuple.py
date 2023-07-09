@@ -10,7 +10,7 @@ from typing import Union
 import pytest
 
 if sys.version_info.minor >= 8:
-    from strongtyping.type_namedtuple import typed_namedtuple
+    from strongtyping.typed_namedtuple import typed_namedtuple
 
 SKIP_MESSAGE = "Some features in typed_namedtuple are only available from version 3.8"
 
