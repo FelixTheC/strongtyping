@@ -33,7 +33,6 @@ authors = ["FelixTheC <felixeisenmenger@gmx.net>"]
 license = "MIT"
 packages = [
     {include = "strongtyping"},
-    {include = "strongtyping-stubs"},
 ]
 exclude = ["strongtyping/tests"]
 
