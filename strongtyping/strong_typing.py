@@ -6,6 +6,7 @@ from functools import wraps
 from typing import (
     Any,
     Callable,
+    Dict,
     Literal,
     NotRequired,
     Optional,
@@ -13,12 +14,11 @@ from typing import (
     Required,
     Type,
     TypeVar,
-    Dict,
     get_args,
     get_origin,
 )
 
-from strongtyping._utils import _severity_level, action, remove_subclass
+from strongtyping._utils import _get_severity_level, _severity_level, action, remove_subclass
 from strongtyping.cached_set import CachedSet
 from strongtyping.config import SEVERITY_LEVEL
 from strongtyping.strong_typing_utils import (
@@ -43,9 +43,9 @@ def match_typing(
     excep_raise: dict[Any, Any] | type[TypeMisMatch] = TypeMisMatch,
     subclass: bool = False,
     severity: SEVERITY_LEVEL | Literal["env"] = "env",
-    **kwargs: dict[str, Any],
+    **kwargs: Any,
 ) -> FuncT | Any:
-    cached_enabled: int = kwargs.get("cache_size", 1)
+    cached_enabled: int = kwargs.get("cache_size", 1)  # type: ignore
     cached_set = CachedSet(cached_enabled) if cached_enabled > 0 else None
     check_duck_typing = kwargs.get("allow_duck_typing", False)
 
@@ -215,7 +215,7 @@ class MatchTypedDict:
         return cls
 
 
-def match_class_typing(cls: T, **kwargs: Dict[str, Any]) -> T:
+def match_class_typing(cls: T, **kwargs: Dict[str, Any]) -> T | Any:
     excep_raise = kwargs.pop("excep_raise", TypeMisMatch)
     cache_size = kwargs.pop("cache_size", 1)
     severity = kwargs.pop("severity", "env")
@@ -236,7 +236,7 @@ def match_class_typing(cls: T, **kwargs: Dict[str, Any]) -> T:
         ]
 
     def __add_decorator(_cls) -> None:
-        severity_level = _severity_level(severity)
+        severity_level: int = _severity_level(severity)
         if severity_level > SEVERITY_LEVEL.DISABLED.value:
             for method in __find_methods(_cls):
                 try:
@@ -247,10 +247,10 @@ def match_class_typing(cls: T, **kwargs: Dict[str, Any]) -> T:
                         method,
                         match_typing(
                             func,
-                            severity=severity,
-                            cache_size=cache_size,
                             excep_raise=excep_raise,
                             subclass=is_static,
+                            severity=_get_severity_level(severity_level),
+                            cache_size=cache_size,
                         ),
                     )
                 except TypeError:
@@ -277,7 +277,7 @@ def match_class_typing(cls: T, **kwargs: Dict[str, Any]) -> T:
                 return MatchTypedDict(cls)
 
         __add_decorator(cls)
-        cls._matches_class = True
+        cls._matches_class = True  # type: ignore
         return cls
     else:
         return wrapper

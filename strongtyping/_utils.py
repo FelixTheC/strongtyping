@@ -47,6 +47,16 @@ def _severity_level(severity_: dict | str | SEVERITY_LEVEL) -> int:
         return severity_.value  # type: ignore
 
 
+def _get_severity_level(severity_: int) -> SEVERITY_LEVEL:
+    match severity_:
+        case 1:
+            return SEVERITY_LEVEL.ENABLED
+        case 2:
+            return SEVERITY_LEVEL.WARNING
+        case _:
+            return SEVERITY_LEVEL.DISABLED
+
+
 exclude_builtins = dir(object)
 
 
