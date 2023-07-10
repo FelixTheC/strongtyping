@@ -6,13 +6,14 @@ from functools import wraps
 from typing import (
     Any,
     Callable,
+    Literal,
     NotRequired,
     Optional,
     ParamSpec,
     Required,
     Type,
     TypeVar,
-    cast,
+    Dict,
     get_args,
     get_origin,
 )
@@ -37,12 +38,12 @@ CACHE_IGNORE_CLASS_FUNCTIONS = ("__init__",)
 
 
 def match_typing(
-    _func=Optional[FuncT],
+    _func: FuncT,
     *,
     excep_raise: dict[Any, Any] | type[TypeMisMatch] = TypeMisMatch,
     subclass: bool = False,
-    severity="env",
-    **kwargs,
+    severity: SEVERITY_LEVEL | Literal["env"] = "env",
+    **kwargs: dict[str, Any],
 ) -> FuncT | Any:
     cached_enabled: int = kwargs.get("cache_size", 1)
     cached_set = CachedSet(cached_enabled) if cached_enabled > 0 else None
@@ -214,7 +215,7 @@ class MatchTypedDict:
         return cls
 
 
-def match_class_typing(cls=None, **kwargs: dict) -> Callable[P, T]:
+def match_class_typing(cls: T, **kwargs: Dict[str, Any]) -> T:
     excep_raise = kwargs.pop("excep_raise", TypeMisMatch)
     cache_size = kwargs.pop("cache_size", 1)
     severity = kwargs.pop("severity", "env")
