@@ -21,6 +21,7 @@ from typing import (
     List,
     NewType,
     Optional,
+    Sequence,
     Set,
     Tuple,
     Type,
@@ -1225,7 +1226,7 @@ def test_with_iterable():
 
 def test_with_binary_union_operator():
     @match_typing
-    def func_e(a: List[str | int], b: List[str | int | tuple]):
+    def func_e(a: Iterable[str | int], b: List[str | int | tuple]):
         return f"{len(a)}-{len(b)}"
 
     assert func_e([1, "2", 3, "4"], [5, ("a", "b"), "10"]) == "4-3"

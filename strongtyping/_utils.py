@@ -20,7 +20,7 @@ ORIGINAL_DUCK_TYPES = {
 }
 
 
-def remove_subclass(args, subclass):
+def remove_subclass(args: tuple, subclass: object):
     if len(args) == 1:
         return args
     cls = args[0] if subclass else None
@@ -36,7 +36,7 @@ SEVERITY_CONFIG = {
 }
 
 
-def _severity_level(severity_: Union[str, SEVERITY_LEVEL]):
+def _severity_level(severity_: dict | str | SEVERITY_LEVEL) -> int:
     if severity_ == "env":
         _level = os.environ.get("ST_SEVERITY", "1")
         try:
@@ -45,6 +45,16 @@ def _severity_level(severity_: Union[str, SEVERITY_LEVEL]):
             return SEVERITY_CONFIG[_level].value
     else:
         return severity_.value  # type: ignore
+
+
+def _get_severity_level(severity_: int) -> SEVERITY_LEVEL:
+    match severity_:
+        case 1:
+            return SEVERITY_LEVEL.ENABLED
+        case 2:
+            return SEVERITY_LEVEL.WARNING
+        case _:
+            return SEVERITY_LEVEL.DISABLED
 
 
 exclude_builtins = dir(object)

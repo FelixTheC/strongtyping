@@ -12,8 +12,9 @@ packages = find_packages(exclude=["test_*", "*.tests"])
 
 setup(
     name="strongtyping",
-    version="3.11.3",
-    description="Decorator which checks whether the function is called with the correct type of parameters",
+    version="3.11.4",
+    description="Decorator which checks whether the function is called"
+    "with the correct type of parameters",
     long_description=README,
     long_description_content_type="text/markdown",
     url="https://strongtyping.readthedocs.io/en/latest/",
@@ -25,7 +26,7 @@ setup(
         "Programming Language :: Python :: 3.11",
     ],
     packages=packages,
-    package_data={"strongtyping-stubs": ["**/*.py", "**/*.pyi"]},
+    package_data={"strongtyping": ["py.typed"]},
     python_requires=">=3.11",
     include_package_data=True,
 )

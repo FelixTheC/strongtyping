@@ -1,5 +1,0 @@
-[MASTER]
-ignore-patterns=**/migrations/*.py
-
-[FORMAT]
-max-line-length=220

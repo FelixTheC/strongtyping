@@ -6,7 +6,7 @@
 """
 from collections import namedtuple
 from keyword import iskeyword
-from typing import List, Tuple, Union
+from typing import Iterable, Optional
 
 from strongtyping.docstring_typing import check_doc_str_type
 from strongtyping.strong_typing import check_type, match_typing
@@ -17,12 +17,12 @@ use_match_typing = {True: check_type, False: check_doc_str_type}
 @match_typing
 def typed_namedtuple(
     typename: str,
-    field_names: Union[List[str], str, List[Tuple[str, object]]],
+    field_names: Iterable,
     *,
     rename: bool = False,
-    defaults: Union[list, tuple] = None,
-    module: str = None,
-):
+    defaults: Optional[Iterable] = None,
+    module: Optional[str] = None,
+) -> object:
     # I could have just copied everything from namedtuple, but then I would have no learning effect
     """
     :param typename: the name of the new class same as in the original namedtuple
@@ -38,7 +38,7 @@ def typed_namedtuple(
     :return:
     """
 
-    def rename_fields():
+    def rename_fields() -> dict:
         knowing = set()
         updated_dict = {}
         for index, name in enumerate(_field_types.keys()):
@@ -66,14 +66,14 @@ def typed_namedtuple(
                 raise ValueError(f"Encountered duplicate field name: {name!r}")
             seen.add(name)
 
-    def contains_typing(f_name: Union[str, tuple]) -> bool:
+    def contains_typing(f_name: str | tuple) -> bool:
         return ":" in f_name or isinstance(f_name, tuple)
 
     def check_type(_value_dict: dict, use_mt: bool = False):
         failed_params = tuple(
             f"{k}: {v}"
             for k, v in _value_dict.items()
-            if not use_match_typing[use_mt](v, _field_types[k])
+            if not use_match_typing[use_mt](v, _field_types[k])  # type: ignore
         )
         if failed_params:
             msg = f"Incorrect parameters: {failed_params}"
@@ -92,13 +92,13 @@ def typed_namedtuple(
     if typing_false and not typing_true:
         if any(contains_typing(fn) for fn in _fields):
             raise TypeError("No mixing of typing and not typing supported")
-        return namedtuple(typename, field_names, rename=rename, defaults=defaults, module=module)
+        return namedtuple(typename, field_names, rename=rename, defaults=defaults, module=module)  # type: ignore
     else:
         try:
             _field_types = {k: v for k, v in map(lambda x: x.split(":"), _fields)}
             _use_match = False
         except AttributeError:
-            _field_types = {k: v for k, v in _fields}
+            _field_types = {k: v for k, v in _fields}  # type: ignore
             _use_match = True
 
         if rename is True:
@@ -121,7 +121,7 @@ def typed_namedtuple(
             else:
                 raise TypeError(f"Initialise {typename} with values or add defaults")
 
-        def __new__(cls, *args, **kwargs):
+        def __new__(cls, *args, **kwargs) -> object:
             _values = _values_to_add(*args, **kwargs)
             if not _values:
                 _values = _values_with_defaults()
@@ -130,7 +130,7 @@ def typed_namedtuple(
                 _values.update(**_values_to_add(*args, **kwargs))
             check_type(_values, _use_match)
             new_tuple = tuple.__new__(cls, _values.values())
-            [setattr(new_tuple, k, v) for k, v in _values.items()]
+            [setattr(new_tuple, k, v) for k, v in _values.items()]  # type: ignore
             return new_tuple
 
         __new__.__doc__ = f"Create new instance of {typename}({_field_types.keys()})"

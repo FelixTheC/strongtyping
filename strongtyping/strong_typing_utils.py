@@ -29,7 +29,7 @@ else:
 
 
 empty = object()
-default_return_queue = Queue()
+default_return_queue: Queue = Queue()
 
 
 class TypeMisMatch(AttributeError):

@@ -14,7 +14,7 @@ from types import FunctionType, MethodType
 
 from strongtyping._utils import _get_new, _severity_level, action, remove_subclass
 from strongtyping.cached_set import CachedSet
-from strongtyping.strong_typing import TypeMisMatch
+from strongtyping.strong_typing import P, T, TypeMisMatch
 
 TYPE_EXTRACTION_PATTERN = r"(^[:a-zA-Z0-9 _-]+(:))"
 PATTERN_1 = r""
@@ -132,31 +132,35 @@ def is_param_info(docstring_line: str) -> bool:
     return any(docstring_line.startswith(a) for a in allowed)
 
 
-def extract_docstring_param_types(func) -> dict:
+def extract_docstring_param_types(func: typing.Callable[P, T]) -> dict:
     """
     extract the types to the defined parameters from the docstring
     """
-    param = [
-        separate_param_type(string)[0].split()
-        for string in inspect.getdoc(func).split("\n")
-        if is_param_info(string)
-    ]
-    docstring = [
-        separate_param_type(string)
-        for string in inspect.getdoc(func).split("\n")
-        if is_type_info(string)
-    ]
-    docstring += [list(reversed(p)) for p in param if len(p) > 1]
-    _docstring_types = {ds[0]: ds[1] for ds in docstring}
-    # there is mismatch when user will mix type and param to bring them in the right order
-    # we will look at the signature and recreate the previous dict to the final one
-    return {k: _docstring_types.get(k, k) for k in inspect.signature(func).parameters.keys()}
+    inspect_doc = inspect.getdoc(func)
+    if inspect_doc is not None:
+        param = [
+            separate_param_type(string)[0].split()
+            for string in inspect_doc.split("\n")
+            if is_param_info(string)
+        ]
+        docstring = [
+            separate_param_type(string)
+            for string in inspect_doc.split("\n")
+            if is_type_info(string)
+        ]
+        docstring += [list(reversed(p)) for p in param if len(p) > 1]  # type: ignore
+        _docstring_types = {ds[0]: ds[1] for ds in docstring}
+        # there is mismatch when user will mix type and param to bring them in the right order
+        # we will look at the signature and recreate the previous dict to the final one
+        return {k: _docstring_types.get(k, k) for k in inspect.signature(func).parameters.keys()}
+    else:
+        return {}
 
 
 def match_docstring(
     _func=None,
     *,
-    excep_raise: Exception = TypeMisMatch,
+    excep_raise: type[TypeMisMatch] = TypeMisMatch,
     cache_size=0,
     subclass: bool = False,
     severity="env",
@@ -219,7 +223,7 @@ def match_docstring(
 def match_class_docstring(
     _cls=None,
     *,
-    excep_raise: Exception = TypeError,
+    excep_raise: type[TypeError] = TypeError,
     cache_size=0,
     severity="env",
     **kwargs,
