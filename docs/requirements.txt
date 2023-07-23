@@ -4,7 +4,7 @@ chardet==4.0.0
 click==8.0.0
 codecov==2.1.11
 coverage==5.5
-future==0.18.2
+future==0.18.3
 idna==2.10
 Jinja2==3.0.1
 joblib==1.2.0
