@@ -289,9 +289,6 @@ def checking_typing_class(arg: Any, possible_types: tuple, *args, **kwargs):
 def checking_typing_typeddict(arg: Any, possible_types: Any, *args, **kwargs):
     total = possible_types.__total__
     required_fields = possible_types.__annotations__
-    if total:
-        if not all(field in arg for field in required_fields):
-            return False
     return checking_typing_typedict_values(arg, required_fields, total)
 
 
@@ -303,6 +300,16 @@ def checking_typing_typeddict_notrequired(arg: Any, possible_types: Any, *args, 
     if arg is None:
         return True
     return check_type(arg, possible_types[0])
+
+
+def checking_typing_unpack(arg: Any, possible_types: tuple, *args, **kwargs):
+    if isinstance(possible_types[0], typing._TypedDictMeta) and isinstance(arg, dict):
+        typed_dict_obj: typing.TypedDict = possible_types[0]
+        return all(
+            check_type(arg.get(key), required_type)
+            for key, required_type in typed_dict_obj.__annotations__.items()
+        )
+    return False
 
 
 def module_checking_typing_list(arg: Any, possible_types: Any):
@@ -490,6 +497,8 @@ def check_type(argument, type_of, mro=False, **kwargs):
             return checking_typing_typeddict_notrequired(
                 argument, get_possible_types(type_of, origin_name)
             )
+        elif origin_name == "unpack":
+            return checking_typing_unpack(argument, get_possible_types(type_of, origin_name))
         elif mro:
             if origin_name == "union":
                 possible_types = get_possible_types(type_of)

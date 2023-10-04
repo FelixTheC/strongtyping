@@ -19,6 +19,20 @@ from strongtyping.strong_typing_utils import (
 CACHE_IGNORE_CLASS_FUNCTIONS = ("__init__",)
 
 
+def _raise_error_or_warning(
+    msg,
+    failed_params,
+    annotated_values,
+    annotations,
+    excep_raise: Type[Exception] = TypeMisMatch,
+    severity_level=SEVERITY_LEVEL.ENABLED,
+):
+    if excep_raise is not None and severity_level == SEVERITY_LEVEL.ENABLED.value:
+        raise excep_raise(msg, failed_params, annotated_values, annotations) from None
+    else:
+        warnings.warn(msg, RuntimeWarning)
+
+
 def match_typing(
     _func=None,
     *,
@@ -64,38 +78,58 @@ def match_typing(
                         check_duck_typing=check_duck_typing,
                     )
                 )
-                failed_params += tuple(
-                    kwarg_name
-                    for kwarg_name, kwarg in kwargs.items()
+
+                failed_unpacking = False
+
+                if anno_kwargs := annotations.get("kwargs"):
                     if not check_type(
-                        kwarg,
-                        annotations.get(kwarg_name),
+                        kwargs,
+                        anno_kwargs,
                         mro=False,
                         check_duck_typing=check_duck_typing,
+                    ):
+                        failed_unpacking = True
+                else:
+                    failed_params += tuple(
+                        kwarg_name
+                        for kwarg_name, kwarg in kwargs.items()
+                        if not check_type(
+                            kwarg,
+                            annotations.get(kwarg_name, annotations.get("kwargs")),
+                            mro=False,
+                            check_duck_typing=check_duck_typing,
+                        )
                     )
-                )
 
                 if not default_return_queue.empty():
                     return default_return_queue.queue.pop()
 
-                if failed_params:
+                if failed_params or failed_unpacking:
                     annotated_values = {arg_name: arg for arg, arg_name in zip(args, arg_names)}
+
                     for kwarg_name, kwarg in kwargs.items():
                         annotated_values[kwarg_name] = kwarg
 
                     msg_list = "\nIncorrect parameter: ".join(
                         f"[{name}] `{pprint.pformat(annotated_values[name], width=20, depth=2)}`"
-                        f"\n\trequired: {annotations[name]}"
+                        f"\n\trequired: {annotations.get(name, name)}"
                         for name in failed_params
                     )
+
+                    if failed_unpacking:
+                        msg_list += f"""The kwargs: {kwargs} can not be packed into a {annotations['kwargs'].__args__[0]} TypedDict.\n
+                        Which requires following parameters\n\t{annotations['kwargs'].__args__[0].__annotations__}."""
+
                     msg = f"Incorrect parameter: {msg_list}"
 
-                    if excep_raise is not None and severity_level == SEVERITY_LEVEL.ENABLED.value:
-                        raise excep_raise(
-                            msg, failed_params, annotated_values, annotations
-                        ) from None
-                    else:
-                        warnings.warn(msg, RuntimeWarning)
+                    _raise_error_or_warning(
+                        msg,
+                        failed_params,
+                        annotated_values,
+                        annotations,
+                        excep_raise,
+                        severity_level,
+                    )
 
                 if cached_set is not None and func.__name__ not in CACHE_IGNORE_CLASS_FUNCTIONS:
                     cached_set.add(cached_key)

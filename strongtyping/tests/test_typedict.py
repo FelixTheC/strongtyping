@@ -4,7 +4,7 @@
 @created: 03.06.21
 @author: felix
 """
-from typing import List, NotRequired, Required, Union
+from typing import List, NotRequired, Required, TypedDict, Union, Unpack
 
 import pytest
 
@@ -253,8 +253,6 @@ def test_typeddict_with_not_required_cannot_before_required():
 
 
 def test_typeddict_with_required_and_not_required_and_sub_typeddict():
-    from typing_extensions import TypedDict
-
     @match_class_typing
     class Movie(TypedDict):
         title: str
@@ -279,6 +277,32 @@ def test_typeddict_with_required_and_not_required_and_sub_typeddict():
 
     with pytest.raises(TypeMisMatch):
         Regisseur(name="Alfonso Cuarón", year=2004)
+
+
+def test_unpacking():
+    @match_class_typing
+    class Additional(TypedDict):
+        name: str
+        val: NotRequired[str]
+
+    class Regisseur(TypedDict):
+        name: str
+        info: NotRequired[dict[Additional]]
+
+    class Movie(TypedDict):
+        name: str
+        year: int
+        regisseur: Regisseur
+
+    @match_typing
+    def foo(**kwargs: Unpack[Movie]) -> str:
+        return f"{kwargs['year']}: {kwargs['name']}"
+
+    with pytest.raises(TypeMisMatch):
+        foo(name="foobar", date=2023)
+
+    movie = Movie(name="Alfonso Cuarón", year=2004, regisseur=Regisseur(name="foobar"))
+    foo(**movie)
 
 
 if __name__ == "__main__":

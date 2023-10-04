@@ -5,6 +5,7 @@ on:
     branches-ignore:
       - 'py_3_10'
       - 'py_3_11'
+      - 'py_3_12'
 
 jobs:
   build:
