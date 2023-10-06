@@ -90,7 +90,7 @@ if py_version >= 9:
         return _IterValidator(self, parameters)
 
 else:
-    from typing import KT, VT, _alias, _GenericAlias, _type_repr  # type: ignore
+    from typing import KT, VT, _alias, _GenericAlias  # type: ignore
 
     Validator = _alias(_Validator, (KT, VT), inst=False)
     IterValidator = _alias(_IterValidator, (KT, VT), inst=False)
@@ -112,7 +112,7 @@ class FrozenType:
             required_type, stored_value = self.weakref.get(
                 instance, (self.required_type, self.stored_value)
             )
-            new_required_type, original_type = value[1], required_type
+            new_required_type, _ = value[1], required_type
             try:
                 updated_stored_value = new_required_type(stored_value)
             except TypeError:

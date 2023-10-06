@@ -223,7 +223,7 @@ def test_validator_type_with_default():
         foo({2: [2, 4]})
 
     with pytest.raises(TypeError):
-        AllowedCluster = Validator[Iterable[Union[int, fractions.Fraction, decimal.Decimal]]]
+        Validator[Iterable[Union[int, fractions.Fraction, decimal.Decimal]]]
 
 
 @pytest.mark.skipif(sys.version_info.minor < 9, reason="Available since 3.9")

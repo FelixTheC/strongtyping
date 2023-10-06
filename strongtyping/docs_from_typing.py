@@ -92,7 +92,10 @@ def get_type_info(val, type_origins):
         return union_types(val, type_origins)
     elif origins[1].lower() == "dict":
         try:
-            return f"{get_origins(val)[1]}({get_type_info(val, type_origins[0])}, {get_type_info(val, type_origins[1])})"
+            return (
+                f"{get_origins(val)[1]}({get_type_info(val, type_origins[0])}, "
+                f"{get_type_info(val, type_origins[1])})"
+            )
         except TypeError:
             text = ", ".join(
                 [
@@ -116,7 +119,10 @@ def get_type_info(val, type_origins):
         fields = {
             key: get_type_info(key, val) for key, val in val_origins[0].__annotations__.items()
         }
-        return f"{val.__name__}[TypedDict]{required} fields are \n\t`{pprint.pformat(fields, sort_dicts=False)}`"
+        return (
+            f"{val.__name__}[TypedDict]{required} "
+            f"fields are \n\t`{pprint.pformat(fields, sort_dicts=False)}`"
+        )
     elif "Validator" in origins[1]:
         required_type, *not_needed = type_origins.__args__
         text = f"{get_type_info(val, required_type)}[{origins[1]}]"
@@ -167,7 +173,10 @@ def docs_from_typing_numpy_format(
             predefined_info = "\n\t".join(additional_infos.get(f"${idx}", "").split("\n"))
             predefined_info = f"\n\t{predefined_info}" if predefined_info else ""
 
-            info_str = f"{key} : {ARGUMENT_TYPE[func_params[key].kind]} of type {get_type_info(val, type_origins)}"
+            info_str = (
+                f"{key} : {ARGUMENT_TYPE[func_params[key].kind]} "
+                f"of type {get_type_info(val, type_origins)}"
+            )
 
             if func_params[key].default is not inspect._empty:
                 info_str = f"{info_str}\n\tDefault is {func_params[key].default}"

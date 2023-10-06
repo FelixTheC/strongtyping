@@ -6,7 +6,6 @@ from mypy.errorcodes import ErrorCode
 from mypy.nodes import FuncBase, SymbolNode
 from mypy.options import Options
 from mypy.plugin import AnalyzeTypeContext, Plugin
-from mypy.semanal import set_callable_name  # type: ignore
 from mypy.types import Type, TypeVar
 
 T = TypeVar("T")

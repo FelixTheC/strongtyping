@@ -42,15 +42,16 @@ def match_typing(
         @wraps(func)
         def inner(*args, **kwargs):
             if arg_names and severity_level > SEVERITY_LEVEL.DISABLED.value:
-
                 args = remove_subclass(args, subclass)
                 if cached_set is not None and func.__name__ not in IGNORE_FUNCS:
-                    # check if func with args and kwargs was checked once before with positive result
+                    # check if func with args and kwargs was checked
+                    # once before with positive result
                     cached_key = (func, args.__str__(), kwargs.__str__())
                     if cached_key in cached_set:
                         return func(*args, **kwargs)
 
-                # Thanks to Ruud van der Ham who find a better and more stable solution for check_args
+                # Thanks to Ruud van der Ham who find a better
+                # and more stable solution for check_args
                 failed_params = tuple(
                     arg_name
                     for arg, arg_name in zip(args, arg_names)
@@ -204,7 +205,7 @@ def match_class_typing(cls=None, **kwargs):
 
     if cls is not None:
         if sys.version_info.major >= 3 and sys.version_info.minor > 7:
-            from typing import Type, _TypedDictMeta
+            from typing import _TypedDictMeta
 
             if isinstance(cls, _TypedDictMeta):
                 return MatchTypedDict(cls)

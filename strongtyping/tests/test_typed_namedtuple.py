@@ -214,19 +214,17 @@ def test_typed_namedtuple_instantiate_with_incorrect_types_raises_type_error(dum
 @pytest.mark.skipif(sys.version_info.minor < 8, reason=SKIP_MESSAGE)
 def test_typed_namedtuple_incorrect_default_types_raises_type_error():
     with pytest.raises(TypeError):
-        Dummy = typed_namedtuple(
-            "Dummy", ["spell:str", "mana:int", "effect:list"], defaults=[0, "", ""]
-        )
+        typed_namedtuple("Dummy", ["spell:str", "mana:int", "effect:list"], defaults=[0, "", ""])
 
     with pytest.raises(TypeError):
-        Dummy = typed_namedtuple(
+        typed_namedtuple(
             "Dummy",
             ["spell:str", "mana:int or str", "effect:list"],
             defaults=["", (), []],
         )
 
     with pytest.raises(TypeError):
-        Dummy = typed_namedtuple(
+        typed_namedtuple(
             "Dummy",
             ["spell:str", "mana:int or str", "effect:list or tuple"],
             defaults=["", "5", {1, 2}],
@@ -285,7 +283,7 @@ def test_typed_namedtuple_rename():
 @pytest.mark.skipif(sys.version_info.minor < 8, reason=SKIP_MESSAGE)
 def test_typed_namedtuple_mixing_typ_and_no_type_not_allowed():
     with pytest.raises(TypeError):
-        Dummy = typed_namedtuple("Dummy", ["spell:str", "mana", "effect:list or tuple"])
+        typed_namedtuple("Dummy", ["spell:str", "mana", "effect:list or tuple"])
 
 
 @pytest.mark.skipif(sys.version_info.minor < 8, reason=SKIP_MESSAGE)

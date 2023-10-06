@@ -10,13 +10,12 @@ from strongtyping.strong_typing import match_typing
 
 
 def action(f, frefs):
-
     """
     This code is original from Ruud van der Ham https://github.com/salabim/easy_property
     """
     if f.__qualname__ == action.qualname:
         if any(action.f[fref] is not None for fref in frefs.split("_")):
-            raise AttributeError(f"decorator defined twice")
+            raise AttributeError("decorator defined twice")
     else:
         action.f.update({}.fromkeys(action.f, None))  # reset all values to None
         action.qualname = f.__qualname__

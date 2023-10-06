@@ -4,7 +4,7 @@ import sys
 import typing
 from functools import lru_cache, partial
 from queue import Queue
-from typing import Any, TypeVar, _GenericAlias, _SpecialForm, _type_repr  # type: ignore
+from typing import Any, TypeVar  # type: ignore
 
 from strongtyping._utils import ORIGINAL_DUCK_TYPES, install_st_m
 
@@ -15,7 +15,7 @@ try:
     from strongtyping_modules.strongtyping_modules import list_elements  # type: ignore
     from strongtyping_modules.strongtyping_modules import set_elements  # type: ignore
     from strongtyping_modules.strongtyping_modules import tuple_elements  # type: ignore
-except ImportError as e:
+except ImportError:
     extension_module: bool = False
 else:
     extension_module = bool(int(os.environ["ST_MODULES_INSTALLED"]))
@@ -51,7 +51,8 @@ else:
 @lru_cache(maxsize=1024)
 def get_possible_types(typ_to_check, origin_name: str = "") -> typing.Union[tuple, None]:
     """
-    :param typ_to_check: some typing like List[str], Dict[str, int], Tuple[Union[str, int], List[int]]
+    :param typ_to_check:
+        some typing like List[str], Dict[str, int], Tuple[Union[str, int], List[int]]
     :param origin_name: the name of the origin
     :return: the inner types, classes of the type
         - List[str] = (str, )
@@ -75,10 +76,10 @@ def get_possible_types(typ_to_check, origin_name: str = "") -> typing.Union[tupl
 
 
 def get_origins(typ_to_check: Any) -> tuple:
-    from strongtyping.strong_typing import match_class_typing
-
     """
-    :param typ_to_check: typ_to_check: some typing like List[str], Dict[str, int], Tuple[Union[str, int], List[int]]
+    :param typ_to_check:
+        typ_to_check: some typing like
+            List[str], Dict[str, int], Tuple[Union[str, int], List[int]]
     :return: the class, alias_class and the class name
         - List[str] = (list, 'List')
         - Dict[str, int] = (dict, 'Dict')

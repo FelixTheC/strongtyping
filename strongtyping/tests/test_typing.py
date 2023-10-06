@@ -245,7 +245,7 @@ def test_func_with_own_union_type():
     assert func_a(a=("Lumos", [1, 2, 3], A()))
 
 
-def test_func_with_own_union_type():
+def test_func_with_own_union_type_2():
     class A:
         pass
 
@@ -772,7 +772,6 @@ def test_with_json():
 
 @pytest.mark.skip()
 def test_with_new_type():
-
     FruitType = NewType("FruitType", Tuple[str, str])
 
     @match_typing
@@ -1040,7 +1039,6 @@ def test_with_severity_param():
 
 
 def test_with_env_severity(monkeypatch):
-
     monkeypatch.setenv("ST_SEVERITY", "disable")
 
     @match_class_typing
