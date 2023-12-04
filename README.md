@@ -1,7 +1,7 @@
 [![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/downloads/release/python-3100/)
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/release/python-3110/)
 [![PyPI version](https://badge.fury.io/py/strongtyping.svg)](https://badge.fury.io/py/strongtyping)
-![Python application](https://github.com/FelixTheC/strongtyping/actions/workflows/python-app.yml/badge.svg)]
+![Python application](https://github.com/FelixTheC/strongtyping/actions/workflows/python-app.yml/badge.svg)
 ![Python tox](https://github.com/FelixTheC/strongtyping/workflows/Python%20tox/badge.svg)
 ![image](https://codecov.io/gh/FelixTheC/strongtyping/graph/badge.svg)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
