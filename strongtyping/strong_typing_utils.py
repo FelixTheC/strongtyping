@@ -44,6 +44,12 @@ class ValidationError(Exception):
         print(message)
 
 
+class UndefinedKey(Exception):
+    def __init__(self, message):
+        super().__init__()
+        print(message)
+
+
 typing_base_class = typing._GenericAlias  # type: ignore
 
 

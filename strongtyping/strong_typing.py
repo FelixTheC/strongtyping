@@ -10,6 +10,7 @@ from strongtyping.cached_set import CachedSet
 from strongtyping.config import SEVERITY_LEVEL
 from strongtyping.strong_typing_utils import (
     TypeMisMatch,
+    UndefinedKey,
     check_type,
     checking_typing_typedict_values,
     default_return_queue,
@@ -235,6 +236,7 @@ def match_class_typing(cls=None, **kwargs):
     excep_raise = kwargs.pop("excep_raise", TypeMisMatch)
     cache_size = kwargs.pop("cache_size", 1)
     severity = kwargs.pop("severity", "env")
+    throw_on_undefined = kwargs.pop("throw_on_undefined", False)
 
     def __has_annotations__(obj):
         return hasattr(obj, "__annotations__")
@@ -267,6 +269,7 @@ def match_class_typing(cls=None, **kwargs):
                             cache_size=cache_size,
                             excep_raise=excep_raise,
                             subclass=is_static,
+                            throw_on_undefined=throw_on_undefined,
                         ),
                     )
                 except TypeError:
@@ -275,6 +278,14 @@ def match_class_typing(cls=None, **kwargs):
     def wrapper(some_cls):
         def inner(*args, **cls_kwargs):
             __add_decorator(some_cls)
+            if throw_on_undefined:
+                allowed_keys = some_cls.__annotations__.keys()
+                data = args[0] if args else cls_kwargs
+                if not all(arg in allowed_keys for arg in data):
+                    raise UndefinedKey(
+                        f"You can use the `TypedDict[{some_cls.__name__}]` "
+                        f"only with the following attributes: `{', '.join(allowed_keys)}`"
+                    )
             return some_cls(*args, **cls_kwargs)
 
         inner._matches_class = True
