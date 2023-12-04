@@ -1,5 +1,5 @@
 [![PyPI version](https://badge.fury.io/py/strongtyping.svg)](https://badge.fury.io/py/strongtyping)
-![Python application](https://github.com/FelixTheC/strongtyping/actions/workflows/python-app.yml/badge.svg)]
+![Python application](https://github.com/FelixTheC/strongtyping/actions/workflows/python-app.yml/badge.svg)
 ![Python tox](https://github.com/FelixTheC/strongtyping/workflows/Python%20tox/badge.svg)
 ![image](https://codecov.io/gh/FelixTheC/strongtyping/graph/badge.svg)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
