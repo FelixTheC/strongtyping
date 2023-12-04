@@ -9,7 +9,7 @@ from typing import List, NotRequired, Required, TypedDict, Union, Unpack
 import pytest
 
 from strongtyping.strong_typing import match_class_typing, match_typing
-from strongtyping.strong_typing_utils import TypeMisMatch, ValidationError
+from strongtyping.strong_typing_utils import TypeMisMatch, UndefinedKey, ValidationError
 
 
 def test_typedict():
@@ -303,6 +303,23 @@ def test_unpacking():
 
     movie = Movie(name="Alfonso Cuarón", year=2004, regisseur=Regisseur(name="foobar"))
     foo(**movie)
+
+
+def test_undefined_keys_raise_error():
+    @match_class_typing(throw_on_undefined=True)
+    class User(TypedDict):
+        id: str
+        username: str
+        description: str | None
+
+    with pytest.raises(UndefinedKey):
+        User({"id": "0123", "username": "test", "description": None, "age": 10})
+
+    with pytest.raises(UndefinedKey):
+        User(id="Alfonso Cuarón", username="2004", description=None, age=10)
+
+    assert User({"id": "0123", "username": "test", "description": None})
+    assert User(id="0123", username="test")
 
 
 if __name__ == "__main__":
