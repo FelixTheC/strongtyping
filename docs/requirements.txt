@@ -5,7 +5,7 @@ click==8.0.0
 codecov==2.1.11
 coverage==5.5
 future==0.18.3
-idna==2.10
+idna==3.7
 Jinja2==3.1.4
 joblib==1.2.0
 livereload==2.6.3
