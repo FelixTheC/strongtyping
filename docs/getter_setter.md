@@ -18,5 +18,5 @@ d.c == 100  # works like a charm
 
 d.c = 1  # works like a charm
 
-d.c = 'foobar'  # will raise TypeMisMatch
+d.c = 'foobar'  # will raise TypeMismatch
 ```

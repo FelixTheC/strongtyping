@@ -19,7 +19,7 @@ from strongtyping.strong_typing import match_typing
 def a(value: int):
     return value * 2
 
-a(2) == 4  # this will raise a TypeMisMatch-Exception
+a(2) == 4  # this will raise a TypeMismatch-Exception
 ```
 
 - the `Warning` behavior `SEVERITY_LEVEL.WARNING`

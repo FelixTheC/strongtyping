@@ -94,7 +94,7 @@ class Dummy:
     attr_a: int
     attr_b: str
 
-# wrong types are raising a TypeMisMatch error
+# wrong types are raising a TypeMismatch error
 assert Dummy("10", 10)
 ```
 
@@ -115,7 +115,7 @@ class SalesSummary(TypedDict):
 # works like expected
 SalesSummary({"sales": 10, "country": "Foo", "product_codes": ["1", "2", "3"]})
 
-# will raise a TypeMisMatch
+# will raise a TypeMismatch
 SalesSummary({"sales": "Foo", "country": 10, "product_codes": [1, 2, 3]})
 ```
 - The `total` keyword will supported like the original TypeDict
@@ -134,6 +134,6 @@ class SalesSummary(TypedDict, total=False):
 # works like expected
 SalesSummary({"sales": 10, "product_codes": ["1", "2", "3"]})
 
-# will raise TypeMisMatch
+# will raise TypeMismatch
 SalesSummary({"sales": "Foo", "product_codes": [1, 2, 3]})
 ```

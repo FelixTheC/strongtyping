@@ -22,5 +22,5 @@ d.b == 'foo'  # will raise AttributeError
 
 d.b = 'bar'  # works like a charm
 
-d.b = 1  # will raise TypeMisMatch
+d.b = 1  # will raise TypeMismatch
 ```

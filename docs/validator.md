@@ -2,7 +2,7 @@
 - The `Validator` type is like Union you can join a type-hint and a validation function.
 - These works only when using with `match_typing`.
 - If the Validation fails then you will receive a `ValidationError` if the type doesn't match 
-  then you will receive a `TypeMisMatch`
+  then you will receive a `TypeMismatch`
 
 ### Usage
 - The first parameter of the `Validator` must be the `type` you're requiring
@@ -24,7 +24,7 @@ def foo(val_a: Validator[list, lambda x: len(x) > 2]):
 
 assert foo([1, 2, 3])
 assert foo([1, 2])  # raises a ValidationError
-assert foo({1, 2, 3})  # raises TypeMisMatch
+assert foo({1, 2, 3})  # raises TypeMismatch
 ```
 
 #### normal function
@@ -46,8 +46,8 @@ def foo(val_a: Validator[List[int], min_length]):
 assert foo([1, 2, 3])
 assert foo([1, 2])  # ValidationError
 assert foo([1, ])  # ValidationError
-assert foo(['1', '2', '3'])  # TypeMisMatch
-assert foo((1, 2, 3))  # TypeMisMatch
+assert foo(['1', '2', '3'])  # TypeMismatch
+assert foo((1, 2, 3))  # TypeMismatch
 ```
 
 
@@ -71,7 +71,7 @@ def foo(val_a: Validator[dict[Union[str, int], Union[list[int], tuple[int, ...]]
 
 assert foo({2: [2, 4], 'hello': (2, 3, 4, 5)})
 assert foo({2: [2, 4]})  # ValidationError
-assert foo(((1, 2), (3, 4)))  # TypeMisMatch
+assert foo(((1, 2), (3, 4)))  # TypeMismatch
 ```
 
 
@@ -106,7 +106,7 @@ cluster({"sales": 10, "product_codes": "Hello World".split()})
 cluster({"sales": 10, "country": "123456789", "product_codes": "Hello World".split()})
 cluster({"country": "123456789", "product_codes": "Hello World".split()})
 
-# will raise a TypeMisMatch
+# will raise a TypeMismatch
 cluster({"sales": 10, "country": "Europe", "product_codes": list(range(10))})
 cluster({"sales": "10", "country": "Europe"})
 cluster({"product_codes": list(range(10))})

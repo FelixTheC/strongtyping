@@ -2,7 +2,7 @@
 - The `IterValidator` type is like `Union` and `map` you can join a type-hint and a validation function.
 - The function you pass as the second argument will be called with each element inside of the argument.
 - These works only when using with `match_typing`.
-- If the check fails it will raise a `TypeMisMatch` or the Exception you specify in `@match_typing(excep_raise=<SomeException>)`
+- If the check fails it will raise a `TypeMismatch` or the Exception you specify in `@match_typing(excep_raise=<SomeException>)`
 
 ### Usage
 - The first parameter of the `IterValidator` must be the `type` you're requiring
