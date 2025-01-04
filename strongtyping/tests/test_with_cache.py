@@ -12,7 +12,7 @@ from typing import List, Optional
 import pytest
 
 from strongtyping.strong_typing import match_class_typing, match_typing
-from strongtyping.strong_typing_utils import TypeMisMatch
+from strongtyping.strong_typing_utils import TypeMismatch
 
 
 def test_func_with_cache():
@@ -27,7 +27,7 @@ def test_func_with_cache():
 
     assert foo([2, 4, 6, 8], 2) == [4, 8, 12, 16]
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         foo([1, 2, 3, 4, 5, 6, 7, "8"])
         foo([1, 2, 3, 4, "hello error", 6, 7, 9])
         foo([2, 4, 6, 8], "2")
@@ -48,7 +48,7 @@ def test_class_with_cache():
 
     assert my_class.foo([2, 4, 6, 8], 2) == [4, 8, 12, 16]
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         my_class.foo([1, 2, 3, 4, "5", 6, 7, 8])
         my_class.foo([1, 2, 3, 4, 5, 6, 7, "9"])
         my_class.foo([2, 4, 6, 8], "2")

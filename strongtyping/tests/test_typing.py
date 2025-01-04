@@ -24,6 +24,7 @@ from typing import (
     Set,
     Tuple,
     Type,
+    TypeVar,
     Union,
 )
 from unittest import mock
@@ -34,7 +35,7 @@ import ujson as ujson
 from strongtyping.config import SEVERITY_LEVEL
 from strongtyping.strong_typing import match_class_typing, match_typing
 from strongtyping.strong_typing_utils import (
-    TypeMisMatch,
+    TypeMismatch,
     checking_typing_dict,
     checking_typing_json,
     checking_typing_list,
@@ -198,16 +199,16 @@ def test_func_with_tuple_typing():
 
     assert func_c((2, "2", "2", 2))
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         func_b(("2", "Hello".split()))
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         assert func_a(("Harmonia", "Nectere"))
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         assert func_a(("Harmonia", "Nectere", "Passus", "Passus"))
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         assert func_c(["Harmonia", "Nectere", "Passus", "Passus"])
 
 
@@ -216,7 +217,7 @@ def test_func_raise_error_incorrect_parameters_less():
     def func_a(a: Tuple[str, str, str]):
         return True
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         func_a(a=("Oculus", "Reparo"))
 
 
@@ -225,7 +226,7 @@ def test_func_raise_error_incorrect_parameters_much():
     def func_a(a: Tuple[str, str, str]):
         return True
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         func_a(("Peskipiksi", "Pesternomi", "Petrificus", "Totalus"))
 
 
@@ -342,7 +343,7 @@ def test_use_str_repr_as_type():
     class Foo:
         pass
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         b = A()
         b.func_a(Foo())
 
@@ -359,10 +360,10 @@ def test_second_pos_arg_hinted():
 
     assert func_b("1", 2) == "1, 2"  # shouldn't raise a TypeMisMatch
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         assert func_b(1, "2") == "1, 2"  # Should raise a TypeMisMatch
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         assert func_b("1", "2") == "1, 2"
 
 
@@ -373,7 +374,7 @@ def test_with_lists():
 
     assert func_b([1, 2], ["a", "b", "c"]) == "2, 3"
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         func_b([1, 2], ("a", "b", "c")) == "2, 3"
 
     @match_typing
@@ -382,13 +383,13 @@ def test_with_lists():
 
     assert func_c([1, 2], ["a", "b", "c"]) == "2, 3"
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         func_c([1, 2], ("a", "b", "c")) == "2, 3"
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         func_c((1, 2), ["a", "b", "c"]) == "2, 3"
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         func_c([1, 2], [1, 2, 3]) == "2, 3"
 
     @match_typing
@@ -411,7 +412,7 @@ def test_lists_with_unions():
 
     assert func_e([1, "2", 3, "4"], [5, ("a", "b"), "10"]) == "4-3"
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         func_e([5, ("a", "b"), "10"], [1, "2", 3, datetime.date])
 
 
@@ -433,7 +434,7 @@ def test_with_optional():
     assert func_a(None, None) == "None-None"
     assert func_a("2", 1) == "2-1"
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         func_a(1, "2")
 
 
@@ -447,16 +448,16 @@ def test_with_dict():
         == "{'a': 5, 'b': 2}-{('hello', 'world'): 10, ('foo', 'bar'): 6}"
     )
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         func_a({"a": 5, "b": 2}, {"helloworld": 10, "foobar": 6})
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         func_a({"a": 5, "b": 2}, {("hello", "world"): "2", ("foo", "bar"): "9"})
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         func_a({"a": 5, "b": "2"}, {("hello", "world"): 12, ("foo", "bar"): 19})
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         func_a({"a": 5, "b": 2}, {("hello", "world"): 12, ("foo", "bar"): "19"})
 
 
@@ -472,10 +473,10 @@ def test_with_dict_2():
     assert func_b({"a": 1}, {((("fbar", "fbar"), "foo"), "bar"): 2020})
     assert func_c({"b": 2, 34: 313})
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         assert func_b({"a": 1}, {((("fbar", 1), "foo"), "bar"): 2020})
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         assert func_c({"b": 2, 34: "foo"})
 
 
@@ -488,7 +489,7 @@ def test_with_set():
     assert func_a({2, 4, 6}, {1, 2, 3, 4})
     assert func_a({"A", 2, "b", 4, "c"}, {1, 2, 3, 4})
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         func_a({"A", 2, "b", 4, "c"}, {"A", 2, "b", 4, "c"})
 
 
@@ -523,10 +524,10 @@ def test_with_type():
     assert func_a(User) == "User"
     assert func_b(User, TeamUser) == ("User", "User")
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         func_a(NoUser)
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         func_a(NoUser, User)
 
 
@@ -563,7 +564,7 @@ def test_with_iterator():
 
     assert func_a(Fibonacci(5)) == [1, 1, 2, 3, 5]
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         func_a(NonFibonacci(5))
 
 
@@ -579,7 +580,7 @@ def test_with_callable():
         return True
 
     assert func_a(dummy_func)
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         func_a(fail_func)
 
 
@@ -597,7 +598,7 @@ def test_with_functiontype():
 
     assert func_a(dummy_func) == "success"
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         func_a(A().inner_func)
 
 
@@ -615,7 +616,7 @@ def test_with_methodtype():
 
     assert func_a(A().inner_func) == "inner_success"
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         func_a(dummy_func)
 
 
@@ -634,7 +635,7 @@ def test_with_method_and_functiontype():
     assert func_a(A().inner_func) == "inner_success"
     assert func_a(dummy_func) == "success"
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         func_a(A())
 
 
@@ -645,7 +646,7 @@ def test_mix():
 
     assert func_a({"a": 1, "b": 2})
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         func_a({1, 2, 3})
 
     @match_typing
@@ -653,7 +654,7 @@ def test_mix():
         return True
 
     assert func_a((1, 2, 3))
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         func_a([1, 2, 3])
 
     @match_typing
@@ -661,7 +662,7 @@ def test_mix():
         return True
 
     assert func_a({1, 2, 3})
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         func_a({"a": 1, "b": 2})
 
 
@@ -680,7 +681,7 @@ def test_with_enum():
 
     assert func_a(Shake.CHOCOLATE, Shake.COOKIES)
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         func_a(Shake.MINT, House.SLITHERIN)
 
 
@@ -704,7 +705,7 @@ def test_with_json():
         ujson.dumps([{1: "foo"}, {2: "bar"}, {3: b"foobar"}], reject_bytes=False),
     )
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         func_a({("not", "allowed"): [i for i in range(5)]}, [{2: b"hello"}, {42: b"world"}])
 
 
@@ -719,7 +720,7 @@ def test_with_new_type():
     assert func_a("some", FruitType(("apple", "sweet")))
     assert func_a("free", FruitType(("pineapple", "super sweet")))
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         # problem with NewType: I only get the supertype and nothing about the name or similar
         # this will be true because the supertype of FruitType is Tuple[str, str]
         # func_a('new', ('coconut', 'soft'))
@@ -733,7 +734,7 @@ def test_with_new_type():
 
     assert func_a("some", MyType([("apple", {"foo": "bar"})]))
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         func_a("new", {"not": "my_type"})
 
 
@@ -743,7 +744,7 @@ def test_with_generator():
         return True
 
     assert func_a((i for i in range(10)))
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         func_a([i for i in range(10)])
 
 
@@ -764,7 +765,7 @@ def test_with_literals():
         return direction
 
     assert with_literals("vertical") == "vertical"
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         with_literals("up")
 
     @match_typing
@@ -897,7 +898,7 @@ def test_with_dataclass():
 
     Dummy(10, "10")
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         Dummy("10", 10)
         Dummy("9", 10)
         Dummy("8", 10)
@@ -909,7 +910,7 @@ def test_with_severity_param():
         return value * 2
 
     assert a(2) == 4
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         a("2")
 
     @match_typing(severity=SEVERITY_LEVEL.WARNING)
@@ -972,7 +973,7 @@ def test_with_severity_param():
 
     od = OtherDummy("2")
     assert od.a(2) == "2222"
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         assert od.a("2") == "222"
 
 
@@ -1073,16 +1074,16 @@ def test_generic_type_hints():
 
     assert a_dict({"foo": "bar"})
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         a_dict({1: "bar"})
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         a_dict({"foo": [1, 2, 3]})
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         c_tuple(("hello", "world", "2"))
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         c_tuple((2, "world", 2))
 
 
@@ -1103,10 +1104,10 @@ def test_optional_same_as_union_none():
     assert func_a({"a": {"foo": 2}}) == 2
     assert func_a(None) == 1
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         func_a(set([1, 2, 3]))
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         func_a({"a": ((1, "2"), (3, "4"))})
 
 
@@ -1128,7 +1129,7 @@ def test_strongtyping_modules_integration():
 
             try:
                 some_func(["alpha", 23, "beta", 2])
-            except TypeMisMatch:
+            except TypeMismatch:
                 pass
             assert mocked_list_module.called
 
@@ -1159,7 +1160,7 @@ def test_with_ellipsis():
 
     data = list(range(20)) + list("hello world")
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         d.a(data)
 
 
@@ -1178,7 +1179,7 @@ def test_empty_containers_are_valid_if_the_share_same_type():
     def foo(val_a: Tuple[str], val_b: Tuple[str, str], val_c: Tuple[str, ...]):
         return True
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         foo((), (), ())
 
     assert foo(("Hello",), ("Jon", "Doe"), ())
@@ -1213,13 +1214,13 @@ def test_with_iterable():
     assert cluster((1, 2, 3, 4, 5))
     assert cluster({1: 0, 2: 0, 3: 0}.keys())
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         cluster("123")
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         cluster(cluster)
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         cluster(1)
 
 
@@ -1230,8 +1231,66 @@ def test_with_binary_union_operator():
 
     assert func_e([1, "2", 3, "4"], [5, ("a", "b"), "10"]) == "4-3"
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         func_e([5, ("a", "b"), "10"], [1, "2", 3, datetime.date])
+
+
+def test_typevar():
+
+    any_type = TypeVar("any_type")
+    my_type = TypeVar("my_type", str, bytes)
+    my_bound_type = TypeVar("my_bound_type", bound=str)
+
+    @match_typing
+    def func_d(a: any_type):
+        return a * 2
+
+    assert func_d(1) == 2
+    assert func_d("1") == "11"
+    assert func_d(["1"]) == ["1", "1"]
+
+    @match_typing
+    def func_e(a: my_type):
+        return a * 2
+
+    assert func_e("hello_world") == "hello_worldhello_world"
+    assert func_e(b"hello_world") == b"hello_worldhello_world"
+
+    with pytest.raises(TypeMismatch):
+        func_e(1)
+
+    class StringSubclass(str):
+        pass
+
+    @match_typing
+    def func_f(a: my_bound_type):
+        return a * 2
+
+    assert func_f(StringSubclass("hello_world")) == "hello_worldhello_world"
+
+    with pytest.raises(TypeMismatch):
+        func_f(b"hello_world")
+
+    @match_typing
+    def to_capitalized[S: str](x: S) -> S:
+        return x.capitalize()
+
+    assert to_capitalized("hello_world") == "Hello_world"
+    assert to_capitalized(StringSubclass("hello_world")) == "Hello_world"
+    with pytest.raises(TypeMismatch):
+        to_capitalized(b"hello_world") == b"Hello_world"
+
+    @match_typing
+    def concatenate[A: (str, bytes)](x: A, y: A) -> A:
+        """Add two strings or bytes objects together."""
+        return x + y
+
+    assert concatenate("hello", "world") == "helloworld"
+    assert concatenate(b"hello", b"world") == b"helloworld"
+    with pytest.raises(TypeMismatch):
+        concatenate(1, 2)
+    with pytest.raises(TypeMismatch):
+        concatenate(list("hello"), "world".split())
 
 
 if __name__ == "__main__":

@@ -13,7 +13,7 @@ from typing import Dict, Iterable, List, Tuple, Union
 
 import pytest
 
-from strongtyping.strong_typing import TypeMisMatch, match_class_typing, match_typing
+from strongtyping.strong_typing import TypeMismatch, match_class_typing, match_typing
 from strongtyping.strong_typing_utils import ValidationError
 from strongtyping.types import IterValidator, Validator
 
@@ -35,7 +35,7 @@ def test_valid_type():
             ]
         )
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         foo({1, 2, 3})
 
     def min_length(val):
@@ -57,10 +57,10 @@ def test_valid_type():
             ]
         )
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         foo(["1", "2", "3"])
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         foo((1, 2, 3))
 
     def min_length(val, *, size):
@@ -106,10 +106,10 @@ def test_with_type_generics():
             ]
         )
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         foo(["1", "2", "3"])
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         foo((1, 2, 3))
 
     def min_length(val, *, size):
@@ -129,7 +129,7 @@ def test_with_type_generics():
     with pytest.raises(ValidationError):
         foo({2: [2, 4]})
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         foo(((1, 2), (3, 4)))
 
 
@@ -151,7 +151,7 @@ def test_inside_of_a_class():
     with pytest.raises(ValidationError):
         assert foo.method_a(("Hi", "Hi"))
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         assert foo.method_a(())
 
 
@@ -178,7 +178,7 @@ def test_validator_type_with_default():
         == []
     )
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         foo({1, 2, 3})
 
     def min_length(val):
@@ -199,10 +199,10 @@ def test_validator_type_with_default():
         is None
     )
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         foo(["1", "2", "3"])
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         foo((1, 2, 3))
 
     def min_length(val, *, size):
@@ -241,7 +241,7 @@ def test_iter_validator():
     def cluster(val: AllowedCluster):
         return True
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         cluster((1, 2, 3.5))  # non int float
         cluster([1, 2, "abc"])  # non int str
         cluster([1, 2, "3.5"])  # non int str

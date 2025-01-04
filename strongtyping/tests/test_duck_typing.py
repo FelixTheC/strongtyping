@@ -11,7 +11,7 @@ except ImportError:
     CaseInsensitiveDict = UNIMPORTED
 
 from strongtyping.strong_typing import match_typing
-from strongtyping.strong_typing_utils import TypeMisMatch
+from strongtyping.strong_typing_utils import TypeMismatch
 
 
 def test_int_float_duck_typing():
@@ -22,7 +22,7 @@ def test_int_float_duck_typing():
     assert adder(2, 2.5) == 4.5
     assert adder(2, 5) == 7
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         adder(2.5, 5)
 
 
@@ -43,7 +43,7 @@ def test_integral_real_duck_typing():
     assert adder(2, 2.5) == 4.5
     assert adder(2, 5) == 7
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         adder(2.5, 5)
 
 
@@ -57,7 +57,7 @@ def test_bytearray_duck_typing():
         b"\x01\x02\x03\x01\x02\x03"
     )
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         adder(bytes([1, 2, 3]), bytearray([1, 2, 3]))
 
 

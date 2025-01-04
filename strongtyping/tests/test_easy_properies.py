@@ -7,7 +7,7 @@
 import pytest
 
 from strongtyping.docstring_typing import getter_setter as dt_getter_setter, setter as dt_setter
-from strongtyping.strong_typing import TypeMisMatch, getter_setter, setter
+from strongtyping.strong_typing import TypeMismatch, getter_setter, setter
 
 
 class Dummy:
@@ -54,7 +54,7 @@ def test_setter():
     d.b = "bar"
     assert d.val == "bar"
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         d.b = 1
 
     dd = DummyDocStr()
@@ -64,21 +64,21 @@ def test_setter():
     dd.b = "bar"
     assert dd.val == "bar"
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         dd.b = 1
 
 
 def test_getter_setter():
     d = Dummy()
     assert d.c == 100
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         d.c = "10"
     d.c = 10
     assert d.c == 10
 
     dd = DummyDocStr()
     assert dd.c == 100
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         dd.c = "10"
     dd.c = 10
     assert dd.c == 10

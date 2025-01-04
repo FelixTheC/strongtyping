@@ -32,7 +32,7 @@ empty = object()
 default_return_queue = Queue()
 
 
-class TypeMisMatch(AttributeError):
+class TypeMismatch(AttributeError):
     def __init__(self, message, failed_params=None, param_values=None, annotations=None):
         super().__init__()
         print(message)
@@ -398,6 +398,14 @@ def check_duck_typing(arg, possible_types, *args, **kwargs):
     return arg_mros.issuperset(required_mros)
 
 
+def check_typevar(arg, possible_types, *args, **kwargs):
+    if possible_types.__bound__:
+        return check_type(arg, possible_types.__bound__)
+    elif possible_types.__constraints__:
+        return check_type(arg, possible_types.__constraints__)
+    return True
+
+
 supported_typings = vars()
 
 
@@ -414,6 +422,9 @@ def check_type(argument, type_of, mro=False, **kwargs):
     if type_of is not None:
         origin, origin_name = get_origins(type_of)
         origin_name = origin_name.lower()
+
+        if isinstance(type_of, TypeVar):
+            return check_typevar(argument, type_of)
 
         if "new_type" in origin_name:
             type_of = type_of.__supertype__
@@ -505,6 +516,9 @@ def check_type(argument, type_of, mro=False, **kwargs):
             )
         elif origin_name == "unpack":
             return checking_typing_unpack(argument, get_possible_types(type_of, origin_name))
+        elif origin_name == "readonly":
+            sub_type = get_possible_types(type_of, origin_name)
+            return check_type(argument, sub_type)
         elif mro:
             if origin_name == "union":
                 possible_types = get_possible_types(type_of)

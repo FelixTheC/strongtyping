@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 import pytest
 
 from strongtyping.strong_typing import match_class_typing
-from strongtyping.strong_typing_utils import TypeMisMatch
+from strongtyping.strong_typing_utils import TypeMismatch
 
 
 def test_create_instance():
@@ -49,10 +49,10 @@ def test_dataclass_with_function_annotation():
     datacls = D()
     assert datacls is not None
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         datacls.add("2")
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         datacls.add(["2"])
 
     datacls.add([2])

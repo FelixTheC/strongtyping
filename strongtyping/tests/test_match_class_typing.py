@@ -7,7 +7,7 @@
 import pytest
 
 from strongtyping.strong_typing import match_class_typing, match_typing
-from strongtyping.strong_typing_utils import TypeMisMatch
+from strongtyping.strong_typing_utils import TypeMismatch
 
 
 def test_correct_repr():
@@ -54,7 +54,7 @@ def test_wrong_type_for_classes_decorated_with_match_class_typing():
         pass
 
     bar(Foo(10))
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         bar("10")
 
     @match_class_typing
@@ -68,7 +68,7 @@ def test_wrong_type_for_classes_decorated_with_match_class_typing():
 
     my_foo = Foo(10)
     bar(my_foo)
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         bar("10")
 
 

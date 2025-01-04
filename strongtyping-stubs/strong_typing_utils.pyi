@@ -7,7 +7,7 @@ extension_module: bool
 empty: Incomplete
 default_return_queue: Incomplete
 
-class TypeMisMatch(AttributeError):
+class TypeMismatch(AttributeError):
     def __init__(self, message, failed_params: Incomplete | None = ..., param_values: Incomplete | None = ..., annotations: Incomplete | None = ...) -> None: ...
 
 class ValidationError(Exception):

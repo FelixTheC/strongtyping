@@ -9,7 +9,7 @@ from strongtyping._utils import _severity_level, action, remove_subclass
 from strongtyping.cached_set import CachedSet
 from strongtyping.config import SEVERITY_LEVEL
 from strongtyping.strong_typing_utils import (
-    TypeMisMatch,
+    TypeMismatch,
     UndefinedKey,
     check_type,
     checking_typing_typedict_values,
@@ -25,7 +25,7 @@ def _raise_error_or_warning(
     failed_params,
     annotated_values,
     annotations,
-    excep_raise: Type[Exception] = TypeMisMatch,
+    excep_raise: Type[Exception] = TypeMismatch,
     severity_level=SEVERITY_LEVEL.ENABLED,
 ):
     if excep_raise is not None and severity_level == SEVERITY_LEVEL.ENABLED.value:
@@ -37,7 +37,7 @@ def _raise_error_or_warning(
 def match_typing(
     _func=None,
     *,
-    excep_raise: Type[Exception] = TypeMisMatch,
+    excep_raise: Type[Exception] = TypeMismatch,
     subclass: bool = False,
     severity="env",
     **kwargs,
@@ -160,7 +160,7 @@ class MatchTypedDict:
         return super().__new__(cls)
 
     def __init__(self, cls=None, *args, **kwargs):
-        self.excep_raise = kwargs.pop("excep_raise", TypeMisMatch)
+        self.excep_raise = kwargs.pop("excep_raise", TypeMismatch)
         self.cache_size = kwargs.pop("cache_size", 1)
         self.severity = kwargs.pop("severity", "env")
         self.cls = cls
@@ -233,7 +233,7 @@ class MatchTypedDict:
 
 
 def match_class_typing(cls=None, **kwargs):
-    excep_raise = kwargs.pop("excep_raise", TypeMisMatch)
+    excep_raise = kwargs.pop("excep_raise", TypeMismatch)
     cache_size = kwargs.pop("cache_size", 1)
     severity = kwargs.pop("severity", "env")
     throw_on_undefined = kwargs.pop("throw_on_undefined", False)

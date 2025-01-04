@@ -14,7 +14,7 @@ from types import FunctionType, MethodType
 
 from strongtyping._utils import _get_new, _severity_level, action, remove_subclass
 from strongtyping.cached_set import CachedSet
-from strongtyping.strong_typing import TypeMisMatch
+from strongtyping.strong_typing import TypeMismatch
 
 TYPE_EXTRACTION_PATTERN = r"(^[:a-zA-Z0-9 _-]+(:))"
 PATTERN_1 = r""
@@ -156,7 +156,7 @@ def extract_docstring_param_types(func) -> dict:
 def match_docstring(
     _func=None,
     *,
-    excep_raise: Exception = TypeMisMatch,
+    excep_raise: Exception = TypeMismatch,
     cache_size=0,
     subclass: bool = False,
     severity="env",

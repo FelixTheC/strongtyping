@@ -4,12 +4,12 @@
 @created: 03.06.21
 @author: felix
 """
-from typing import List, NotRequired, Required, TypedDict, Union, Unpack
+from typing import List, NotRequired, ReadOnly, Required, TypedDict, Union, Unpack
 
 import pytest
 
 from strongtyping.strong_typing import match_class_typing, match_typing
-from strongtyping.strong_typing_utils import TypeMisMatch, UndefinedKey, ValidationError
+from strongtyping.strong_typing_utils import TypeMismatch, UndefinedKey, ValidationError
 
 
 def test_typedict():
@@ -23,7 +23,7 @@ def test_typedict():
 
     assert SalesSummary({"sales": 10, "country": "Foo", "product_codes": ["1", "2", "3"]})
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         SalesSummary({"sales": "Foo", "country": 10, "product_codes": [1, 2, 3]})
 
 
@@ -38,7 +38,7 @@ def test_typedict_with_total():
 
     assert SalesSummary({"sales": 10, "product_codes": ["1", "2", "3"]})
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         SalesSummary({"sales": "Foo", "product_codes": [1, 2, 3]})
 
 
@@ -67,7 +67,7 @@ def test_typedict_with_validator():
     with pytest.raises(ValidationError):
         cluster({"sales": 10, "country": "123456789", "product_codes": "Hello World".split()})
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         cluster({"sales": "10", "country": "Europe", "product_codes": "Hello World".split()})
         cluster({"sales": 10, "country": "Europe", "product_codes": list(range(10))})
 
@@ -97,7 +97,7 @@ def test_typedict_with_validator_and_total():
     with pytest.raises(ValidationError):
         cluster({"country": "123456789", "product_codes": "Hello World".split()})
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         cluster({"sales": "10", "country": "Europe"})
         cluster({"product_codes": list(range(10))})
 
@@ -116,9 +116,9 @@ def test_use_typed_dict_total_true_class_as_function_parameter_to_validate():
 
     assert move_to({"x": 1.0, "y": 2.2})
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         move_to({"x": 1.0, "y": 2})
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         move_to({"y": 2.1})
 
 
@@ -159,10 +159,10 @@ def test_nested_typeddicts():
     assert make_move({"position": {"x": 1.0, "z": 0.25}, "velocity": 1.0})
     assert make_move({"position": {"x": 1.0, "y": 2.0, "z": 0.25}, "velocity": 1})
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         make_move({"position": {"x": 1.0, "y": 2.0, "z": "0.25"}, "velocity": 1.0})
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         make_move({"position": {"x": 1.0, "y": 2.0, "z": 0.25}})
 
 
@@ -272,10 +272,10 @@ def test_typeddict_with_required_and_not_required_and_sub_typeddict():
 
     assert Regisseur(name="Alfonso Cuarón", movie=Movie(title="Hallow"), year=2004)
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         Regisseur(name="Alfonso Cuarón", movie=Movie, year=2004)
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         Regisseur(name="Alfonso Cuarón", year=2004)
 
 
@@ -298,7 +298,7 @@ def test_unpacking():
     def foo(**kwargs: Unpack[Movie]) -> str:
         return f"{kwargs['year']}: {kwargs['name']}"
 
-    with pytest.raises(TypeMisMatch):
+    with pytest.raises(TypeMismatch):
         foo(name="foobar", date=2023)
 
     movie = Movie(name="Alfonso Cuarón", year=2004, regisseur=Regisseur(name="foobar"))
@@ -317,6 +317,17 @@ def test_undefined_keys_raise_error():
 
     with pytest.raises(UndefinedKey):
         User(id="Alfonso Cuarón", username="2004", description=None, age=10)
+
+    assert User({"id": "0123", "username": "test", "description": None})
+    assert User(id="0123", username="test")
+
+
+def test_readonly_is_ignored():
+    @match_class_typing
+    class User(TypedDict):
+        id: ReadOnly[str]
+        username: str
+        description: str | None
 
     assert User({"id": "0123", "username": "test", "description": None})
     assert User(id="0123", username="test")
