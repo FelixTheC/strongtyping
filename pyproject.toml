@@ -1,3 +1,29 @@
+[project]
+name = "strongtyping"
+version = "3.13.1"
+authors = [
+  { name="FelixTheC", email="fberndt87@gmail.com" },
+]
+description = "Decorator which checks whether the function is called with the correct type of parameters"
+readme = "README.md"
+requires-python = ">=3.13"
+classifiers=[
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.13",
+]
+license = {text = "MIT License"}
+
+[project.urls]
+Homepage = "https://github.com/FelixTheC/strongtyping"
+Repository = "https://github.com/FelixTheC/strongtyping"
+Documentation = "https://strongtyping.readthedocs.io/en/latest/"
+
+[project.packages]
+include = ["strongtyping-stubs"]
+
+[project.package_data]
+strongtyping-stubs = ["**/*.py", "**/*.pyi"]
+
 [tool.black]
 line-length = 100
 target-version = ['py39']
@@ -47,5 +73,5 @@ pytest-cov = "^4.0.0"
 codecov = "^2.1.12"
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["setuptools >= 61.0", "wheel"]
+build-backend = "setuptools.build_meta"
