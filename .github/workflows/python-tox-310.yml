@@ -4,9 +4,6 @@ on:
   push:
     branches:
       - 'py_3_10'
-      - 'py_3_11'
-      - 'py_3_12'
-      - 'py_3_13'
 
 jobs:
   build:
