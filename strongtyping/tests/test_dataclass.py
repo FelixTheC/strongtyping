@@ -2,6 +2,7 @@
 @created: 12.02.23
 @author: felix
 """
+
 from dataclasses import dataclass, field
 
 import pytest

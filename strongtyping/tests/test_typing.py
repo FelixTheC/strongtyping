@@ -1235,6 +1235,9 @@ def test_with_binary_union_operator():
         func_e([5, ("a", "b"), "10"], [1, "2", 3, datetime.date])
 
 
+@pytest.mark.skipif(
+    sys.version_info.minor < 13, reason="complex TypeVar available since 3.13"
+)
 def test_typevar():
 
     any_type = TypeVar("any_type")

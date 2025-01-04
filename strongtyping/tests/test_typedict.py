@@ -4,7 +4,8 @@
 @created: 03.06.21
 @author: felix
 """
-from typing import List, NotRequired, ReadOnly, Required, TypedDict, Union, Unpack
+import sys
+from typing import List, NotRequired, Required, TypedDict, Union, Unpack
 
 import pytest
 
@@ -322,7 +323,12 @@ def test_undefined_keys_raise_error():
     assert User(id="0123", username="test")
 
 
+@pytest.mark.skipif(
+    sys.version_info.minor < 13, reason="TypedDict ReadOnly option available since 3.13"
+)
 def test_readonly_is_ignored():
+    from typing import ReadOnly
+
     @match_class_typing
     class User(TypedDict):
         id: ReadOnly[str]
