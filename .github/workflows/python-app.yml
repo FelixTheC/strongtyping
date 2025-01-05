@@ -27,7 +27,7 @@ jobs:
         run: python -m black strongtyping --check
       - name: Test with pytest
         run: |
-          pytest strongtyping --cov=strongtyping
+          pytest tests --cov=strongtyping
       - name: Run coverage
         run: |
           codecov --token=${{ secrets.CODECOV_TOKEN }}
