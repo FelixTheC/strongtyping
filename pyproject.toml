@@ -18,11 +18,8 @@ Homepage = "https://github.com/FelixTheC/strongtyping"
 Repository = "https://github.com/FelixTheC/strongtyping"
 Documentation = "https://strongtyping.readthedocs.io/en/latest/"
 
-[project.packages]
-include = ["strongtyping-stubs"]
-
-[project.package_data]
-strongtyping-stubs = ["**/*.py", "**/*.pyi"]
+[tool.setuptools]
+packages = ["strongtyping", "strongtyping-stubs"]
 
 [tool.black]
 line-length = 100
