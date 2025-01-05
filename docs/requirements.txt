@@ -2,7 +2,7 @@ attrs==21.2.0
 certifi==2020.12.5
 chardet==4.0.0
 click==8.0.0
-codecov==2.1.11
+codecov>=2.1.13
 coverage==5.5
 future==0.18.2
 idna==2.10
