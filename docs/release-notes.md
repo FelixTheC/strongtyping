@@ -1,5 +1,31 @@
 # Release Notes
 
+## v3.13.1
+
+### Enhancements
+
+- Updated the CI workflow to use Python 3.13 and modernized the build process by replacing deprecated setup.py commands with build and twine.
+- Adjusted pyproject.toml to align with new packaging configurations.
+- Enabled Python 3.13 in GitHub Actions workflows and tests, adding related compatibility checks where necessary.
+- Upgraded actions/checkout and adjusted test markers for feature-specific availability in 3.13.
+- Replaced all occurrences of "TypeMisMatch" with the correct term "TypeMismatch" across documentation files, improving consistency and correctness in the error type mentioned throughout the project.
+
+### New Features
+
+- Added support for Python version 3.13 as reflected in the README updates. Now users are aware of the extended compatibility with newer Python versions.
+
+### Refactoring
+
+- Relocated all test files from strongtyping/tests to a root-level tests directory for better project organization and consistency. No code changes were made, ensuring functionality remains unaffected.
+
+## v3.12.1
+
+### Enhancement
+
+- feat: raise UndefinedKey exception on user decision by @FelixTheC in #130
+  - new exception type UndefinedKey
+  - new allowed parameter(throw_on_undefined) for match_class_typing which will be thrown if you try to init a TypeDict with an unspecified attribute/key
+
 ## v2.1.8
 - fix `isinstance` with `@match_class_typing` decorator
 

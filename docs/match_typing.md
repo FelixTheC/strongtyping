@@ -138,6 +138,7 @@ HelloHelloHelloHello
 The current version of `strongtyping` supports:
 
 - builtin types like: str, int, tuple etc
+- dataclass
 - from typing: 
     - List
     - Tuple
@@ -150,7 +151,9 @@ The current version of `strongtyping` supports:
     - Callable
     - Generator
     - Literal
+    - TypedDict
+    - TypeVar
 - from types:
     - FunctionType
     - MethodType
-- with string types representation like _[Ed: Not sure what this means Felix?]_
+

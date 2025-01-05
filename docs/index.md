@@ -76,8 +76,9 @@ func_e([5, ('a', 'b'), '10'], [1, '2', 3, datetime.date])
 ```
 
 ## Requirements
-<b>Python 3.7, 3.8, 3.9</b>
+<b>Python 3.13</b>
 
+## Optional requirements
 - ujson
 - pytest
  
