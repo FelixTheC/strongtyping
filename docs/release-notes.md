@@ -13,6 +13,7 @@
 ### New Features
 
 - Added support for Python version 3.13 as reflected in the README updates. Now users are aware of the extended compatibility with newer Python versions.
+- Added support for PEP 604 union syntax (X | Y) - Fixes compatibility issues with types.UnionType introduced in Python 3.10+.
 
 ### Refactoring
 

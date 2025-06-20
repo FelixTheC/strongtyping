@@ -6,6 +6,7 @@
 """
 import inspect
 import os
+import types
 import typing
 from collections import deque
 from collections.abc import Callable, Iterable
@@ -440,6 +441,11 @@ def check_type(argument, type_of, mro=False, **kwargs):
             return checking_typing_json(argument, type_of, mro)
 
         if origin is typing.Union:
+            return checking_typing_union(
+                argument, get_possible_types(type_of, origin_name), mro, **kwargs
+            )
+        elif isinstance(type_of, types.UnionType):
+            # Handle PEP 604 union syntax (e.g., int | str)
             return checking_typing_union(
                 argument, get_possible_types(type_of, origin_name), mro, **kwargs
             )

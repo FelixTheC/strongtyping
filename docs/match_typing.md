@@ -143,6 +143,7 @@ The current version of `strongtyping` supports:
     - List
     - Tuple
     - Union also nested ( Tuple[Union[str, int], Union[list, tuple]] )
+    - PEP 604 union syntax ( str | int | None )
     - Any
     - Dict
     - Set
