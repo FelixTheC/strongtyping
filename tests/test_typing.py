@@ -36,6 +36,7 @@ from strongtyping.config import SEVERITY_LEVEL
 from strongtyping.strong_typing import match_class_typing, match_typing
 from strongtyping.strong_typing_utils import (
     TypeMismatch,
+    check_type,
     checking_typing_dict,
     checking_typing_json,
     checking_typing_list,
@@ -1292,6 +1293,63 @@ def test_typevar():
         concatenate(1, 2)
     with pytest.raises(TypeMismatch):
         concatenate(list("hello"), "world".split())
+
+
+def test_pep604_union_syntax():
+    """Test PEP 604 union syntax (X | Y) support"""
+    # Test basic union types
+    assert check_type("hello", str | int) is True
+    assert check_type(42, str | int) is True
+    assert check_type(3.14, str | int) is False
+    
+    # Test with None (Optional-like)
+    assert check_type([], list[str] | None) is True
+    assert check_type(None, list[str] | None) is True
+    assert check_type("not a list", list[str] | None) is False
+    
+    # Test complex nested types
+    assert check_type([1, 2, 3], list[int] | dict[str, int]) is True
+    assert check_type({"a": 1}, list[int] | dict[str, int]) is True  
+    assert check_type("neither", list[int] | dict[str, int]) is False
+    
+    # Test three-way union
+    assert check_type("text", str | int | list) is True
+    assert check_type(123, str | int | list) is True
+    assert check_type([1, 2, 3], str | int | list) is True
+    assert check_type({"not": "allowed"}, str | int | list) is False
+
+
+def test_pep604_vs_traditional_union():
+    """Test that PEP 604 and traditional Union work the same way"""
+    from typing import Union
+    
+    # Both should behave identically
+    pep604_type = str | int
+    traditional_type = Union[str, int]
+    
+    test_values = ["hello", 42, 3.14, [], None]
+    
+    for value in test_values:
+        pep604_result = check_type(value, pep604_type)
+        traditional_result = check_type(value, traditional_type)
+        assert pep604_result == traditional_result, f"Mismatch for {value}: PEP604={pep604_result}, Traditional={traditional_result}"
+
+
+@match_typing
+def test_pep604_with_decorators():
+    """Test PEP 604 union syntax works with @match_typing decorator"""
+    @match_typing
+    def process_value(x: str | int | None) -> str:
+        if x is None:
+            return "none"
+        return str(x)
+    
+    assert process_value("hello") == "hello"
+    assert process_value(42) == "42" 
+    assert process_value(None) == "none"
+    
+    with pytest.raises(TypeMismatch):
+        process_value([1, 2, 3])
 
 
 if __name__ == "__main__":
