@@ -1,6 +1,6 @@
 [project]
 name = "strongtyping"
-version = "3.13.1"
+version = "3.13.2"
 authors = [
   { name="FelixTheC", email="fberndt87@gmail.com" },
 ]
@@ -50,7 +50,7 @@ target-version = "py312"
 
 [tool.poetry]
 name = "strongtyping"
-version = "3.12.1"
+version = "3.12.2"
 description = "Decorator which checks whether the function is called with the correct type of parameters"
 authors = ["FelixTheC <felixeisenmenger@gmx.net>"]
 license = "MIT"
