@@ -5,12 +5,15 @@
 @author: felix
 """
 import sys
+import uuid
 from typing import List, NotRequired, Required, TypedDict, Union, Unpack
 
 import pytest
 
+from strongtyping.helpers import validate_typed_dict
 from strongtyping.strong_typing import match_class_typing, match_typing
 from strongtyping.strong_typing_utils import TypeMismatch, UndefinedKey, ValidationError
+from strongtyping.types import Validator
 
 
 def test_typedict():
@@ -321,6 +324,50 @@ def test_undefined_keys_raise_error():
 
     assert User({"id": "0123", "username": "test", "description": None})
     assert User(id="0123", username="test")
+
+
+def test_validator_as_type():
+    def is_convertible_to_uuid(x: str) -> bool:
+        try:
+            uuid.UUID(x)
+        except ValueError:
+            return False
+        return True
+
+    @match_class_typing(throw_on_undefined=True)
+    class User(TypedDict):
+        id: Validator[str, lambda x: is_convertible_to_uuid(x)]
+        username: Validator[str, lambda x: 10 <= len(x) >= 15]
+        description: str | None
+
+    with pytest.raises(ValidationError):
+        User({"id": "0123", "username": "test", "description": None})
+
+    assert User(
+        {
+            "id": "63f24361-57cc-42b2-9310-06af5bd3eff4",
+            "username": "loremipsumdolor",
+            "description": None,
+        }
+    )
+
+    assert validate_typed_dict(
+        User,
+        {
+            "id": "63f24361-57cc-42b2-9310-06af5bd3eff4",
+            "username": "loremipsumdolor",
+            "description": None,
+        },
+    )
+
+    assert not validate_typed_dict(
+        User,
+        {
+            "id": "12345685",
+            "username": "loremipsumdolor",
+            "description": None,
+        },
+    )
 
 
 @pytest.mark.skipif(

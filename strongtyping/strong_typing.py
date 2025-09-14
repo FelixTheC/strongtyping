@@ -276,6 +276,8 @@ def match_class_typing(cls=None, **kwargs):
                     pass
 
     def wrapper(some_cls):
+        from typing import _TypedDictMeta
+
         def inner(*args, **cls_kwargs):
             __add_decorator(some_cls)
             if throw_on_undefined:
@@ -286,6 +288,16 @@ def match_class_typing(cls=None, **kwargs):
                         f"You can use the `TypedDict[{some_cls.__name__}]` "
                         f"only with the following attributes: `{', '.join(allowed_keys)}`"
                     )
+            try:
+                from typing_extensions import _TypedDictMeta as _TypedDictMetaExtension
+            except ImportError:
+                if isinstance(some_cls, _TypedDictMeta):
+                    MatchTypedDict(some_cls)(*args, **cls_kwargs)
+            else:
+                if isinstance(some_cls, _TypedDictMeta) or isinstance(
+                    some_cls, _TypedDictMetaExtension
+                ):
+                    MatchTypedDict(some_cls)(*args, **cls_kwargs)
             return some_cls(*args, **cls_kwargs)
 
         inner._matches_class = True
@@ -304,6 +316,7 @@ def match_class_typing(cls=None, **kwargs):
                 return MatchTypedDict(cls)
 
         __add_decorator(cls)
+
         cls._matches_class = True
         return cls
     else:

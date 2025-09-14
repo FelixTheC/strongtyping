@@ -420,6 +420,7 @@ def check_type(argument, type_of, mro=False, **kwargs):
         return argument
 
     check_result = True
+
     if type_of is not None:
         origin, origin_name = get_origins(type_of)
         origin_name = origin_name.lower()
@@ -536,6 +537,8 @@ def check_type(argument, type_of, mro=False, **kwargs):
             try:
                 is_instance = isinstance(argument, type_of) or argument == type_of
             except (TypeError, AttributeError):
+                if callable(type_of):
+                    return type_of(argument) is not None
                 return isinstance(argument, type_of._subs_tree()[1:])
             else:
                 if not is_instance:
