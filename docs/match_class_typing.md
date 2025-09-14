@@ -137,3 +137,67 @@ SalesSummary({"sales": 10, "product_codes": ["1", "2", "3"]})
 # will raise TypeMismatch
 SalesSummary({"sales": "Foo", "product_codes": [1, 2, 3]})
 ```
+- `match_class_typing` supports a special parameter when used with __TypedDict__: `throw_on_undefined`
+- this will raise an `UndefinedKey` exception when a key is not defined in the __TypedDict__
+```python
+from typing import List, TypedDict
+from strongtyping.strong_typing import match_class_typing
+from strongtyping.strong_typing_utils import UndefinedKey
+
+@match_class_typing(throw_on_undefined=True)
+class User(TypedDict):
+    id: str
+    username: str
+    description: str | None
+
+# works like expected
+User({"id": "0123", "username": "test", "description": None})
+
+# will throw `UndefinedKey`
+User({"id": "0123", "username": "test", "description": None, "age": 10})
+```
+#### make TypedDict a bit stricter
+- you can use the `match_class_typing` decorator with the `Validator` type to make the TypedDict a bit stricter
+```python
+import uuid
+from typing import List, TypedDict
+from strongtyping.strong_typing import match_class_typing
+from strongtyping.types import Validator
+
+def is_convertible_to_uuid(x: str) -> bool:
+    try:
+        uuid.UUID(x)
+    except ValueError:
+        return False
+    return True
+
+@match_class_typing
+class User(TypedDict):
+    id: Validator[str, lambda x: is_convertible_to_uuid(x)]
+    username: Validator[str, lambda x: 10 <= len(x) >= 15]
+    description: str | None
+
+# will throw `ValidationError`
+User({"id": "0123", "username": "loremipsum", "description": None})
+
+# is valid
+User({"id": "63f24361-57cc-42b2-9310-06af5bd3eff4", 
+      "username": "loremipsumdolor", 
+      "description": None})
+```
+- for an easier usage you can use the function `validate_typed_dict` from `strongtyping.helpers`
+```python
+from strongtyping.helpers import validate_typed_dict
+from strongtyping.types import Validator
+
+example_request_data = {
+            "id": "63f24361-57cc-42b2-9310-06af5bd3eff4",
+            "username": "loremipsumdolor",
+            "description": None,
+        }
+
+if validate_typed_dict(User, example_request_data):
+    # do something with the data
+else:
+    # handle the error
+```

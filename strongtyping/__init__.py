@@ -13,4 +13,5 @@ __all__ = [
     "cached_set",
     "cached_dict",
     "type_namedtuple",
+    "helpers",
 ]
