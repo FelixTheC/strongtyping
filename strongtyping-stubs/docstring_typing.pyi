@@ -2,7 +2,7 @@ import typing
 from _typeshed import Incomplete
 from strongtyping._utils import action as action, remove_subclass as remove_subclass
 from strongtyping.cached_set import CachedSet as CachedSet
-from strongtyping.strong_typing import TypeMismatch as TypeMisMatch
+from strongtyping.strong_typing import TypeMismatch as TypeMismatch
 
 TYPE_EXTRACTION_PATTERN: str
 PATTERN_1: str

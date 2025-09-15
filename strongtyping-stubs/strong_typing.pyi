@@ -2,7 +2,7 @@ from _typeshed import Incomplete
 from strongtyping._utils import action as action, remove_subclass as remove_subclass
 from strongtyping.cached_set import CachedSet as CachedSet
 from strongtyping.config import SEVERITY_LEVEL as SEVERITY_LEVEL
-from strongtyping.strong_typing_utils import TypeMismatch as TypeMisMatch, check_type as check_type, checking_typing_typedict_values as checking_typing_typedict_values, default_return_queue as default_return_queue
+from strongtyping.strong_typing_utils import TypeMismatch as TypeMismatch, check_type as check_type, checking_typing_typedict_values as checking_typing_typedict_values, default_return_queue as default_return_queue
 from typing import Type
 
 CACHE_IGNORE_CLASS_FUNCTIONS: Incomplete
