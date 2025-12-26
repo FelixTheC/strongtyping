@@ -133,7 +133,7 @@ HelloHelloHelloHello
 """
 ```
 
-### Limitations
+### Supported types
 
 The current version of `strongtyping` supports:
 
@@ -144,17 +144,49 @@ The current version of `strongtyping` supports:
     - Tuple
     - Union also nested ( Tuple[Union[str, int], Union[list, tuple]] )
     - PEP 604 union syntax ( str | int | None )
+    - Optional
     - Any
     - Dict
     - Set
     - Type
+    - Iterable
     - Iterator
     - Callable
     - Generator
     - Literal
-    - TypedDict
-    - TypeVar
+    - TypedDict (including `Required`, `NotRequired`, `ReadOnly`, `Unpack`)
+    - TypeVar (including bounds and constraints)
+    - NewType
+    - Annotated
+    - Python 3.12+ Generics syntax (`def func[T](...)`)
 - from types:
     - FunctionType
     - MethodType
+
+### Annotated for validation
+
+You can use `typing.Annotated` to add validation logic to your type hints. Any callable in the metadata will be executed with the parameter value.
+
+```python
+from typing import Annotated
+from strongtyping.strong_typing import match_typing
+
+def is_positive(value: int) -> bool:
+    return value > 0
+
+@match_typing
+def process(x: Annotated[int, is_positive]):
+    return f"Processed {x}"
+
+process(10)  # Works
+process(-5)  # Raises TypeMismatch
+```
+
+Multiple validators can be used:
+
+```python
+@match_typing
+def process(x: Annotated[int, lambda x: x > 0, lambda x: x % 2 == 0]):
+    ...
+```
 

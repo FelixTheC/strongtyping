@@ -97,7 +97,15 @@ set_severity_level(SEVERITY_LEVEL.DISABLED)
 
 - Or you can set the environment value `ST_SEVERITY` directly:
 ```python
-environ['ST_SEVERITY'] = 1  # enabled
-environ['ST_SEVERITY'] = 2  # warning
-environ['ST_SEVERITY'] = 0  # disabled
+import os
+os.environ['ST_SEVERITY'] = '1'  # enabled
+os.environ['ST_SEVERITY'] = '2'  # warning
+os.environ['ST_SEVERITY'] = '0'  # disabled
+```
+
+You can also use string values for `ST_SEVERITY`:
+```python
+os.environ['ST_SEVERITY'] = 'enable'
+os.environ['ST_SEVERITY'] = 'warning'
+os.environ['ST_SEVERITY'] = 'disable'
 ```
