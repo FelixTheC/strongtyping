@@ -50,7 +50,7 @@ target-version = "py312"
 
 [tool.poetry]
 name = "strongtyping"
-version = "3.12.2"
+version = "3.13.3"
 description = "Decorator which checks whether the function is called with the correct type of parameters"
 authors = ["FelixTheC <felixeisenmenger@gmx.net>"]
 license = "MIT"
@@ -62,12 +62,12 @@ exclude = ["strongtyping/tests"]
 
 [tool.poetry.dependencies]
 python = ">=3.10,<4.0"
-ujson = "^5.5.0"
+ujson = "5.6.0"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^7.2.0"
-pytest-cov = "^4.0.0"
-codecov = "^2.1.12"
+pytest = "8.4.2"
+pytest-cov = "6.3.0"
+codecov = "2.1.13"
 
 [build-system]
 requires = ["setuptools >= 61.0", "wheel"]
