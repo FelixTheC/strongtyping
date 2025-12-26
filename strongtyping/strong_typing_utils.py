@@ -14,8 +14,6 @@ from functools import lru_cache, partial
 from queue import Queue
 from typing import Any, TypeVar, _AnyMeta, _GenericAlias, _SpecialForm, _type_repr  # type: ignore
 
-from attr.validators import is_callable
-
 from strongtyping._utils import ORIGINAL_DUCK_TYPES, install_st_m
 
 install_st_m()
