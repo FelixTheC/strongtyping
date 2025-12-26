@@ -12,6 +12,7 @@ from datetime import datetime
 from enum import Enum, IntEnum
 from types import FunctionType, MethodType
 from typing import (
+    Annotated,
     Any,
     Callable,
     Dict,
@@ -1322,7 +1323,7 @@ def test_pep604_union_syntax():
 def test_pep604_vs_traditional_union():
     """Test that PEP 604 and traditional Union work the same way"""
     from typing import Union
-    
+
     # Both should behave identically
     pep604_type = str | int
     traditional_type = Union[str, int]
@@ -1335,7 +1336,6 @@ def test_pep604_vs_traditional_union():
         assert pep604_result == traditional_result, f"Mismatch for {value}: PEP604={pep604_result}, Traditional={traditional_result}"
 
 
-@match_typing
 def test_pep604_with_decorators():
     """Test PEP 604 union syntax works with @match_typing decorator"""
     @match_typing
@@ -1350,6 +1350,42 @@ def test_pep604_with_decorators():
     
     with pytest.raises(TypeMismatch):
         process_value([1, 2, 3])
+
+def test_annotated_function():
+    """Test that annotated functions work correctly with @match_typing"""
+    @match_typing
+    def annotated_func(x: Annotated[int, lambda x: x > 0]) -> str:
+        return f"Processed: {x}"
+
+    assert annotated_func(10) == "Processed: 10"
+
+    with pytest.raises(TypeMismatch):
+        annotated_func(-10)
+
+def test_annotated_function_with_string_info():
+    """Test that annotated functions work correctly with @match_typing"""
+    @match_typing
+    def annotated_func(x: Annotated[int, "Should be greater than zero and even"]) -> str:
+        return f"Processed: {x}"
+
+    assert annotated_func(10) == "Processed: 10"
+
+    # text metadata information is not supported
+    assert annotated_func(5) == "Processed: 5"
+
+def is_even(value: int) -> bool:
+    return value % 2 == 0
+
+def test_annotated_function_with_multiple_checks():
+    """Test that annotated functions work correctly with @match_typing"""
+    @match_typing
+    def annotated_func(x: Annotated[int, lambda x: x > 0, is_even, "lorem ipsum dolor"]) -> str:
+        return f"Processed: {x}"
+
+    assert annotated_func(20) == "Processed: 20"
+
+    with pytest.raises(TypeMismatch):
+        annotated_func(3)
 
 
 if __name__ == "__main__":
