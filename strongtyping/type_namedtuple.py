@@ -22,7 +22,7 @@ def typed_namedtuple(
     rename: bool = False,
     defaults: Union[list, tuple] = None,
     module: str = None,
-):
+) -> type:
     # I could have just copied everything from namedtuple, but then I would have no learning effect
     """
     :param typename: the name of the new class same as in the original namedtuple

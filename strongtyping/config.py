@@ -14,9 +14,9 @@ class SEVERITY_LEVEL(Enum):
     WARNING = 2
 
     @property
-    def value_as_str(self):
+    def value_as_str(self) -> str:
         return str(self.value)
 
 
-def set_severity_level(_level: SEVERITY_LEVEL):
+def set_severity_level(_level: SEVERITY_LEVEL) -> None:
     environ["ST_SEVERITY"] = _level.value_as_str

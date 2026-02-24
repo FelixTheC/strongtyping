@@ -12,22 +12,17 @@ from collections import deque
 from collections.abc import Callable, Iterable
 from functools import lru_cache, partial
 from queue import Queue
-from typing import Any, TypeVar, _AnyMeta, _GenericAlias, _SpecialForm, _type_repr  # type: ignore
+from typing import (  # type: ignore
+    Any,
+    T,
+    TypeVar,
+    _AnyMeta,
+    _GenericAlias,
+    _SpecialForm,
+    _type_repr,
+)
 
-from strongtyping._utils import ORIGINAL_DUCK_TYPES, install_st_m
-
-install_st_m()
-
-try:
-    from strongtyping_modules.strongtyping_modules import dict_elements  # type: ignore
-    from strongtyping_modules.strongtyping_modules import list_elements  # type: ignore
-    from strongtyping_modules.strongtyping_modules import set_elements  # type: ignore
-    from strongtyping_modules.strongtyping_modules import tuple_elements  # type: ignore
-except ImportError:
-    extension_module: bool = False
-else:
-    extension_module = bool(int(os.environ["ST_MODULES_INSTALLED"]))
-
+from strongtyping._utils import ORIGINAL_DUCK_TYPES
 
 empty = object()
 default_return_queue = Queue()
@@ -55,7 +50,9 @@ typing_base_class = typing._GenericAlias  # type: ignore
 
 
 @lru_cache(maxsize=1024)
-def get_possible_types(typ_to_check, origin_name: str = "") -> typing.Union[tuple, None]:
+def get_possible_types(
+    typ_to_check: typing.Union[tuple, object, None], origin_name: str = ""
+) -> tuple[object | TypeVar, ...] | None:
     """
     :param typ_to_check: some typing like List[str], Dict[str, int], Tuple[Union[str, int], List[int]]
     :param origin_name: the name of the origin
@@ -68,19 +65,14 @@ def get_possible_types(typ_to_check, origin_name: str = "") -> typing.Union[tupl
         # we can ensure now that we use a python version which has typing.TypedDict
         return typ_to_check
 
-    if extension_module:
-        if not hasattr(typ_to_check, "__args__"):
-            try:
-                return typ_to_check.__origin__
-            except AttributeError:
-                return None
     if hasattr(typ_to_check, "__args__") and typ_to_check.__args__ is not None:
         return tuple(typ for typ in typ_to_check.__args__ if not isinstance(typ, TypeVar))
     else:
         return None
 
 
-def get_origins(typ_to_check: Any) -> tuple:
+@lru_cache(maxsize=1024)
+def get_origins(typ_to_check: object | type) -> tuple[object, str]:
     from strongtyping.strong_typing import MatchTypedDict
 
     """
@@ -127,7 +119,9 @@ def get_origins(typ_to_check: Any) -> tuple:
     return origin, origin_name
 
 
-def checking_typing_dict(arg: Any, possible_types: tuple, *args):
+def checking_typing_dict(
+    arg: T, possible_types: tuple[object | TypeVar, ...] | None, *args: Any, **kwargs: Any
+) -> bool:
     if not isinstance(arg, dict):
         return False
     if isinstance(arg, dict) and not possible_types:
@@ -148,7 +142,9 @@ def checking_typing_dict(arg: Any, possible_types: tuple, *args):
         return result_key and result_val
 
 
-def checking_typing_set(arg: Any, possible_types: tuple, *args, **kwargs):
+def checking_typing_set(
+    arg: T, possible_types: tuple[object | TypeVar, ...] | None, *args: Any, **kwargs: Any
+) -> bool:
     if not possible_types:
         return isinstance(arg, set)
     possible_type = possible_types[0]
@@ -157,7 +153,9 @@ def checking_typing_set(arg: Any, possible_types: tuple, *args, **kwargs):
     )
 
 
-def checking_typing_type(arg: Any, possible_types: tuple, *args, **kwargs):
+def checking_typing_type(
+    arg: T, possible_types: tuple[object | TypeVar, ...] | None, *args: Any, **kwargs: Any
+) -> bool:
     try:
         arguments = arg.__mro__
     except AttributeError:
@@ -171,7 +169,9 @@ def checking_typing_type(arg: Any, possible_types: tuple, *args, **kwargs):
         )
 
 
-def checking_typing_union(arg: Any, possible_types: tuple, mro, **kwargs):
+def checking_typing_union(
+    arg: T, possible_types: tuple[object | TypeVar, ...] | None, mro: bool, **kwargs: dict[T, T]
+) -> bool:
     if mro:
         return any(pssble_type in arg for pssble_type in possible_types)
     try:
@@ -185,22 +185,28 @@ def checking_typing_union(arg: Any, possible_types: tuple, mro, **kwargs):
             return validate_object(arg, kwargs.get("validation_with"))
 
 
-def checking_typing_optional(arg: Any, possible_types: tuple, mro, **kwargs):
+def checking_typing_optional(
+    arg: T, possible_types: tuple[object | TypeVar, ...] | None, mro: bool, **kwargs: dict[T, T]
+) -> bool:
     return arg is None or check_type(arg, possible_types[0])
 
 
-def checking_typing_iterator(arg: Any, *args, **kwargs):
+def checking_typing_iterator(arg: object, *args: Any, **kwargs: Any) -> bool:
     return hasattr(arg, "__iter__") and hasattr(arg, "__next__")
 
 
-def checking_typing_callable(arg: Any, possible_types: tuple, *args, **kwargs):
+def checking_typing_callable(
+    arg: T, possible_types: tuple[object | TypeVar, ...] | None, *args: Any, **kwargs: Any
+) -> bool:
     insp = inspect.signature(arg)
     return_val = insp.return_annotation == possible_types[-1]
     params = insp.parameters
     return return_val and all(p.annotation == pt for p, pt in zip(params.values(), possible_types))
 
 
-def checking_typing_tuple(arg: Any, possible_types: tuple, *args, **kwargs):
+def checking_typing_tuple(
+    arg: T, possible_types: tuple[object | TypeVar, ...] | None, *args: Any, **kwargs: Any
+) -> bool:
     if not possible_types:
         return isinstance(arg, tuple)
     if Ellipsis in possible_types and isinstance(arg, tuple):
@@ -212,22 +218,22 @@ def checking_typing_tuple(arg: Any, possible_types: tuple, *args, **kwargs):
     return all(check_type(argument, typ, **kwargs) for argument, typ in zip(arg, possible_types))
 
 
-def checking_typing_list(arg: Any, possible_types: tuple, *args, **kwargs):
+def checking_typing_list(
+    arg: T, possible_types: tuple[object | TypeVar, ...] | None, *args: Any, **kwargs: Any
+) -> bool:
     if not isinstance(arg, list):
         return False
     if isinstance(arg, list) and not possible_types:
         return True
-    possible_type = possible_types[0]
-    return all(check_type(argument, possible_type, **kwargs) for argument in arg)
+    return all(check_type(argument, possible_types[0], **kwargs) for argument in arg)
 
 
-def checking_ellipsis(arg, possible_types, *args, **kwargs):
+def checking_ellipsis(arg, possible_types, *args: Any, **kwargs: Any) -> bool:
     possible_types = [pt for pt in possible_types if pt is not Ellipsis]
-    possible_type = possible_types[0]
-    return all(check_type(argument, possible_type, **kwargs) for argument in arg)
+    return all(check_type(argument, possible_types[0], **kwargs) for argument in arg)
 
 
-def checking_typing_json(arg, possible_types, *args, **kwargs):
+def checking_typing_json(arg, possible_types, *args: Any, **kwargs: Any) -> bool:
     try:
         possible_types.dumps(arg)
     except TypeError:
@@ -236,15 +242,19 @@ def checking_typing_json(arg, possible_types, *args, **kwargs):
         return True
 
 
-def checking_typing_generator(arg, possible_types, *args, **kwargs):
+def checking_typing_generator(
+    arg: T, possible_types: tuple[object | TypeVar, ...] | None, *args: Any, **kwargs: Any
+) -> bool:
     return hasattr(arg, "send") and hasattr(arg, "throw") and hasattr(arg, "__next__")
 
 
-def checking_typing_literal(arg, possible_types, *args, **kwargs):
+def checking_typing_literal(arg, possible_types, *args: Any, **kwargs: Any) -> bool:
     return arg in possible_types
 
 
-def checking_typing_validator(arg, possible_types, *args, **kwargs):
+def checking_typing_validator(
+    arg: T, possible_types: tuple[object | TypeVar, ...] | None, *args: Any, **kwargs: Any
+) -> bool | None:
     if len(possible_types) == 2:
         default_return = empty
         required_type, validation = possible_types
@@ -270,12 +280,16 @@ def checking_typing_validator(arg, possible_types, *args, **kwargs):
         return check_type(arg, required_type, **kwargs)
 
 
-def checking_typing_itervalidator(arg, possible_types, *args, **kwargs):
+def checking_typing_itervalidator(
+    arg: T, possible_types: tuple[object | TypeVar, ...] | None, *args: Any, **kwargs: Any
+) -> bool:
     required_type, validation = possible_types
     return check_type(arg, required_type, validation_with=validation, **kwargs)
 
 
-def checking_typing_iterable(arg: Any, possible_types: tuple, *args, **kwargs):
+def checking_typing_iterable(
+    arg: T, possible_types: tuple[object | TypeVar, ...] | None, *args: Any, **kwargs: Any
+) -> bool:
     if not hasattr(arg, "__iter__"):
         return False
     pssble_type = possible_types[0]
@@ -289,27 +303,37 @@ def checking_typing_typedict_values(args: dict, required_types: dict, total: boo
     return all(check_type(args[key], val) for key, val in fields_to_check.items())
 
 
-def checking_typing_class(arg: Any, possible_types: tuple, *args, **kwargs):
+def checking_typing_class(
+    arg: T, possible_types: tuple[object | TypeVar, ...] | None, *args: Any, **kwargs: Any
+) -> bool:
     return isinstance(arg, possible_types)
 
 
-def checking_typing_typeddict(arg: Any, possible_types: Any, *args, **kwargs):
+def checking_typing_typeddict(
+    arg: T, possible_types: tuple[object | TypeVar, ...] | None, *args: Any, **kwargs: Any
+) -> bool:
     total = possible_types.__total__
     required_fields = possible_types.__annotations__
     return checking_typing_typedict_values(arg, required_fields, total)
 
 
-def checking_typing_typeddict_required(arg: Any, possible_types: Any, *args, **kwargs):
+def checking_typing_typeddict_required(
+    arg: T, possible_types: tuple[object | TypeVar, ...] | None, *args: Any, **kwargs: Any
+) -> bool:
     return check_type(arg, possible_types[0])
 
 
-def checking_typing_typeddict_notrequired(arg: Any, possible_types: Any, *args, **kwargs):
+def checking_typing_typeddict_notrequired(
+    arg: T, possible_types: tuple[object | TypeVar, ...] | None, *args: Any, **kwargs: Any
+) -> bool:
     if arg is None:
         return True
     return check_type(arg, possible_types[0])
 
 
-def checking_typing_unpack(arg: Any, possible_types: tuple, *args, **kwargs):
+def checking_typing_unpack(
+    arg: T, possible_types: tuple[object | TypeVar, ...] | None, *args: Any, **kwargs: Any
+) -> bool:
     if isinstance(possible_types[0], typing._TypedDictMeta) and isinstance(arg, dict):
         typed_dict_obj: typing.TypedDict = possible_types[0]
         return all(
@@ -319,71 +343,13 @@ def checking_typing_unpack(arg: Any, possible_types: tuple, *args, **kwargs):
     return False
 
 
-def module_checking_typing_list(arg: Any, possible_types: Any):
-    if (
-        not hasattr(possible_types, "__args__")
-        or not possible_types.__args__
-        or all(isinstance(pt, TypeVar) for pt in possible_types.__args__)
-    ):
-        return isinstance(arg, list)
-    return bool(list_elements(arg, possible_types))
-
-
-def module_checking_typing_dict(arg: Any, possible_types: Any):
-    if (
-        not hasattr(possible_types, "__args__")
-        or not possible_types.__args__
-        or all(isinstance(pt, TypeVar) for pt in possible_types.__args__)
-    ):
-        return isinstance(arg, dict)
-    return bool(dict_elements(arg, possible_types))
-
-
-def module_checking_typing_set(arg: Any, possible_types: Any):
-    if (
-        not hasattr(possible_types, "__args__")
-        or isinstance(possible_types.__args__[0], TypeVar)
-        or all(isinstance(pt, TypeVar) for pt in possible_types.__args__)
-    ):
-        return isinstance(arg, set)
-    return bool(set_elements(arg, possible_types))
-
-
-def module_checking_typing_tuple(arg: Any, possible_types: Any):
-    if (
-        not hasattr(possible_types, "__args__")
-        or not possible_types.__args__
-        or all(isinstance(pt, TypeVar) for pt in possible_types.__args__)
-    ):
-        return isinstance(arg, tuple)
-    return bool(tuple_elements(arg, possible_types))
-
-
-def module_checking_typing_validator(arg, possible_types, *args, **kwargs):
-    try:
-        required_type, validation = possible_types.__args__
-    except ValueError:
-        required_type, validation, _ = possible_types.__args__
-    if validation(arg) is False:
-        if isinstance(validation, partial):
-            validation = validation.func
-        validation_function_file = inspect.getfile(validation)
-        validation_body, validation_line = inspect.getsourcelines(validation)
-        raise ValidationError(
-            f"Argument: `{arg}` did not pass the validation defined here "
-            f'\n\tFile: "{validation_function_file}", line {validation_line}'
-            f"\n\tName: {validation.__name__}"
-        )
-    return check_type(arg, required_type, **kwargs)
-
-
-def validate_object(value, validation_func=None):
+def validate_object(value: T, validation_func: Callable[[T], bool] | None = None) -> bool:
     if validation_func:
         return validation_func(value)
     return True
 
 
-def check_duck_typing(arg, possible_types, *args, **kwargs):
+def check_duck_typing(arg: T, possible_types: T, *args: Any, **kwargs: Any) -> bool:
     if isinstance(arg, possible_types):
         return True
 
@@ -399,7 +365,7 @@ def check_duck_typing(arg, possible_types, *args, **kwargs):
     return arg_mros.issuperset(required_mros)
 
 
-def check_typevar(arg, possible_types, *args, **kwargs):
+def check_typevar(arg: T, possible_types: Any, *args: Any, **kwargs: Any) -> bool:
     if possible_types.__bound__:
         return check_type(arg, possible_types.__bound__)
     elif possible_types.__constraints__:
@@ -410,7 +376,7 @@ def check_typevar(arg, possible_types, *args, **kwargs):
 supported_typings = vars()
 
 
-def check_annotated_type(argument, type_of) -> bool:
+def check_annotated_type(argument: T, type_of: T) -> bool:
     result = True  # when no callable is assigned to __metadata__ we return True
     for func_obj in type_of.__metadata__:
         if callable(func_obj):
@@ -419,8 +385,8 @@ def check_annotated_type(argument, type_of) -> bool:
     return result
 
 
-def check_type(argument, type_of, mro=False, **kwargs):
-    from strongtyping.types import IterValidator, Validator
+def check_type(argument: T, type_of: T, mro: bool = False, **kwargs: dict[T, T]) -> bool:
+    from strongtyping.st_types import IterValidator, Validator
 
     # if int(py_version) >= 10 and isinstance(type_of, (str, bytes)):
     #     type_of = eval(type_of, locals(), globals())
@@ -460,8 +426,6 @@ def check_type(argument, type_of, mro=False, **kwargs):
                 argument, get_possible_types(type_of, origin_name), mro, **kwargs
             )
         elif origin in (list, typing.MutableSequence, typing.Deque, deque):
-            if extension_module:
-                return module_checking_typing_list(argument, type_of)
             return checking_typing_list(
                 argument, get_possible_types(type_of, origin_name), mro, **kwargs
             )
@@ -470,14 +434,10 @@ def check_type(argument, type_of, mro=False, **kwargs):
                 argument, get_possible_types(type_of, origin_name), mro, **kwargs
             )
         elif origin is set:
-            if extension_module:
-                return module_checking_typing_set(argument, type_of)
             return checking_typing_set(
                 argument, get_possible_types(type_of, origin_name), mro, **kwargs
             )
         elif origin is tuple:
-            if extension_module:
-                return module_checking_typing_tuple(argument, type_of)
             return checking_typing_tuple(
                 argument, get_possible_types(type_of, origin_name), mro, **kwargs
             )
@@ -493,8 +453,6 @@ def check_type(argument, type_of, mro=False, **kwargs):
             from strongtyping.strong_typing import MatchTypedDict
 
             possible_type = get_possible_types(type_of, origin_name)
-            if extension_module and not isinstance(possible_type[0], MatchTypedDict):
-                return module_checking_typing_dict(argument, type_of)
             return checking_typing_dict(argument, possible_type, mro, **kwargs)
         elif origin in (typing.Callable, Callable):
             return checking_typing_callable(
@@ -505,8 +463,6 @@ def check_type(argument, type_of, mro=False, **kwargs):
                 argument, get_possible_types(type_of, origin_name), mro, **kwargs
             )
         elif origin is Validator:
-            if extension_module:
-                return module_checking_typing_validator(argument, type_of)
             return checking_typing_validator(
                 argument, get_possible_types(type_of, origin_name), mro, **kwargs
             )

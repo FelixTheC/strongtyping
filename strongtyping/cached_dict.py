@@ -13,14 +13,14 @@ class CachedDict(dict):
     Warning only use for caching when Memory limit is reached all items will be cleared
     """
 
-    def __init__(self, memory_limit: Union[int, float] = 1, *args, **kwargs):
+    def __init__(self, memory_limit: Union[int, float] = 1, *args: Any, **kwargs: Any) -> None:
         """
         :param memory_limit: in MB
         """
         self.memory_limit = memory_limit * 1000000
         super().__init__(*args, **kwargs)
 
-    def __setitem__(self, key: Any, value: Any):
+    def __setitem__(self, key: Any, value: Any) -> None:
         if sys.getsizeof(self) > self.memory_limit:
             self.clear()
         super().__setitem__(key, value)

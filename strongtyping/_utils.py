@@ -7,7 +7,7 @@
 import logging
 import os
 from types import MethodType
-from typing import Type, Union
+from typing import Any, Callable, T, Type, Union
 
 from strongtyping.config import SEVERITY_LEVEL
 
@@ -20,7 +20,7 @@ ORIGINAL_DUCK_TYPES = {
 }
 
 
-def remove_subclass(args, subclass):
+def remove_subclass(args: Any, subclass: T) -> T:
     if len(args) == 1:
         return args
     cls = args[0] if subclass else None
@@ -36,7 +36,7 @@ SEVERITY_CONFIG = {
 }
 
 
-def _severity_level(severity_: Union[str, SEVERITY_LEVEL]):
+def _severity_level(severity_: Union[str, SEVERITY_LEVEL]) -> SEVERITY_LEVEL | int:
     if severity_ == "env":
         _level = os.environ.get("ST_SEVERITY", "1")
         try:
@@ -51,8 +51,12 @@ exclude_builtins = dir(object)
 
 
 def _get_new(
-    typing_func, excep_raise: Type[Exception] = TypeError, cache_size=0, severity="env", **kwargs
-):
+    typing_func: Callable[[T], T],
+    excep_raise: Type[Exception] = TypeError,
+    cache_size: int = 0,
+    severity: str = "env",
+    **kwargs: Any,
+) -> Callable[[Type[T]], Type[T]]:
     def new_with_match_typing(cls_, *args, **kwargs):
         def add_match_typing(obj: object, attr: str) -> bool:
             if (
@@ -88,7 +92,7 @@ def _get_new(
     return new_with_match_typing
 
 
-def install_st_m():
+def install_st_m() -> None:
     import os
 
     try:
@@ -102,7 +106,7 @@ def install_st_m():
             os.environ["ST_MODULES_INSTALLED"] = "1"
 
 
-def action(f, frefs, type_function):  # type: ignore
+def action(f: Any, frefs: Any, type_function: Any) -> Any:
     """
     This code is original from Ruud van der Ham https://github.com/salabim/easy_property
     """
