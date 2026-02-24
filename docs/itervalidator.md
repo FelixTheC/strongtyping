@@ -23,7 +23,7 @@ import decimal
 import fractions
 
 from strongtyping.strong_typing import match_typing
-from strongtyping.types import IterValidator, Validator
+from strongtyping.st_types import IterValidator, Validator
 
 number = typing.Union[str, int, float, fractions.Fraction, decimal.Decimal]
 

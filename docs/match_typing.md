@@ -133,6 +133,23 @@ HelloHelloHelloHello
 """
 ```
 
+### check if the correct value is returned when ever you need it
+- with `validate_return` = True you can check if the correct value is returned when ever you need it.
+- mostly when you want to use TypeDicts or any other complex type hint.
+```python
+from strongtyping.strong_typing import match_typing
+
+@match_typing(validate_return=True)
+def multipler(a: int, b: int) -> int:
+    return str(a * b)
+
+print(multipler(4, 4))
+
+"""
+Incorrect return value: `'16'`
+"""
+```
+
 ### Supported types
 
 The current version of `strongtyping` supports:

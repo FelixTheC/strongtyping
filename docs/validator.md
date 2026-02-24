@@ -77,11 +77,13 @@ assert foo(((1, 2), (3, 4)))  # TypeMismatch
 
 ## TypedDict
 - Works also with the `Validator` type
+
 ```python
 from typing import List, TypedDict
 
 from strongtyping.strong_typing import match_class_typing, match_typing
-from strongtyping.types import Validator
+from strongtyping.st_types import Validator
+
 
 @match_class_typing
 class MyDict(TypedDict, total=False):
@@ -89,14 +91,18 @@ class MyDict(TypedDict, total=False):
     country: str
     product_codes: List[str]
 
+
 def allow_only_valid_country_names(value: MyDict):
     return not value.get("country", "").isnumeric()
 
+
 AllowedDicts = Validator[MyDict, allow_only_valid_country_names]
+
 
 @match_typing
 def cluster(val: AllowedDicts):
     return True
+
 
 # works like expected
 cluster({"sales": 10, "country": "Europe", "product_codes": "Hello World".split()})

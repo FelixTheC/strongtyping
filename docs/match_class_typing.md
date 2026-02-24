@@ -158,11 +158,13 @@ User({"id": "0123", "username": "test", "description": None, "age": 10})
 ```
 #### make TypedDict a bit stricter
 - you can use the `match_class_typing` decorator with the `Validator` type to make the TypedDict a bit stricter
+
 ```python
 import uuid
 from typing import List, TypedDict
 from strongtyping.strong_typing import match_class_typing
-from strongtyping.types import Validator
+from strongtyping.st_types import Validator
+
 
 def is_convertible_to_uuid(x: str) -> bool:
     try:
@@ -171,33 +173,36 @@ def is_convertible_to_uuid(x: str) -> bool:
         return False
     return True
 
+
 @match_class_typing
 class User(TypedDict):
     id: Validator[str, lambda x: is_convertible_to_uuid(x)]
     username: Validator[str, lambda x: 10 <= len(x) >= 15]
     description: str | None
 
+
 # will throw `ValidationError`
 User({"id": "0123", "username": "loremipsum", "description": None})
 
 # is valid
-User({"id": "63f24361-57cc-42b2-9310-06af5bd3eff4", 
-      "username": "loremipsumdolor", 
+User({"id": "63f24361-57cc-42b2-9310-06af5bd3eff4",
+      "username": "loremipsumdolor",
       "description": None})
 ```
 - for an easier usage you can use the function `validate_typed_dict` from `strongtyping.helpers`
+
 ```python
 from strongtyping.helpers import validate_typed_dict
-from strongtyping.types import Validator
+from strongtyping.st_types import Validator
 
 example_request_data = {
-            "id": "63f24361-57cc-42b2-9310-06af5bd3eff4",
-            "username": "loremipsumdolor",
-            "description": None,
-        }
+    "id": "63f24361-57cc-42b2-9310-06af5bd3eff4",
+    "username": "loremipsumdolor",
+    "description": None,
+}
 
 if validate_typed_dict(User, example_request_data):
-    # do something with the data
+# do something with the data
 else:
-    # handle the error
+# handle the error
 ```
