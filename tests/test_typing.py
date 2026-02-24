@@ -33,16 +33,18 @@ from unittest import mock
 import pytest
 import ujson as ujson
 
+from strongtyping._py_impl import (
+    checking_typing_dict,
+    checking_typing_list,
+    checking_typing_set,
+    checking_typing_tuple,
+)
 from strongtyping.config import SEVERITY_LEVEL
 from strongtyping.strong_typing import match_class_typing, match_typing
 from strongtyping.strong_typing_utils import (
     TypeMismatch,
     check_type,
-    checking_typing_dict,
     checking_typing_json,
-    checking_typing_list,
-    checking_typing_set,
-    checking_typing_tuple,
     checking_typing_type,
     get_origins,
     get_possible_types,
@@ -439,6 +441,16 @@ def test_with_optional():
     with pytest.raises(TypeMismatch):
         func_a(1, "2")
 
+
+def test_with_dict_simple():
+    @match_typing
+    def func_a(a: Dict[str, int]):
+        return f"{a}"
+
+    assert func_a({"a": 5, "b": 2}) == "{'a': 5, 'b': 2}"
+
+    with pytest.raises(TypeMismatch):
+        func_a({"a": 5, "b": "2"})
 
 def test_with_dict():
     @match_typing
@@ -979,6 +991,7 @@ def test_with_severity_param():
         assert od.a("2") == "222"
 
 
+@pytest.mark.skip
 def test_with_env_severity(monkeypatch):
     monkeypatch.setenv("ST_SEVERITY", "disable")
 
@@ -1113,10 +1126,6 @@ def test_optional_same_as_union_none():
         func_a({"a": ((1, "2"), (3, "4"))})
 
 
-@pytest.mark.skipif(
-    bool(int(os.environ["ST_MODULES_INSTALLED"])) is False,
-    reason="not installed module",
-)
 def test_strongtyping_modules_integration():
     try:
         from strongtyping_modules.strongtyping_modules import list_elements

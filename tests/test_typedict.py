@@ -153,7 +153,7 @@ def test_nested_typeddicts():
 
     class Move(TypedDict):
         position: Vector
-        velocity: Union[float, int]
+        velocity: Required[Union[float, int]]
 
     @match_typing
     def make_move(move: Move):

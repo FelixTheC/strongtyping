@@ -21,6 +21,10 @@ Documentation = "https://strongtyping.readthedocs.io/en/latest/"
 [tool.setuptools]
 packages = ["strongtyping", "strongtyping-stubs"]
 
+[[tool.setuptools.ext-modules]]
+name = "strongtyping._c_impl"
+sources = ["strongtyping/_c_impl.pyx"]
+
 [tool.black]
 line-length = 100
 target-version = ['py39']
@@ -68,7 +72,11 @@ ujson = "5.6.0"
 pytest = "8.4.2"
 pytest-cov = "6.3.0"
 codecov = "2.1.13"
+cython = "3.2.4"
 
 [build-system]
-requires = ["setuptools >= 61.0", "wheel"]
+requires = ["setuptools>=61.0", "Cython>=3.0"]
 build-backend = "setuptools.build_meta"
+
+[tool.cython-compiler]
+directive = {annotate = true, language_level = "3str"}

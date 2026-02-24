@@ -1,5 +1,6 @@
 ujson>=3.0.0
-pytest==8.4.2
-pytest-cov>=2.10.0
+pytest==9.0.2
+pytest-cov>=6.3.0
+pytest-benchmark>=5.2.3
 codecov
 typing-extensions>=4.4.0
