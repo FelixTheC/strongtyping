@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import pytest
 
-from strongtyping.types import FrozenType
+from strongtyping.st_types import FrozenType
 
 
 def test_create_class_with_final_types():

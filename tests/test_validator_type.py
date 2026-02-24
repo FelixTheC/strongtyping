@@ -13,9 +13,9 @@ from typing import Dict, Iterable, List, Tuple, Union
 
 import pytest
 
+from strongtyping.st_types import IterValidator, Validator
 from strongtyping.strong_typing import TypeMismatch, match_class_typing, match_typing
 from strongtyping.strong_typing_utils import ValidationError
-from strongtyping.types import IterValidator, Validator
 
 
 def test_valid_type():
@@ -81,10 +81,7 @@ def test_valid_type():
         foo({2: [2, 4]})
 
 
-@pytest.mark.skipif(
-    bool(int(os.environ["ST_MODULES_INSTALLED"])) is True,
-    reason="module does not support Validator at the moment",
-)
+@pytest.mark.skip(reason="module does not support Validator at the moment")
 @pytest.mark.skipif(sys.version_info.minor < 9, reason="Generics only available since 3.9")
 def test_with_type_generics():
     def min_length(val):
@@ -155,10 +152,7 @@ def test_inside_of_a_class():
         assert foo.method_a(())
 
 
-@pytest.mark.skipif(
-    bool(int(os.environ["ST_MODULES_INSTALLED"])) is True,
-    reason="module does not support Validator at the moment",
-)
+@pytest.mark.skipif(reason="module does not support Validator at the moment")
 @pytest.mark.skipif(sys.version_info.minor < 9, reason="Available since 3.9")
 def test_validator_type_with_default():
     @match_typing

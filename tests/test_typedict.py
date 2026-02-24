@@ -11,9 +11,9 @@ from typing import List, NotRequired, Required, TypedDict, Union, Unpack
 import pytest
 
 from strongtyping.helpers import validate_typed_dict
+from strongtyping.st_types import Validator
 from strongtyping.strong_typing import match_class_typing, match_typing
 from strongtyping.strong_typing_utils import TypeMismatch, UndefinedKey, ValidationError
-from strongtyping.types import Validator
 
 
 def test_typedict():
@@ -49,7 +49,7 @@ def test_typedict_with_total():
 def test_typedict_with_validator():
     from typing import TypedDict
 
-    from strongtyping.types import Validator
+    from strongtyping.st_types import Validator
 
     @match_class_typing
     class MyDict(TypedDict):
@@ -79,7 +79,7 @@ def test_typedict_with_validator():
 def test_typedict_with_validator_and_total():
     from typing import TypedDict
 
-    from strongtyping.types import Validator
+    from strongtyping.st_types import Validator
 
     @match_class_typing
     class MyDict(TypedDict, total=False):
