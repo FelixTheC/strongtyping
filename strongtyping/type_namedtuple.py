@@ -4,6 +4,7 @@
 @created: 13.07.20
 @author: felix
 """
+
 from collections import namedtuple
 from keyword import iskeyword
 from typing import List, Tuple, Union
@@ -56,11 +57,9 @@ def typed_namedtuple(
                 raise ValueError(f"Field names cannot start with an underscore: {name!r}")
 
             if not name.isidentifier():
-                raise ValueError(
-                    "Type names and field names must be valid " f"identifiers: {name!r}"
-                )
+                raise ValueError(f"Type names and field names must be valid identifiers: {name!r}")
             if iskeyword(name):
-                raise ValueError("Type names and field names cannot be a " f"keyword: {name!r}")
+                raise ValueError(f"Type names and field names cannot be a keyword: {name!r}")
 
             if name in seen:
                 raise ValueError(f"Encountered duplicate field name: {name!r}")
@@ -85,8 +84,9 @@ def typed_namedtuple(
         else field_names
     )
 
-    typing_true, typing_false = all(contains_typing(fn) for fn in _fields), not all(
-        contains_typing(fn) for fn in _fields
+    typing_true, typing_false = (
+        all(contains_typing(fn) for fn in _fields),
+        not all(contains_typing(fn) for fn in _fields),
     )
 
     if typing_false and not typing_true:
@@ -176,7 +176,7 @@ def typed_namedtuple(
             "_replace": _replace,
             "__getnewargs__": __getnewargs__,
             "__repr__": __repr__,
-            "__doc__": f'{typename}({", ".join(_field_types.keys())})\n{class_doc}',
+            "__doc__": f"{typename}({', '.join(_field_types.keys())})\n{class_doc}",
             "_field_defaults": _field_defaults,
         }
 

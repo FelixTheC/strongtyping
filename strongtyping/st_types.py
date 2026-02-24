@@ -4,6 +4,7 @@
 @created: 30.05.21
 @author: felix
 """
+
 import inspect
 import json
 import weakref
@@ -30,8 +31,7 @@ class _Validator(_GenericAlias, _root=True):  # type: ignore
         validation_body, validation_line = inspect.getsourcelines(validator)
         validation_lines = validation_line + len(validation_body)
         func_info = (
-            f"{func_name}(<{validation_function_file}>, "
-            f"lines={validation_line}-{validation_lines})"
+            f"{func_name}(<{validation_function_file}>, lines={validation_line}-{validation_lines})"
         )
         return f"strong_typing_utils.Validator[{_type_repr(args[0])}, {func_info}]"
 
@@ -55,8 +55,7 @@ class _IterValidator(_GenericAlias, _root=True):  # type: ignore
         validation_body, validation_line = inspect.getsourcelines(validator)
         validation_lines = validation_line + len(validation_body)
         func_info = (
-            f"{func_name}(<{validation_function_file}>, "
-            f"lines={validation_line}-{validation_lines})"
+            f"{func_name}(<{validation_function_file}>, lines={validation_line}-{validation_lines})"
         )
         return f"strong_typing_utils.IterValidator[{_type_repr(args[0])}, {func_info}]"
 

@@ -4,6 +4,7 @@
 @created: 11.06.20
 @author: felix
 """
+
 import builtins
 import functools
 import inspect
@@ -196,7 +197,7 @@ def match_docstring(
                     if not check_doc_str_type(kwarg, docstring_types.get(kwarg_name))
                 )
                 if failed_params:
-                    msg = f'Incorrect parameters: {", ".join(f"{name}: {docstring_types[name]}" for name in failed_params)}'
+                    msg = f"Incorrect parameters: {', '.join(f'{name}: {docstring_types[name]}' for name in failed_params)}"
                     if excep_raise is not None and severity_level == 1:
                         raise excep_raise(msg)
                     else:

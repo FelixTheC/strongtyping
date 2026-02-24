@@ -119,8 +119,8 @@ def match_typing(
                     )
 
                     if failed_unpacking:
-                        msg_list += f"""The kwargs: {kwargs} can not be packed into a {annotations['kwargs'].__args__[0]} TypedDict.\n
-                        Which requires following parameters\n\t{annotations['kwargs'].__args__[0].__annotations__}."""
+                        msg_list += f"""The kwargs: {kwargs} can not be packed into a {annotations["kwargs"].__args__[0]} TypedDict.\n
+                        Which requires following parameters\n\t{annotations["kwargs"].__args__[0].__annotations__}."""
 
                     msg = f"Incorrect parameter: {msg_list}"
 

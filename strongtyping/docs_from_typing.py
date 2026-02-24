@@ -4,6 +4,7 @@
 @created: 12.05.21
 @author: eisenmenger
 """
+
 import inspect
 import pprint
 import re
@@ -210,7 +211,7 @@ def docs_from_typing_reST_format(
 
     if "return" in annotations:
         type_infos.append(
-            f':returns: {get_type_info(annotations["return"], annotations["return"])}'
+            f":returns: {get_type_info(annotations['return'], annotations['return'])}"
         )
 
     lb = "" if remove_linebreak else "\n"

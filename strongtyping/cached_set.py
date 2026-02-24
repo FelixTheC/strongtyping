@@ -4,6 +4,7 @@
 @created: 07.06.20
 @author: felix
 """
+
 import sys
 from typing import Any, Union
 

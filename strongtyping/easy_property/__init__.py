@@ -4,6 +4,7 @@
 @created: 09.07.20
 @author: felix
 """
+
 from functools import partial
 
 from strongtyping.strong_typing import match_typing
