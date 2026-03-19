@@ -6,7 +6,10 @@ authors = [
 ]
 description = "Decorator which checks whether the function is called with the correct type of parameters"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.11"
+dependencies = [
+    "ujson==5.6.0",
+]
 classifiers=[
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3.13",
@@ -22,6 +25,10 @@ Documentation = "https://strongtyping.readthedocs.io/en/latest/"
 
 [tool.setuptools]
 packages = ["strongtyping", "strongtyping-stubs"]
+include-package-data = true
+
+[tool.setuptools.package-data]
+"strongtyping-stubs" = ["**/*.py", "**/*.pyi"]
 
 [tool.black]
 line-length = 100
