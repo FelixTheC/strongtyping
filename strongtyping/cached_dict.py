@@ -5,7 +5,7 @@
 @author: felix
 """
 
-import sys
+from collections import deque
 from typing import Any, Union
 
 
@@ -18,10 +18,14 @@ class CachedDict(dict):
         """
         :param memory_limit: in MB
         """
-        self.memory_limit = memory_limit * 1000000
-        super().__init__(*args, **kwargs)
+        super().__init__()
+        self.max_size = memory_limit
+        self.order = deque()
 
-    def __setitem__(self, key: Any, value: Any) -> None:
-        if sys.getsizeof(self) > self.memory_limit:
-            self.clear()
+    def __setitem__(self, key, value):
+        if key not in self:
+            if len(self) >= self.max_size:
+                oldest = self.order.popleft()
+                del self[oldest]
+            self.order.append(key)
         super().__setitem__(key, value)

@@ -6,6 +6,7 @@
 """
 
 import sys
+from collections import deque
 from typing import Any, Union
 
 
@@ -18,10 +19,11 @@ class CachedSet(set):
         """
         :param memory_limit: in MB
         """
-        self.memory_limit = memory_limit * 1000000
-        super(CachedSet, self).__init__(*args, **kwargs)
+        super().__init__()
+        self.max_size = memory_limit
+        self.order = deque()
 
     def add(self, element: Any) -> None:
-        if sys.getsizeof(self) > self.memory_limit:
+        if sys.getsizeof(self) > self.max_size:
             self.clear()
         super().add(element)

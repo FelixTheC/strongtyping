@@ -25,6 +25,7 @@ from typing import (
     Set,
     Tuple,
     Type,
+    TypeGuard,
     TypeVar,
     Union,
 )
@@ -1383,6 +1384,22 @@ def test_annotated_function_with_multiple_checks():
 
     with pytest.raises(TypeMismatch):
         annotated_func(3)
+
+def test_with_binary_union_operator():
+    @match_typing
+    def func_e(a, b) -> TypeGuard[str]:
+        return f"{len(a)}-{len(b)}"
+
+    assert func_e([1, "2", 3, "4"], [5, ("a", "b"), "10"]) == "4-3"
+
+
+def test_type_guard_fails():
+    @match_typing
+    def func_e(a, b) -> TypeGuard[int]:
+        return f"{len(a)}-{len(b)}"
+
+    with pytest.raises(TypeMismatch):
+        assert func_e([1, "2", 3, "4"], [5, ("a", "b"), "10"]) == "4-3"
 
 
 if __name__ == "__main__":

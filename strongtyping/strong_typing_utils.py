@@ -7,6 +7,7 @@
 
 import inspect
 import os
+import sys
 import types
 import typing
 from collections import deque
@@ -32,19 +33,19 @@ default_return_queue = Queue()
 class TypeMismatch(AttributeError):
     def __init__(self, message, failed_params=None, param_values=None, annotations=None):
         super().__init__()
-        print(message)
+        print(message, file=sys.stderr)
 
 
 class ValidationError(Exception):
     def __init__(self, message):
         super().__init__()
-        print(message)
+        print(message, file=sys.stderr)
 
 
 class UndefinedKey(Exception):
     def __init__(self, message):
         super().__init__()
-        print(message)
+        print(message, file=sys.stderr)
 
 
 typing_base_class = typing._GenericAlias  # type: ignore
@@ -397,6 +398,14 @@ def check_type(argument: T, type_of: T, mro: bool = False, **kwargs: dict[T, T])
 
     check_result = True
 
+    arg_type = type(argument)
+    if type_of is int and arg_type is int:
+        return True
+    if type_of is str and arg_type is str:
+        return True
+    if type_of is bool and arg_type is bool:
+        return True
+
     if type_of is not None:
         origin, origin_name = get_origins(type_of)
         origin_name = origin_name.lower()
@@ -494,6 +503,8 @@ def check_type(argument: T, type_of: T, mro: bool = False, **kwargs: dict[T, T])
             return check_type(argument, sub_type)
         elif origin_name == "annotated":
             return check_annotated_type(argument, type_of)
+        elif origin_name == "typeguard":
+            return check_type(argument, get_possible_types(type_of, origin_name), mro, **kwargs)
         elif mro:
             if origin_name == "union":
                 possible_types = get_possible_types(type_of)

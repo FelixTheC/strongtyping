@@ -1,8 +1,10 @@
 import copy
 import inspect
 import pprint
+import traceback
 import warnings
 from functools import wraps
+from string import Template
 from typing import Any, Callable, NotRequired, Required, T, Type, get_args, get_origin
 
 from strongtyping._utils import _severity_level, action, remove_subclass
@@ -14,10 +16,15 @@ from strongtyping.strong_typing_utils import (
     check_type,
     checking_typing_typedict_values,
     default_return_queue,
+    get_origins,
 )
 
 # CACHE_IGNORE_CLASS_FUNCTIONS = ("__init__", "__str__", "__repr__")
 CACHE_IGNORE_CLASS_FUNCTIONS = ("__init__",)
+
+_error_info_msg = Template(
+    "TypeMismatch: failed at $source\nExpected type: $expected_type\nActual value: $actual_value (type: $actual_type)"
+)
 
 
 def _raise_error_or_warning(
@@ -111,10 +118,14 @@ def match_typing(
 
                     for kwarg_name, kwarg in kwargs.items():
                         annotated_values[kwarg_name] = kwarg
+                    root = list(traceback.extract_stack(None, 2))[0]
 
-                    msg_list = "\nIncorrect parameter: ".join(
-                        f"[{name}] `{pprint.pformat(annotated_values[name], width=20, depth=2)}`"
-                        f"\n\trequired: {annotations.get(name, name)}"
+                    source = f"{root.filename}:{root.lineno} in {root.name}"
+                    msg_list = "\n".join(
+                        _error_info_msg.substitute(source=source,
+                                                   expected_type=annotations.get(name, name),
+                                                   actual_value=annotated_values[name],
+                                                   actual_type=type(annotated_values[name]))
                         for name in failed_params
                     )
 
@@ -122,7 +133,7 @@ def match_typing(
                         msg_list += f"""The kwargs: {kwargs} can not be packed into a {annotations["kwargs"].__args__[0]} TypedDict.\n
                         Which requires following parameters\n\t{annotations["kwargs"].__args__[0].__annotations__}."""
 
-                    msg = f"Incorrect parameter: {msg_list}"
+                    msg = f"\n{msg_list}"
 
                     _raise_error_or_warning(
                         msg,
@@ -136,20 +147,23 @@ def match_typing(
                 if cached_set is not None and func.__name__ not in CACHE_IGNORE_CLASS_FUNCTIONS:
                     cached_set.add(cached_key)
 
-            if validate_return and annotations.get("return"):
+            if annotations.get("return"):
                 return_type = annotations.get("return")
-                return_val = func(*args, **kwargs)
-                res = check_type(return_val, return_type, mro=False)
-                if not res:
-                    _raise_error_or_warning(
-                        f"Incorrect return value: `{pprint.pformat(return_val, width=20, depth=2)}`",
-                        ("return",),
-                        return_type,
-                        annotations,
-                        excep_raise,
-                        severity_level,
-                    )
-                return return_val
+                if validate_return or get_origins(return_type)[1] == "TypeGuard":
+                    return_val = func(*args, **kwargs)
+                    res = check_type(return_val, return_type, mro=False)
+                    if not res:
+                        _raise_error_or_warning(
+                            f"Incorrect return value: `{pprint.pformat(return_val, width=20, depth=2)}`",
+                            ("return",),
+                            return_type,
+                            annotations,
+                            excep_raise,
+                            severity_level,
+                        )
+                    return return_val
+                else:
+                    return func(*args, **kwargs)
             else:
                 return func(*args, **kwargs)
 
