@@ -12,10 +12,17 @@
 [![](https://img.shields.io/pypi/dm/strongtyping.svg)](https://pypi.org/project/strongtyping/)
 
 # Strong Typing
+
 <p>Decorator which <b>checks at Runtime</b> whether the function is called with the correct type of parameters.<br> 
 And <b><em>raises</em> TypeMisMatch</b> if the used parameters in a function call where invalid.</p>
 
 # This is the release for Python-3.13 and above
+
 - If you need a different version please checkout the release Tags 2.\*.*
+
+## Performance boost with mypyc
+
+- Since __3.13.6__ `mypyc` is used to compile the core logic code.
+- This results in a significant performance boost from around __5x faster__, especially for large containers.
 
 ## [Docs have been moved to 'readthedocs'](https://strongtyping.readthedocs.io/en/latest/#the-solution)

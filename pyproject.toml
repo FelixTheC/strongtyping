@@ -1,6 +1,6 @@
 [project]
 name = "strongtyping"
-version = "3.13.6a"
+version = "3.13.6"
 authors = [
     { name = "FelixTheC", email = "fberndt87@gmail.com" },
 ]
