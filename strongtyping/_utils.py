@@ -55,18 +55,18 @@ exclude_builtins = dir(object)
 
 
 def _get_new(
-        typing_func: Callable[..., Any],
-        excep_raise: Type[Exception] = TypeError,
-        cache_size: int = 0,
-        severity: str = "env",
-        **kwargs: Any,
+    typing_func: Callable[..., Any],
+    excep_raise: Type[Exception] = TypeError,
+    cache_size: int = 0,
+    severity: str = "env",
+    **kwargs: Any,
 ) -> Any:
     def new_with_match_typing(cls_: Type[T], *args: Any, **kwargs: Any) -> T:
         def add_match_typing(obj: T, attr: str) -> bool:
             if (
-                    hasattr(getattr(cls_, attr), "__annotations__")
-                    and getattr(cls_, attr).__class__.__name__ != "property"
-                    and not hasattr(getattr(obj, attr), "__fe_strng_mtch__")
+                hasattr(getattr(cls_, attr), "__annotations__")
+                and getattr(cls_, attr).__class__.__name__ != "property"
+                and not hasattr(getattr(obj, attr), "__fe_strng_mtch__")
             ):
                 type_annotations: dict[str, Any] = getattr(getattr(cls_, attr), "__annotations__")
                 return len([i for i in type_annotations.keys() if i != "return"]) > 0

@@ -6,8 +6,13 @@ from typing import Any
 
 
 class TypeMismatch(AttributeError):
-    def __init__(self, message: str, failed_params: Any = None, param_values: Any = None,
-                 annotations: Any = None) -> None:
+    def __init__(
+        self,
+        message: str,
+        failed_params: Any = None,
+        param_values: Any = None,
+        annotations: Any = None,
+    ) -> None:
         super().__init__()
         print(message, file=sys.stderr)
 

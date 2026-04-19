@@ -156,11 +156,11 @@ def get_type_info(val: Any, type_origins: Any) -> str:
 
 
 def docs_from_typing_numpy_format(
-        annotations: Dict[str, Any],
-        additional_infos: Dict[str, str],
-        func_params: Dict[str, inspect.Parameter],
-        remove_linebreak: bool,
-        func_info: str,
+    annotations: Dict[str, Any],
+    additional_infos: Dict[str, str],
+    func_params: Dict[str, inspect.Parameter],
+    remove_linebreak: bool,
+    func_info: str,
 ) -> tuple[str, str]:
     doc_infos = ["Parameters", "----------"]
     type_infos = ["Returns", "-------"]
@@ -194,11 +194,11 @@ def docs_from_typing_numpy_format(
 
 
 def docs_from_typing_reST_format(
-        annotations: Dict[str, Any],
-        additional_infos: Dict[str, str],
-        func_params: Dict[str, inspect.Parameter],
-        remove_linebreak: bool,
-        func_info: str,
+    annotations: Dict[str, Any],
+    additional_infos: Dict[str, str],
+    func_params: Dict[str, inspect.Parameter],
+    remove_linebreak: bool,
+    func_info: str,
 ) -> tuple[str, str]:
     doc_infos = []
     type_infos = []
@@ -262,8 +262,12 @@ def docs_from_typing(func: Callable[..., Any], remove_linebreak: bool, style: st
         )
 
 
-def rest_docs_from_typing(_func: Optional[Callable[..., Any]] = None, *, insert_at: Optional[str] = None,
-                          remove_linebreak: bool = False) -> Any:
+def rest_docs_from_typing(
+    _func: Optional[Callable[..., Any]] = None,
+    *,
+    insert_at: Optional[str] = None,
+    remove_linebreak: bool = False,
+) -> Any:
     def wrapper(func: Callable[..., Any]) -> Any:
         @wraps(func)
         def inner(*args: Any, **kwargs: Any) -> Any:
@@ -285,8 +289,12 @@ def rest_docs_from_typing(_func: Optional[Callable[..., Any]] = None, *, insert_
         return wrapper
 
 
-def numpy_docs_from_typing(_func: Optional[Callable[..., Any]] = None, *, insert_at: Optional[str] = None,
-                           remove_linebreak: bool = False) -> Any:
+def numpy_docs_from_typing(
+    _func: Optional[Callable[..., Any]] = None,
+    *,
+    insert_at: Optional[str] = None,
+    remove_linebreak: bool = False,
+) -> Any:
     def wrapper(func: Callable[..., Any]) -> Any:
         @wraps(func)
         def inner(*args: Any, **kwargs: Any) -> Any:

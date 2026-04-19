@@ -148,9 +148,7 @@ def extract_docstring_param_types(func: typing.Callable[..., Any]) -> dict[str, 
         if is_param_info(string)
     ]
     docstring: list[tuple[str, str]] = [
-        separate_param_type(string)
-        for string in doc.split("\n")
-        if is_type_info(string)
+        separate_param_type(string) for string in doc.split("\n") if is_type_info(string)
     ]
     docstring += [tuple(reversed(p)) for p in param if len(p) > 1]  # type: ignore
     _docstring_types = {ds[0]: ds[1] for ds in docstring}
@@ -160,13 +158,13 @@ def extract_docstring_param_types(func: typing.Callable[..., Any]) -> dict[str, 
 
 
 def match_docstring(
-        _func: typing.Optional[typing.Callable[..., Any]] = None,
-        *,
-        excep_raise: typing.Optional[typing.Type[Exception]] = TypeMismatch,
-        cache_size: int = 0,
-        subclass: bool = False,
-        severity: str = "env",
-        **kwargs: Any,
+    _func: typing.Optional[typing.Callable[..., Any]] = None,
+    *,
+    excep_raise: typing.Optional[typing.Type[Exception]] = TypeMismatch,
+    cache_size: int = 0,
+    subclass: bool = False,
+    severity: str = "env",
+    **kwargs: Any,
 ) -> Any:
     cached_set = None if cache_size == 0 else CachedSet(cache_size)
 
@@ -224,12 +222,12 @@ def match_docstring(
 
 
 def match_class_docstring(
-        _cls: typing.Optional[typing.Type[Any]] = None,
-        *,
-        excep_raise: typing.Type[Exception] = TypeError,
-        cache_size: int = 0,
-        severity: str = "env",
-        **kwargs: Any,
+    _cls: typing.Optional[typing.Type[Any]] = None,
+    *,
+    excep_raise: typing.Type[Exception] = TypeError,
+    cache_size: int = 0,
+    severity: str = "env",
+    **kwargs: Any,
 ) -> Any:
     def wrapper(cls: typing.Type[Any]) -> Any:
         severity_level = _severity_level(severity)

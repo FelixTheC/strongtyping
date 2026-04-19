@@ -16,7 +16,9 @@ class CachedDict(dict[Any, Any]):
 
     order: deque[Any]
 
-    def __init__(self: "CachedDict", memory_limit: Union[int, float] = 1, *args: Any, **kwargs: Any) -> None:
+    def __init__(
+        self: "CachedDict", memory_limit: Union[int, float] = 1, *args: Any, **kwargs: Any
+    ) -> None:
         """
         :param memory_limit: in MB
         """

@@ -139,6 +139,7 @@ def IsNegative() -> Callable[[int], bool]:
 def IsUUid() -> Callable[[str], bool]:
     def is_uuid(val: str) -> bool:
         import uuid
+
         try:
             uuid.UUID(val)
         except ValueError:

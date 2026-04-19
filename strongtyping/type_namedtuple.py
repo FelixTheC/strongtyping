@@ -18,12 +18,12 @@ use_match_typing: Dict[bool, Any] = {True: check_type, False: check_doc_str_type
 
 @match_typing
 def typed_namedtuple(
-        typename: str,
-        field_names: Union[List[str], str, List[Tuple[str, object]]],
-        *,
-        rename: bool = False,
-        defaults: Optional[Union[list[Any], tuple[Any, ...]]] = None,
-        module: Optional[str] = None,
+    typename: str,
+    field_names: Union[List[str], str, List[Tuple[str, object]]],
+    *,
+    rename: bool = False,
+    defaults: Optional[Union[list[Any], tuple[Any, ...]]] = None,
+    module: Optional[str] = None,
 ) -> type:
     # I could have just copied everything from namedtuple, but then I would have no learning effect
     """

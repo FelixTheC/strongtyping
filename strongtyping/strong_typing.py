@@ -28,12 +28,12 @@ _error_info_msg = Template(
 
 
 def _raise_error_or_warning(
-        msg: str,
-        failed_params: tuple[str, ...],
-        annotated_values: Any,
-        annotations: Any,
-        excep_raise: Type[Exception] = TypeMismatch,
-        severity_level: int = SEVERITY_LEVEL.ENABLED.value,
+    msg: str,
+    failed_params: tuple[str, ...],
+    annotated_values: Any,
+    annotations: Any,
+    excep_raise: Type[Exception] = TypeMismatch,
+    severity_level: int = SEVERITY_LEVEL.ENABLED.value,
 ) -> None:
     if excep_raise is not None and severity_level == SEVERITY_LEVEL.ENABLED.value:
         raise excep_raise(msg, failed_params, annotated_values, annotations) from None
@@ -42,12 +42,12 @@ def _raise_error_or_warning(
 
 
 def match_typing(
-        _func: Callable[..., Any] | None = None,
-        *,
-        excep_raise: Type[Exception] = TypeMismatch,
-        subclass: bool = False,
-        severity: str = "env",
-        **kwargs: Any,
+    _func: Callable[..., Any] | None = None,
+    *,
+    excep_raise: Type[Exception] = TypeMismatch,
+    subclass: bool = False,
+    severity: str = "env",
+    **kwargs: Any,
 ) -> Any:
     cached_enabled: int = kwargs.get("cache_size", 1)
     cached_set = CachedSet(cached_enabled) if cached_enabled > 0 else None
@@ -92,10 +92,10 @@ def match_typing(
 
                 if anno_kwargs := annotations.get("kwargs"):
                     if not check_type(
-                            kwargs,
-                            anno_kwargs,
-                            mro=False,
-                            check_duck_typing=check_duck_typing,
+                        kwargs,
+                        anno_kwargs,
+                        mro=False,
+                        check_duck_typing=check_duck_typing,
                     ):
                         failed_unpacking = True
                 else:
@@ -122,10 +122,12 @@ def match_typing(
 
                     source = f"{root.filename}:{root.lineno} in {root.name}"
                     msg_list = "\n".join(
-                        _error_info_msg.substitute(source=source,
-                                                   expected_type=annotations.get(name, name),
-                                                   actual_value=annotated_values[name],
-                                                   actual_type=type(annotated_values[name]))
+                        _error_info_msg.substitute(
+                            source=source,
+                            expected_type=annotations.get(name, name),
+                            actual_value=annotated_values[name],
+                            actual_type=type(annotated_values[name]),
+                        )
                         for name in failed_params
                     )
 
@@ -186,7 +188,9 @@ def add_required_methods_to_class(cls: Any, inst: Any) -> None:
 
 
 class MatchTypedDict:
-    def __new__(cls: Type[Any], instance: Type[Any] | None = None, *args: Any, **kwargs: Any) -> Any:
+    def __new__(
+        cls: Type[Any], instance: Type[Any] | None = None, *args: Any, **kwargs: Any
+    ) -> Any:
         _cls: Any = cls
         _cls.cls = instance
         _cls.__annotations__ = getattr(instance, "__annotations__", {})
@@ -284,11 +288,11 @@ def match_class_typing(cls: Type[Any] | None = None, **kwargs: Any) -> Any:
             func
             for func in dir(_cls)
             if callable(getattr(_cls, func))
-               and __has_annotations__(getattr(_cls, func))
-               and not hasattr(getattr(_cls, func), "__fe_strng_mtch__")
-               and not isinstance(getattr(_cls, func), classmethod)
-               and len(list(inspect.signature(getattr(_cls, func)).parameters.keys()))
-               > 1  # if it is a function without parameter there is no need to wrap it
+            and __has_annotations__(getattr(_cls, func))
+            and not hasattr(getattr(_cls, func), "__fe_strng_mtch__")
+            and not isinstance(getattr(_cls, func), classmethod)
+            and len(list(inspect.signature(getattr(_cls, func)).parameters.keys()))
+            > 1  # if it is a function without parameter there is no need to wrap it
         ]
 
     def __add_decorator(_cls: Type[Any]) -> None:
@@ -360,7 +364,9 @@ def getter_setter(func: Any = None) -> Any:
 class FinalClass:
     cls: Any = None
 
-    def __new__(cls: Type[Any], instance: Type[Any] | None = None, *args: Any, **kwargs: Any) -> Any:
+    def __new__(
+        cls: Type[Any], instance: Type[Any] | None = None, *args: Any, **kwargs: Any
+    ) -> Any:
         if args:
             raise RuntimeError(
                 f"`class {instance}` can not inherit from `class {args[0][0].__name__}`"
