@@ -8,7 +8,7 @@ description = "Decorator which checks whether the function is called with the co
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "ujson==5.6.0",
+    "ujson==5.12.0",
 ]
 classifiers = [
     "License :: OSI Approved :: MIT License",
@@ -72,6 +72,8 @@ exclude = ["strongtyping/tests"]
 [tool.poetry.dependencies]
 python = ">=3.10,<4.0"
 ujson = "5.6.0"
+mypy = "1.20.1"
+librt = "0.9.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "8.4.2"
@@ -95,6 +97,7 @@ check_untyped_defs = true
 build = "cp313-*"
 skip = "pp* *musllinux*"
 test-skip = "*"
+before-build = "python -m pip install --upgrade pip setuptools wheel mypy librt"
 
 [tool.cibuildwheel.linux]
 archs = ["x86_64"]
@@ -106,5 +109,5 @@ archs = ["x86_64", "arm64"]
 archs = ["AMD64"]
 
 [build-system]
-requires = ["setuptools >= 61.0", "wheel", "mypyc"]
+requires = ["setuptools>=61.0", "wheel", "mypy", "librt"]
 build-backend = "setuptools.build_meta"
