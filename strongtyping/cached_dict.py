@@ -9,12 +9,14 @@ from collections import deque
 from typing import Any, Union
 
 
-class CachedDict(dict):
+class CachedDict(dict[Any, Any]):
     """
     Warning only use for caching when Memory limit is reached all items will be cleared
     """
 
-    def __init__(self, memory_limit: Union[int, float] = 1, *args: Any, **kwargs: Any) -> None:
+    order: deque[Any]
+
+    def __init__(self: "CachedDict", memory_limit: Union[int, float] = 1, *args: Any, **kwargs: Any) -> None:
         """
         :param memory_limit: in MB
         """
@@ -22,7 +24,7 @@ class CachedDict(dict):
         self.max_size = memory_limit
         self.order = deque()
 
-    def __setitem__(self, key, value):
+    def __setitem__(self: "CachedDict", key: Any, value: Any) -> None:
         if key not in self:
             if len(self) >= self.max_size:
                 oldest = self.order.popleft()

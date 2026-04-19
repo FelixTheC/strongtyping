@@ -12,10 +12,11 @@ import re
 import typing
 import warnings
 from types import FunctionType, MethodType
+from typing import Any
 
 from strongtyping._utils import _get_new, _severity_level, action, remove_subclass
 from strongtyping.cached_set import CachedSet
-from strongtyping.strong_typing import TypeMismatch
+from strongtyping.strong_typing_utils import TypeMismatch
 
 TYPE_EXTRACTION_PATTERN = r"(^[:a-zA-Z0-9 _-]+(:))"
 PATTERN_1 = r""
@@ -28,7 +29,7 @@ REMOVE_PATTERN = r"[\(\[\)\]]"
 FM_PATTERN = r"([FM][a-z]{5,7}Type)"
 
 
-def separate_param_type(docstring_type_part: str) -> tuple:
+def separate_param_type(docstring_type_part: str) -> tuple[str, str]:
     t = re.split(TYPE_EXTRACTION_PATTERN, docstring_type_part)
     clean = [re.sub(PATTERN_1, "", part.strip()) for part in t if part]
     return re.sub(EXTRACT_PARAM_NAME_PATTERN, "", clean[0]).replace(":", ""), clean[-1]
@@ -37,7 +38,7 @@ def separate_param_type(docstring_type_part: str) -> tuple:
 possible_types = {"(": tuple, "[": list, "{": set}
 
 
-def param_attr(attr: str):
+def param_attr(attr: str) -> Any:
     """
     :return: builtin class or typing instance
     """
@@ -47,7 +48,7 @@ def param_attr(attr: str):
         return getattr(builtins, attr)
 
 
-def get_container_types(ttype_of: str) -> typing.Union[None, tuple]:
+def get_container_types(ttype_of: str) -> typing.Optional[tuple[Any, ...]]:
     pattern = r"([\(\[]\w+)" if "or" not in ttype_of else OR_PATTERN
     pattern = pattern if ", " not in ttype_of else COMMA_PATTERN
     sub_pattern = re.findall(pattern, ttype_of)
@@ -62,14 +63,14 @@ def get_container_types(ttype_of: str) -> typing.Union[None, tuple]:
     return container_types
 
 
-def get_or_types(ttype: str) -> list:
+def get_or_types(ttype: str) -> list[str]:
     if " or " in ttype:
         return [t for t in re.findall(r"(\w+)\W+(or)\W+(\w+)", ttype)[0] if t != "or"]
     else:
         return re.findall(r"\w{2,}", ttype)
 
 
-def is_tuple(arg, type_of: str):
+def is_tuple(arg: Any, type_of: str) -> bool:
     container_types = get_container_types(type_of)
     sub_types = (
         all(isinstance(a, container_types) for a in arg) and len(arg) == len(container_types)
@@ -79,13 +80,13 @@ def is_tuple(arg, type_of: str):
     return isinstance(arg, tuple) and sub_types
 
 
-def is_list(arg, type_of: str):
+def is_list(arg: Any, type_of: str) -> bool:
     container_types = get_container_types(type_of)
     sub_types = all(isinstance(a, container_types) for a in arg) if container_types else True
     return isinstance(arg, list) and sub_types
 
 
-def is_dict(arg, type_of: str):
+def is_dict(arg: Any, type_of: str) -> bool:
     container_types = get_container_types(type_of)
     sub_types = (
         all(isinstance(k, container_types[0]) for k in arg.keys())
@@ -96,11 +97,11 @@ def is_dict(arg, type_of: str):
     return isinstance(arg, dict) and sub_types
 
 
-def is_set(arg, type_of: str):
+def is_set(arg: Any, type_of: str) -> bool:
     return isinstance(arg, set)
 
 
-def is_function_or_method_type(arg, type_of):
+def is_function_or_method_type(arg: Any, type_of: str) -> bool:
     type_dict = {"F": isinstance(arg, FunctionType), "M": isinstance(arg, MethodType)}
     return type_dict[type_of[0]]
 
@@ -108,7 +109,7 @@ def is_function_or_method_type(arg, type_of):
 options = {"tuple": is_tuple, "list": is_list, "set": is_set, "dict": is_dict}
 
 
-def check_doc_str_type(arg, type_of):
+def check_doc_str_type(arg: Any, type_of: typing.Optional[str]) -> Any:
     check_result = True
     if type_of is not None:
         try:
@@ -133,21 +134,25 @@ def is_param_info(docstring_line: str) -> bool:
     return any(docstring_line.startswith(a) for a in allowed)
 
 
-def extract_docstring_param_types(func) -> dict:
+def extract_docstring_param_types(func: typing.Callable[..., Any]) -> dict[str, Any]:
     """
     extract the types to the defined parameters from the docstring
     """
-    param = [
+    doc = inspect.getdoc(func)
+    if doc is None:
+        return {k: k for k in inspect.signature(func).parameters.keys()}
+
+    param: list[list[str]] = [
         separate_param_type(string)[0].split()
-        for string in inspect.getdoc(func).split("\n")
+        for string in doc.split("\n")
         if is_param_info(string)
     ]
-    docstring = [
+    docstring: list[tuple[str, str]] = [
         separate_param_type(string)
-        for string in inspect.getdoc(func).split("\n")
+        for string in doc.split("\n")
         if is_type_info(string)
     ]
-    docstring += [list(reversed(p)) for p in param if len(p) > 1]
+    docstring += [tuple(reversed(p)) for p in param if len(p) > 1]  # type: ignore
     _docstring_types = {ds[0]: ds[1] for ds in docstring}
     # there is mismatch when user will mix type and param to bring them in the right order
     # we will look at the signature and recreate the previous dict to the final one
@@ -155,23 +160,23 @@ def extract_docstring_param_types(func) -> dict:
 
 
 def match_docstring(
-    _func=None,
-    *,
-    excep_raise: Exception = TypeMismatch,
-    cache_size=0,
-    subclass: bool = False,
-    severity="env",
-    **kwargs,
-):
+        _func: typing.Optional[typing.Callable[..., Any]] = None,
+        *,
+        excep_raise: typing.Optional[typing.Type[Exception]] = TypeMismatch,
+        cache_size: int = 0,
+        subclass: bool = False,
+        severity: str = "env",
+        **kwargs: Any,
+) -> Any:
     cached_set = None if cache_size == 0 else CachedSet(cache_size)
 
-    def wrapper(func):
+    def wrapper(func: typing.Callable[..., Any]) -> Any:
         docstring_types = extract_docstring_param_types(func)
 
         severity_level = _severity_level(severity)
 
         @functools.wraps(func)
-        def inner(*args, **kwargs):
+        def inner(*args: Any, **kwargs: Any) -> Any:
             if severity_level > 0:
                 args = remove_subclass(args, subclass)
 
@@ -208,8 +213,9 @@ def match_docstring(
 
             return func(*args, **kwargs)
 
-        inner.__fe_strng_mtch__ = 0
-        return inner
+        _inner: Any = inner
+        _inner.__fe_strng_mtch__ = 0
+        return _inner
 
     if _func is not None:
         return wrapper(_func)
@@ -218,17 +224,17 @@ def match_docstring(
 
 
 def match_class_docstring(
-    _cls=None,
-    *,
-    excep_raise: Exception = TypeError,
-    cache_size=0,
-    severity="env",
-    **kwargs,
-):
-    def wrapper(cls):
+        _cls: typing.Optional[typing.Type[Any]] = None,
+        *,
+        excep_raise: typing.Type[Exception] = TypeError,
+        cache_size: int = 0,
+        severity: str = "env",
+        **kwargs: Any,
+) -> Any:
+    def wrapper(cls: typing.Type[Any]) -> Any:
         severity_level = _severity_level(severity)
 
-        def inner(*args, **kwargs):
+        def inner(*args: Any, **kwargs: Any) -> Any:
             if severity_level > 0:
                 cls.__new__ = _get_new(match_docstring, excep_raise, cache_size, severity, **kwargs)
                 if hasattr(cls.__init__, "__annotations__"):
@@ -243,13 +249,13 @@ def match_class_docstring(
         return wrapper
 
 
-def getter(func):
+def getter(func: Any) -> Any:
     return action(func, "getter", match_docstring)
 
 
-def setter(func):
+def setter(func: Any) -> Any:
     return action(func, "setter", match_docstring)
 
 
-def getter_setter(func):
+def getter_setter(func: Any) -> Any:
     return action(func, "getter_setter", match_docstring)

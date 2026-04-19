@@ -6,38 +6,41 @@
 """
 
 from functools import partial
+from typing import Any, Callable
 
 from strongtyping.strong_typing import match_typing
 
 
-def action(f, frefs):
+def action(f: Callable[..., Any], frefs: str) -> Any:
     """
     This code is original from Ruud van der Ham https://github.com/salabim/easy_property
     """
-    if f.__qualname__ == action.qualname:
-        if any(action.f[fref] is not None for fref in frefs.split("_")):
+    _action: Any = action
+    if f.__qualname__ == _action.qualname:
+        if any(_action.f[fref] is not None for fref in frefs.split("_")):
             raise AttributeError("decorator defined twice")
     else:
-        action.f.update({}.fromkeys(action.f, None))  # reset all values to None
-        action.qualname = f.__qualname__
-    action.f.update({}.fromkeys(frefs.split("_"), f))  # set all frefs values to f
+        _action.f.update({}.fromkeys(_action.f, None))  # reset all values to None
+        _action.qualname = f.__qualname__
+    _action.f.update({}.fromkeys(frefs.split("_"), f))  # set all frefs values to f
 
     # this line was added by myself
-    action.f["setter"] = (
-        match_typing(action.f["setter"]) if action.f["setter"] is not None else None
+    _action.f["setter"] = (
+        match_typing(_action.f["setter"]) if _action.f["setter"] is not None else None
     )
 
     return property(
         *(
-            action.f[ref] if (ref != "documenter" or action.f[ref] is None) else action.f[ref](0)
-            for ref in action.f
+            _action.f[ref] if (ref != "documenter" or _action.f[ref] is None) else _action.f[ref](0)
+            for ref in _action.f
         )
     )
 
 
-action.qualname = None
-action.f = dict.fromkeys(["getter", "setter", "deleter", "documenter"], None)
+_action_obj: Any = action
+_action_obj.qualname = None
+_action_obj.f = dict.fromkeys(["getter", "setter", "deleter", "documenter"], None)
 
 globals().update(
-    {fref: partial(action, frefs=fref) for fref in {**action.f, "getter_setter": None}}
+    {fref: partial(action, frefs=fref) for fref in {**_action_obj.f, "getter_setter": None}}
 )

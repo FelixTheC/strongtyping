@@ -9,21 +9,21 @@ import inspect
 import json
 import weakref
 from functools import partial
-from typing import Any, _GenericAlias, _SpecialForm, _type_repr
+from typing import Any, Type, _GenericAlias, _SpecialForm, _type_repr  # type: ignore
 
 
 class _Validator(_GenericAlias, _root=True):  # type: ignore
     _name = "Validator"
 
-    def __getitem__(self, item):
+    def __getitem__(self, item: Any) -> Any:
         return super().__getitem__(item)
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         if len(self.__args__) > 2:
             return hash(frozenset([self.__args__[:-1], json.dumps(self.__args__[-1])]))
         return hash(frozenset(self.__args__))
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         args = self.__args__
         validator = args[1].func if isinstance(args[1], partial) else args[1]
         func_name = validator.__name__
@@ -39,15 +39,15 @@ class _Validator(_GenericAlias, _root=True):  # type: ignore
 class _IterValidator(_GenericAlias, _root=True):  # type: ignore
     _name = "IterValidator"
 
-    def __getitem__(self, item):
+    def __getitem__(self, item: Any) -> Any:
         return super().__getitem__(item)
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         if len(self.__args__) > 2:
             return hash(frozenset([self.__args__[:-1], json.dumps(self.__args__[-1])]))
         return hash(frozenset(self.__args__))
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         args = self.__args__
         validator = args[1].func if isinstance(args[1], partial) else args[1]
         func_name = validator.__name__
@@ -61,7 +61,7 @@ class _IterValidator(_GenericAlias, _root=True):  # type: ignore
 
 
 @_SpecialForm  # type: ignore
-def Validator(self, parameters, *args, **kwargs):
+def Validator(self: Any, parameters: Any, *args: Any, **kwargs: Any) -> Any:
     if isinstance(parameters, _GenericAlias):
         raise TypeError("Validator needs min 2 values. Validator[type, function]")
     if not parameters:
@@ -74,7 +74,7 @@ def Validator(self, parameters, *args, **kwargs):
 
 
 @_SpecialForm  # type: ignore
-def IterValidator(self, parameters, *args, **kwargs):
+def IterValidator(self: Any, parameters: Any, *args: Any, **kwargs: Any) -> Any:
     if isinstance(parameters, _GenericAlias):
         raise TypeError("Validator needs min 2 values. Validator[type, function]")
     if not parameters:
@@ -89,15 +89,15 @@ def IterValidator(self, parameters, *args, **kwargs):
 class FrozenType:
     __slots__ = ("required_type", "stored_value", "weakref")
 
-    def __init__(self, required_type, stored_value=None):
-        self.weakref = weakref.WeakKeyDictionary()
+    def __init__(self, required_type: Any, stored_value: Any = None) -> None:
+        self.weakref: weakref.WeakKeyDictionary[object, Any] = weakref.WeakKeyDictionary()
         self.required_type = required_type
         self.stored_value = stored_value
 
-    def __get__(self, instance=None, owner=None):
+    def __get__(self, instance: object = None, owner: Type[Any] | None = None) -> Any:
         return self.weakref.get(instance, (None, self.stored_value))[1]
 
-    def __set__(self, instance=None, value=None):
+    def __set__(self, instance: object = None, value: Any = None) -> None:
         if isinstance(value, tuple) and isinstance(value[0], FrozenType):
             required_type, stored_value = self.weakref.get(
                 instance, (self.required_type, self.stored_value)
@@ -117,17 +117,17 @@ class FrozenType:
             else:
                 self.weakref[instance] = (self.required_type, value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return repr(self.required_type)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.stored_value)
 
-    def __doc__(self):
-        return self.required_type.__doc__
+    def get_doc(self) -> str | None:
+        return str(self.required_type.__doc__) if self.required_type.__doc__ else None
 
     @classmethod
-    def cast(cls, instance, origin, new):
+    def cast(cls: Any, instance: Any, origin: Any, new: Any) -> tuple["FrozenType", Any, object]:
         """
         change the type explicit not implicit by accident
         """
@@ -137,7 +137,7 @@ class FrozenType:
             raise TypeError(f"Cannot cast {type(origin)} to {new}")
         return FrozenType(FrozenType), new, instance
 
-    def error_msg(self, value: Any, attribute_name: str = "This") -> Exception:
+    def error_msg(self: Any, value: Any, attribute_name: str = "This") -> Exception:
         raise TypeError(
             f"`{attribute_name}` is a final type. "
             f"\n\tYou cannot assign {type(value)} to {self.required_type}"

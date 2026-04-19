@@ -10,10 +10,11 @@ from collections import deque
 from typing import Any, Union
 
 
-class CachedSet(set):
+class CachedSet(set[Any]):
     """
     Warning only use for caching when Memory limit is reached all items will be cleared
     """
+    order: deque[Any]
 
     def __init__(self, memory_limit: Union[int, float] = 1, *args: Any, **kwargs: Any) -> None:
         """

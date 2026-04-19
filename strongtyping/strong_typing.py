@@ -2,10 +2,11 @@ import copy
 import inspect
 import pprint
 import traceback
+import typing
 import warnings
 from functools import wraps
 from string import Template
-from typing import Any, Callable, NotRequired, Required, T, Type, get_args, get_origin
+from typing import Any, Callable, NotRequired, Required, Type, get_args, get_origin
 
 from strongtyping._utils import _severity_level, action, remove_subclass
 from strongtyping.cached_set import CachedSet
@@ -28,13 +29,13 @@ _error_info_msg = Template(
 
 
 def _raise_error_or_warning(
-    msg: str,
-    failed_params: tuple[str, ...],
-    annotated_values: dict[str, Any],
-    annotations: str,
-    excep_raise: Type[Exception] = TypeMismatch,
-    severity_level=SEVERITY_LEVEL.ENABLED,
-):
+        msg: str,
+        failed_params: tuple[str, ...],
+        annotated_values: Any,
+        annotations: Any,
+        excep_raise: Type[Exception] = TypeMismatch,
+        severity_level: int = SEVERITY_LEVEL.ENABLED.value,
+) -> None:
     if excep_raise is not None and severity_level == SEVERITY_LEVEL.ENABLED.value:
         raise excep_raise(msg, failed_params, annotated_values, annotations) from None
     else:
@@ -42,19 +43,19 @@ def _raise_error_or_warning(
 
 
 def match_typing(
-    _func: Callable[[T], T] | None = None,
-    *,
-    excep_raise: Type[Exception] = TypeMismatch,
-    subclass: bool = False,
-    severity: str = "env",
-    **kwargs: Any,
-):
+        _func: Callable[..., Any] | None = None,
+        *,
+        excep_raise: Type[Exception] = TypeMismatch,
+        subclass: bool = False,
+        severity: str = "env",
+        **kwargs: Any,
+) -> Any:
     cached_enabled: int = kwargs.get("cache_size", 1)
     cached_set = CachedSet(cached_enabled) if cached_enabled > 0 else None
     check_duck_typing = kwargs.get("allow_duck_typing", False)
     validate_return = kwargs.get("validate_return", False)
 
-    def wrapper(func: Callable[[T], T]):
+    def wrapper(func: Callable[..., Any]) -> Any:
         # needed in py 3.10
         # globals().update(func.__globals__)
 
@@ -63,7 +64,7 @@ def match_typing(
         severity_level = _severity_level(severity)
 
         @wraps(func)
-        def inner(*args: Any, **kwargs: Any):
+        def inner(*args: Any, **kwargs: Any) -> Any:
             if arg_names and severity_level > SEVERITY_LEVEL.DISABLED.value:
                 args = remove_subclass(args, subclass)
 
@@ -92,10 +93,10 @@ def match_typing(
 
                 if anno_kwargs := annotations.get("kwargs"):
                     if not check_type(
-                        kwargs,
-                        anno_kwargs,
-                        mro=False,
-                        check_duck_typing=check_duck_typing,
+                            kwargs,
+                            anno_kwargs,
+                            mro=False,
+                            check_duck_typing=check_duck_typing,
                     ):
                         failed_unpacking = True
                 else:
@@ -167,8 +168,9 @@ def match_typing(
             else:
                 return func(*args, **kwargs)
 
-        inner.__fe_strng_mtch__ = 0
-        return inner
+        _inner: Any = inner
+        _inner.__fe_strng_mtch__ = 0
+        return _inner
 
     if _func is not None:
         return wrapper(_func)
@@ -176,7 +178,7 @@ def match_typing(
         return wrapper
 
 
-def add_required_methods_to_class(cls: T, inst: T) -> None:
+def add_required_methods_to_class(cls: Any, inst: Any) -> None:
     for method in ("__instancecheck__",):
         try:
             setattr(cls, method, getattr(inst, method))
@@ -185,28 +187,34 @@ def add_required_methods_to_class(cls: T, inst: T) -> None:
 
 
 class MatchTypedDict:
-    def __new__(cls: T, instance: Type[T] | None = None, *args: Any, **kwargs: Any) -> Type[T]:
-        cls.cls = instance
-        add_required_methods_to_class(cls, instance)
-        return super().__new__(cls)
+    def __new__(cls: Type[Any], instance: Type[Any] | None = None, *args: Any, **kwargs: Any) -> Any:
+        _cls: Any = cls
+        _cls.cls = instance
+        _cls.__annotations__ = getattr(instance, "__annotations__", {})
+        _cls.__total__ = getattr(instance, "__total__", True)
+        add_required_methods_to_class(_cls, instance)
+        return super().__new__(_cls)
 
-    def __init__(self, cls: Type[T] | None = None, *args: Any, **kwargs: Any) -> None:
-        self.excep_raise = kwargs.pop("excep_raise", TypeMismatch)
-        self.cache_size = kwargs.pop("cache_size", 1)
-        self.severity = kwargs.pop("severity", "env")
-        self.cls = cls
+    def __init__(self, cls: Type[Any] | None = None, *args: Any, **kwargs: Any) -> None:
+        self.excep_raise: Type[Exception] = kwargs.pop("excep_raise", TypeMismatch)
+        self.cache_size: int = kwargs.pop("cache_size", 1)
+        self.severity: str = kwargs.pop("severity", "env")
+        self.cls: Any = cls
+        self.__annotations__ = getattr(cls, "__annotations__", {})
+        self.__total__ = getattr(cls, "__total__", True)
 
-    def __getattr__(self, item: T):
+    def __getattr__(self, item: str) -> Any:
         return getattr(self.cls, item)
 
     @property
-    def is_typed_dict(self) -> bool | None:
+    def is_typed_dict(self) -> bool:
         if hasattr(self.cls, "__orig_bases__"):
             return any(obj.__name__ == "TypedDict" for obj in self.cls.__orig_bases__)
         try:
-            return self.cls.__class__.__name__ == "_TypedDictMeta"
+            return bool(self.cls.__class__.__name__ == "_TypedDictMeta")
         except AttributeError:
-            pass
+            return False
+        return False
 
     def __match_class_repr__(self) -> str:
         required_values = copy.deepcopy(self.__annotations__)
@@ -215,7 +223,7 @@ class MatchTypedDict:
                 required_values[key] = val.__match_class_repr__()
         return f"{self.cls.__name__}[{required_values}"
 
-    def create_error_msg(self, args: dict) -> str:
+    def create_error_msg(self, args: Any) -> str:
         required_values = copy.deepcopy(self.__annotations__)
         for key, val in required_values.items():
             if hasattr(val, "__match_class_repr__"):
@@ -225,7 +233,7 @@ class MatchTypedDict:
             f"\nRequired parameter:\n`{pprint.pformat(required_values, depth=4)}`"
         )
 
-    def _no_required_inside(self, val: Type[T]) -> bool:
+    def _no_required_inside(self, val: Any) -> bool:
         if get_origin(val) is Required:
             return False
         try:
@@ -249,9 +257,9 @@ class MatchTypedDict:
                     raise TypeError("NotRequired cannot before required")
         return True
 
-    def __call__(self, *args: Any, **kwargs: Any) -> T:
+    def __call__(self, *args: Any, **kwargs: Any) -> Any:
         if self.is_typed_dict:
-            arguments = kwargs if kwargs else args[0]
+            arguments: Any = kwargs if kwargs else args[0]
             if not self.check_annotations():
                 raise TypeError("A NotRequired field can not contain Required")
             if not checking_typing_typedict_values(arguments, self.__annotations__, self.__total__):
@@ -263,28 +271,28 @@ class MatchTypedDict:
         return cls
 
 
-def match_class_typing(cls: Type[T] | None = None, **kwargs: Any) -> Callable[[Type[T]], Type[T]]:
+def match_class_typing(cls: Type[Any] | None = None, **kwargs: Any) -> Any:
     excep_raise = kwargs.pop("excep_raise", TypeMismatch)
     cache_size = kwargs.pop("cache_size", 1)
     severity = kwargs.pop("severity", "env")
     throw_on_undefined = kwargs.pop("throw_on_undefined", False)
 
-    def __has_annotations__(obj: T) -> bool:
+    def __has_annotations__(obj: Any) -> bool:
         return hasattr(obj, "__annotations__")
 
-    def __find_methods(_cls: Type[T]) -> list[str]:
+    def __find_methods(_cls: Type[Any]) -> list[str]:
         return [
             func
             for func in dir(_cls)
             if callable(getattr(_cls, func))
-            and __has_annotations__(getattr(_cls, func))
-            and not hasattr(getattr(_cls, func), "__fe_strng_mtch__")
-            and not isinstance(getattr(_cls, func), classmethod)
-            and len(list(inspect.signature(getattr(_cls, func)).parameters.keys()))
-            > 1  # if it is a function without parameter there is no need to wrap it
+               and __has_annotations__(getattr(_cls, func))
+               and not hasattr(getattr(_cls, func), "__fe_strng_mtch__")
+               and not isinstance(getattr(_cls, func), classmethod)
+               and len(list(inspect.signature(getattr(_cls, func)).parameters.keys()))
+               > 1  # if it is a function without parameter there is no need to wrap it
         ]
 
-    def __add_decorator(_cls: Type[T]) -> Type[T]:
+    def __add_decorator(_cls: Type[Any]) -> None:
         severity_level = _severity_level(severity)
         if severity_level > SEVERITY_LEVEL.DISABLED.value:
             for method in __find_methods(_cls):
@@ -306,10 +314,8 @@ def match_class_typing(cls: Type[T] | None = None, **kwargs: Any) -> Callable[[T
                 except TypeError:
                     pass
 
-    def wrapper(some_cls: Type[T]) -> Type[T]:
-        from typing import _TypedDictMeta
-
-        def inner(*args, **cls_kwargs):
+    def wrapper(some_cls: Type[Any]) -> Any:
+        def inner(*args: Any, **cls_kwargs: Any) -> Any:
             __add_decorator(some_cls)
             if throw_on_undefined:
                 allowed_keys = some_cls.__annotations__.keys()
@@ -319,66 +325,57 @@ def match_class_typing(cls: Type[T] | None = None, **kwargs: Any) -> Callable[[T
                         f"You can use the `TypedDict[{some_cls.__name__}]` "
                         f"only with the following attributes: `{', '.join(allowed_keys)}`"
                     )
-            try:
-                from typing_extensions import _TypedDictMeta as _TypedDictMetaExtension
-            except ImportError:
-                if isinstance(some_cls, _TypedDictMeta):
-                    MatchTypedDict(some_cls)(*args, **cls_kwargs)
-            else:
-                if isinstance(some_cls, _TypedDictMeta) or isinstance(
-                    some_cls, _TypedDictMetaExtension
-                ):
-                    MatchTypedDict(some_cls)(*args, **cls_kwargs)
+            if typing.is_typeddict(some_cls):
+                MatchTypedDict(some_cls)(*args, **cls_kwargs)
             return some_cls(*args, **cls_kwargs)
 
-        inner._matches_class = True
-        return inner
+        _inner: Any = inner
+        _inner._matches_class = True
+        return _inner
 
     if cls is not None:
-        from typing import _TypedDictMeta
-
-        try:
-            from typing_extensions import _TypedDictMeta as _TypedDictMetaExtension
-        except ImportError:
-            if isinstance(cls, _TypedDictMeta):
-                return MatchTypedDict(cls)
-        else:
-            if isinstance(cls, _TypedDictMeta) or isinstance(cls, _TypedDictMetaExtension):
-                return MatchTypedDict(cls)
+        if typing.is_typeddict(cls):
+            return MatchTypedDict(cls)
 
         __add_decorator(cls)
 
-        cls._matches_class = True
-        return cls
+        _cls: Any = cls
+        _cls._matches_class = True
+        return _cls
     else:
         return wrapper
 
 
-def getter(func: Callable[[T], T] = None) -> Any:
+def getter(func: Any = None) -> Any:
     return action(func, "getter", match_typing)
 
 
-def setter(func: Callable[[T], T] = None) -> Any:
+def setter(func: Any = None) -> Any:
     return action(func, "setter", match_typing)
 
 
-def getter_setter(func: Callable[[T], T] = None) -> Any:
+def getter_setter(func: Any = None) -> Any:
     return action(func, "getter_setter", match_typing)
 
 
 class FinalClass:
-    def __new__(cls, instance: Type[T] | None = None, *args: Any, **kwargs: Any) -> Type[T]:
+    cls: Any = None
+
+    def __new__(cls: Type[Any], instance: Type[Any] | None = None, *args: Any, **kwargs: Any) -> Any:
         if args:
             raise RuntimeError(
                 f"`class {instance}` can not inherit from `class {args[0][0].__name__}`"
             )
-        cls.cls = instance
-        return super().__new__(cls)
+        _cls: Any = cls
+        _cls.cls = instance
+        _cls.__doc__ = getattr(instance, "__doc__", None)
+        return super().__new__(_cls)
 
-    def __init__(self, cls: Type[T] | None = None, *args: Any, **kwargs: Any) -> None:
-        self.cls = cls
+    def __init__(self, cls: Type[Any] | None = None, *args: Any, **kwargs: Any) -> None:
+        self.cls: Any = cls
+        self.__doc__ = getattr(cls, "__doc__", None)
 
-    def __getattr__(self, item: T) -> Any:
+    def __getattr__(self, item: str) -> Any:
         return getattr(self.cls, item)
 
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
@@ -390,6 +387,5 @@ class FinalClass:
     def __str__(self) -> str:
         return str(self.cls)
 
-    @property
-    def __doc__(self) -> str:
-        return self.cls.__doc__
+    def get_doc(self) -> str:
+        return str(self.cls.__doc__)
