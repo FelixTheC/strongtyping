@@ -16,7 +16,7 @@ classifiers = [
     "Programming Language :: Python :: 3.14",
     "Programming Language :: Python :: 3.15",
 ]
-license = { text = "MIT License" }
+license = { text = "MIT License", format = 'SPDX' }
 
 [project.urls]
 Homepage = "https://github.com/FelixTheC/strongtyping"
@@ -91,6 +91,20 @@ disallow_untyped_defs = true
 disallow_incomplete_defs = true
 check_untyped_defs = true
 
+[tool.cibuildwheel]
+build = "cp313-*"
+skip = "pp* *musllinux*"
+test-skip = "*"
+
+[tool.cibuildwheel.linux]
+archs = ["x86_64"]
+
+[tool.cibuildwheel.macos]
+archs = ["x86_64", "arm64"]
+
+[tool.cibuildwheel.windows]
+archs = ["AMD64"]
+
 [build-system]
-requires = ["setuptools >= 61.0", "wheel"]
+requires = ["setuptools >= 61.0", "wheel", "mypyc"]
 build-backend = "setuptools.build_meta"
