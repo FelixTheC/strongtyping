@@ -5,29 +5,62 @@ name: Upload Python Package
 
 on:
   release:
-    types: [created]
+    types: [ created ]
 
 jobs:
+  build_wheels:
+    name: Build wheels on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
 
-  deploy:
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Install cibuildwheel
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade build setuptools wheel mypy[mypyc]
+          python -m pip install cibuildwheel          
+
+      - name: Build wheels
+        run: python -m cibuildwheel --output-dir wheelhouse
+
+      - name: Upload wheels
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-${{ matrix.os }}
+          path: wheelhouse/*
+
+  publish:
+    name: Publish to PyPI
+    needs: build_wheels
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v5
-    - name: Set up Python
-      uses: actions/setup-python@v6
-      with:
-        python-version: '3.13'
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install setuptools wheel twine
-    - name: Build and publish
-      env:
-        TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-        TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-      run: |
-        python3 -m pip install --upgrade build
-        python3 -m pip install --upgrade twine
-        python3 -m build
-        python3 -m twine upload  dist/*
+      - name: Download all wheels
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+
+      - name: Flatten wheel directories
+        shell: bash
+        run: |
+          find dist -type f -name "*.whl" -exec mv {} dist/ \;
+          find dist -type d -empty -delete
+
+      - name: Install twine
+        run: python -m pip install --upgrade twine
+
+      - name: Upload to PyPI
+        env:
+          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+        run: python -m twine upload dist/*

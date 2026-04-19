@@ -23,4 +23,4 @@ def test_max_size(cls):
         return len(cached_dict)
 
     assert _add(memory_limit=0.0001) == 1
-    assert _add(memory_limit=1, max_items=1000) == 1000
+    assert _add(memory_limit=1, max_items=1000) == 1

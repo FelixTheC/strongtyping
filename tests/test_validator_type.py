@@ -6,16 +6,15 @@
 """
 import decimal
 import fractions
-import os
 import sys
 from functools import partial
 from typing import Dict, Iterable, List, Tuple, Union
 
 import pytest
 
+from strongtyping.exceptions import TypeMismatch, ValidationError
 from strongtyping.st_types import IterValidator, Validator
-from strongtyping.strong_typing import TypeMismatch, match_class_typing, match_typing
-from strongtyping.strong_typing_utils import ValidationError
+from strongtyping.strong_typing import match_class_typing, match_typing
 
 
 def test_valid_type():
@@ -68,10 +67,10 @@ def test_valid_type():
 
     @match_typing
     def foo(
-        val_a: Validator[
-            Dict[Union[str, int], Union[List[int], Tuple[int, ...]]],
-            partial(min_length, size=2),
-        ]
+            val_a: Validator[
+                Dict[Union[str, int], Union[List[int], Tuple[int, ...]]],
+                partial(min_length, size=2),
+            ]
     ):
         return True
 
@@ -114,10 +113,10 @@ def test_with_type_generics():
 
     @match_typing
     def foo(
-        val_a: Validator[
-            dict[Union[str, int], Union[list[int], tuple[int, ...]]],
-            partial(min_length, size=2),
-        ]
+            val_a: Validator[
+                dict[Union[str, int], Union[list[int], tuple[int, ...]]],
+                partial(min_length, size=2),
+            ]
     ):
         return True
 
@@ -164,12 +163,12 @@ def test_validator_type_with_default():
     assert foo([1, 2]) == []
 
     assert (
-        foo(
-            [
-                1,
-            ]
-        )
-        == []
+            foo(
+                [
+                    1,
+                ]
+            )
+            == []
     )
 
     with pytest.raises(TypeMismatch):
@@ -185,12 +184,12 @@ def test_validator_type_with_default():
     assert foo([1, 2, 3])
     assert foo([1, 2]) is None
     assert (
-        foo(
-            [
-                1,
-            ]
-        )
-        is None
+            foo(
+                [
+                    1,
+                ]
+            )
+            is None
     )
 
     with pytest.raises(TypeMismatch):
@@ -204,10 +203,10 @@ def test_validator_type_with_default():
 
     @match_typing
     def foo(
-        val_a: Validator[
-            Dict[Union[str, int], Union[List[int], Tuple[int, ...]]],
-            partial(min_length, size=2),
-        ]
+            val_a: Validator[
+                Dict[Union[str, int], Union[List[int], Tuple[int, ...]]],
+                partial(min_length, size=2),
+            ]
     ):
         return True
 

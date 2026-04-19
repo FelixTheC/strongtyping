@@ -5,23 +5,31 @@
 @author: felix
 """
 
-import sys
+from collections import deque
 from typing import Any, Union
 
 
-class CachedDict(dict):
+class CachedDict(dict[Any, Any]):
     """
     Warning only use for caching when Memory limit is reached all items will be cleared
     """
 
-    def __init__(self, memory_limit: Union[int, float] = 1, *args: Any, **kwargs: Any) -> None:
+    order: deque[Any]
+
+    def __init__(
+        self: "CachedDict", memory_limit: Union[int, float] = 1, *args: Any, **kwargs: Any
+    ) -> None:
         """
         :param memory_limit: in MB
         """
-        self.memory_limit = memory_limit * 1000000
-        super().__init__(*args, **kwargs)
+        super().__init__()
+        self.max_size = memory_limit
+        self.order = deque()
 
-    def __setitem__(self, key: Any, value: Any) -> None:
-        if sys.getsizeof(self) > self.memory_limit:
-            self.clear()
+    def __setitem__(self: "CachedDict", key: Any, value: Any) -> None:
+        if key not in self:
+            if len(self) >= self.max_size:
+                oldest = self.order.popleft()
+                del self[oldest]
+            self.order.append(key)
         super().__setitem__(key, value)

@@ -10,13 +10,14 @@ import pprint
 import re
 import textwrap
 from functools import wraps
+from typing import Any, Callable, Dict, Optional, Type
 
 from strongtyping.strong_typing_utils import get_origins, get_possible_types
 
 Pattern = re.compile(r"(\$\d[a-zA-Z0-9, ()\n]+)")
 
 
-def getsource(object):
+def getsource(object: Any) -> str:
     """Return the text of the source code for an object.
 
     The argument may be a module, class, method, function, traceback, frame,
@@ -69,9 +70,12 @@ ARGUMENT_TYPE = {
 }
 
 
-def union_types(val, type_origins):
-    types = []
-    for type_origin in get_possible_types(type_origins):
+def union_types(val: Any, type_origins: Any) -> str:
+    types: list[str] = []
+    possible = get_possible_types(type_origins)
+    if possible is None:
+        return str(type_origins)
+    for type_origin in possible:
         try:
             types.append(type_origin.__name__)
         except AttributeError:
@@ -79,7 +83,7 @@ def union_types(val, type_origins):
     return " or ".join(types)
 
 
-def get_type_info(val, type_origins):
+def get_type_info(val: Any, type_origins: Any) -> str:
     origins = get_origins(type_origins)
     val_origins = get_origins(val)
     if get_origins(val)[1] == "Union":
@@ -129,7 +133,7 @@ def get_type_info(val, type_origins):
     else:
         if type_origins:
             try:
-                origins = ", ".join((type_origin.__name__ for type_origin in type_origins))
+                origins_str = ", ".join((type_origin.__name__ for type_origin in type_origins))
             except AttributeError:
                 if len(type_origins) == 1:
                     return f"{get_origins(val)[1]}({get_type_info(val, type_origins[0])})"
@@ -140,20 +144,24 @@ def get_type_info(val, type_origins):
                     )
             except TypeError:
                 try:
-                    return type_origins.__name__
+                    return str(type_origins.__name__)
                 except AttributeError:
                     return str(type_origins)
             else:
-                return f"{get_origins(val)[1]}({origins})"
+                return f"{get_origins(val)[1]}({origins_str})"
         else:
             if hasattr(val, "__name__"):
-                return val.__name__
+                return str(val.__name__)
             return str(val)
 
 
 def docs_from_typing_numpy_format(
-    annotations, additional_infos, func_params, remove_linebreak, func_info
-):
+    annotations: Dict[str, Any],
+    additional_infos: Dict[str, str],
+    func_params: Dict[str, inspect.Parameter],
+    remove_linebreak: bool,
+    func_info: str,
+) -> tuple[str, str]:
     doc_infos = ["Parameters", "----------"]
     type_infos = ["Returns", "-------"]
     func_param_keys = [
@@ -186,8 +194,12 @@ def docs_from_typing_numpy_format(
 
 
 def docs_from_typing_reST_format(
-    annotations, additional_infos, func_params, remove_linebreak, func_info
-):
+    annotations: Dict[str, Any],
+    additional_infos: Dict[str, str],
+    func_params: Dict[str, inspect.Parameter],
+    remove_linebreak: bool,
+    func_info: str,
+) -> tuple[str, str]:
     doc_infos = []
     type_infos = []
     func_param_keys = [
@@ -218,23 +230,22 @@ def docs_from_typing_reST_format(
     return lb + "\n".join(doc_infos + type_infos), func_info
 
 
-def docs_from_typing(func, remove_linebreak, style):
-    annotations = func.__annotations__
-    func_params = inspect.signature(func).parameters
+def docs_from_typing(func: Callable[..., Any], remove_linebreak: bool, style: str) -> Any:
+    annotations: Dict[str, Any] = func.__annotations__
+    func_params: Dict[str, inspect.Parameter] = dict(inspect.signature(func).parameters)
     if func.__doc__:
         if not func.__doc__.endswith("\n") and func.__doc__ != "":
             func_doc = f"{func.__doc__}\n"
         else:
             func_doc = func.__doc__
-        additional_infos = Pattern.split(textwrap.dedent(func_doc))
-        func_info = textwrap.dedent(additional_infos[0])
-        additional_infos = dict(
-            [
-                tuple(filter(lambda x: len(x) > 1, map(str.strip, re.split(r"(\$\d)", info))))
-                for info in additional_infos
-                if info and info[0] == "$"
-            ]
-        )
+        additional_infos_list = Pattern.split(textwrap.dedent(func_doc))
+        func_info = textwrap.dedent(additional_infos_list[0])
+        _additional_infos_gen: Any = [
+            tuple(filter(lambda x: len(x) > 1, map(str.strip, re.split(r"(\$\d)", info))))
+            for info in additional_infos_list
+            if info and info[0] == "$"
+        ]
+        additional_infos: Dict[str, str] = dict(_additional_infos_gen)
     else:
         if func.__name__ != "__init__":
             func_info = f"Function {func.__name__}\n\n"
@@ -251,20 +262,26 @@ def docs_from_typing(func, remove_linebreak, style):
         )
 
 
-def rest_docs_from_typing(_func=None, *, insert_at: str = None, remove_linebreak: bool = False):
-    def wrapper(func):
+def rest_docs_from_typing(
+    _func: Optional[Callable[..., Any]] = None,
+    *,
+    insert_at: Optional[str] = None,
+    remove_linebreak: bool = False,
+) -> Any:
+    def wrapper(func: Callable[..., Any]) -> Any:
         @wraps(func)
-        def inner(*args, **kwargs):
+        def inner(*args: Any, **kwargs: Any) -> Any:
             return func(*args, **kwargs)
 
         text, func_doc = docs_from_typing(func, remove_linebreak, style="rest")
 
+        _inner: Any = inner
         if insert_at is not None:
-            inner.__doc__ = func_doc.replace(insert_at, text)
+            _inner.__doc__ = func_doc.replace(insert_at, text)
         else:
-            inner.__doc__ = f"{func_doc}{text}"
-        inner.has_auto_generated_docs = True
-        return inner
+            _inner.__doc__ = f"{func_doc}{text}"
+        _inner.has_auto_generated_docs = True
+        return _inner
 
     if _func is not None:
         return wrapper(_func)
@@ -272,20 +289,26 @@ def rest_docs_from_typing(_func=None, *, insert_at: str = None, remove_linebreak
         return wrapper
 
 
-def numpy_docs_from_typing(_func=None, *, insert_at: str = None, remove_linebreak: bool = False):
-    def wrapper(func):
+def numpy_docs_from_typing(
+    _func: Optional[Callable[..., Any]] = None,
+    *,
+    insert_at: Optional[str] = None,
+    remove_linebreak: bool = False,
+) -> Any:
+    def wrapper(func: Callable[..., Any]) -> Any:
         @wraps(func)
-        def inner(*args, **kwargs):
+        def inner(*args: Any, **kwargs: Any) -> Any:
             return func(*args, **kwargs)
 
         text, func_doc = docs_from_typing(func, remove_linebreak, style="numpy")
 
+        _inner: Any = inner
         if insert_at is not None:
-            inner.__doc__ = func_doc.replace(insert_at, text)
+            _inner.__doc__ = func_doc.replace(insert_at, text)
         else:
-            inner.__doc__ = f"{func_doc}{text}"
-        inner.has_auto_generated_docs = True
-        return inner
+            _inner.__doc__ = f"{func_doc}{text}"
+        _inner.has_auto_generated_docs = True
+        return _inner
 
     if _func is not None:
         return wrapper(_func)
@@ -293,9 +316,9 @@ def numpy_docs_from_typing(_func=None, *, insert_at: str = None, remove_linebrea
         return wrapper
 
 
-def class_docs_from_typing(_cls=None, *, doc_type: str = "reST"):
-    def wrapper(cls):
-        docs_formatter = (
+def class_docs_from_typing(_cls: Optional[Type[Any]] = None, *, doc_type: str = "reST") -> Any:
+    def wrapper(cls: Type[Any]) -> Any:
+        docs_formatter: Any = (
             rest_docs_from_typing if doc_type.lower() == "rest" else numpy_docs_from_typing
         )
         cls.__doc__ = f"{cls.__doc__}{docs_formatter(cls.__init__).__doc__}"
@@ -306,7 +329,7 @@ def class_docs_from_typing(_cls=None, *, doc_type: str = "reST"):
             if inspect.isfunction(getattr(cls, func)) and func != "__init__"
         ]
         for func in users_funcs:
-            cls_method = getattr(cls, func)
+            cls_method: Any = getattr(cls, func)
             if cls_method.__annotations__ and not hasattr(cls_method, "has_auto_generated_docs"):
                 cls_method.__doc__ = docs_formatter(getattr(cls, func)).__doc__
         return cls

@@ -2,21 +2,21 @@
 name = "strongtyping"
 version = "3.13.5"
 authors = [
-  { name="FelixTheC", email="fberndt87@gmail.com" },
+    { name = "FelixTheC", email = "fberndt87@gmail.com" },
 ]
 description = "Decorator which checks whether the function is called with the correct type of parameters"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.13"
 dependencies = [
-    "ujson==5.6.0",
+    "ujson==5.12.0",
 ]
-classifiers=[
+classifiers = [
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
     "Programming Language :: Python :: 3.15",
 ]
-license = {text = "MIT License"}
+license = { text = "MIT License", format = 'SPDX' }
 
 [project.urls]
 Homepage = "https://github.com/FelixTheC/strongtyping"
@@ -64,20 +64,50 @@ description = "Decorator which checks whether the function is called with the co
 authors = ["FelixTheC <felixeisenmenger@gmx.net>"]
 license = "MIT"
 packages = [
-    {include = "strongtyping"},
-    {include = "strongtyping-stubs"},
+    { include = "strongtyping" },
+    { include = "strongtyping-stubs" },
 ]
 exclude = ["strongtyping/tests"]
 
 [tool.poetry.dependencies]
 python = ">=3.10,<4.0"
 ujson = "5.6.0"
+mypy = "1.20.1"
+librt = "0.9.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "8.4.2"
 pytest-cov = "6.3.0"
 codecov = "2.1.13"
 
+[tool.mypy]
+python_version = "3.13"
+strict = true
+exclude = '^tests/'
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_unused_configs = true
+no_implicit_optional = true
+disallow_any_generics = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+
+[tool.cibuildwheel]
+build = "cp313-*"
+skip = "pp* *musllinux*"
+test-skip = "*"
+before-build = "python -m pip install --upgrade pip setuptools wheel mypy librt"
+
+[tool.cibuildwheel.linux]
+archs = ["x86_64"]
+
+[tool.cibuildwheel.macos]
+archs = ["x86_64", "arm64"]
+
+[tool.cibuildwheel.windows]
+archs = ["AMD64"]
+
 [build-system]
-requires = ["setuptools >= 61.0", "wheel"]
+requires = ["setuptools>=61.0", "wheel", "mypy", "librt"]
 build-backend = "setuptools.build_meta"

@@ -8,20 +8,23 @@
 import logging
 import os
 from types import MethodType
-from typing import Any, Callable, T, Type, Union
+from typing import Any, Callable, ParamSpec, Type, TypeVar, Union
 
 from strongtyping.config import SEVERITY_LEVEL
 
+T = TypeVar("T")
+P = ParamSpec("P")
+
 logger = logging.getLogger(__name__)
 
-ORIGINAL_DUCK_TYPES = {
+ORIGINAL_DUCK_TYPES: Any = {
     int: [int, float, complex],
     float: [float, complex],
     bytearray: [bytearray, bytes],
 }
 
 
-def remove_subclass(args: Any, subclass: T) -> T:
+def remove_subclass(args: Any, subclass: bool) -> Any:
     if len(args) == 1:
         return args
     cls = args[0] if subclass else None
@@ -37,57 +40,55 @@ SEVERITY_CONFIG = {
 }
 
 
-def _severity_level(severity_: Union[str, SEVERITY_LEVEL]) -> SEVERITY_LEVEL | int:
+def _severity_level(severity_: Union[str, SEVERITY_LEVEL]) -> int:
     if severity_ == "env":
         _level = os.environ.get("ST_SEVERITY", "1")
         try:
             return int(_level)
         except (TypeError, ValueError):
-            return SEVERITY_CONFIG[_level].value
+            return int(SEVERITY_CONFIG[_level].value)
     else:
-        return severity_.value  # type: ignore
+        return int(severity_.value) if isinstance(severity_, SEVERITY_LEVEL) else int(severity_)
 
 
 exclude_builtins = dir(object)
 
 
 def _get_new(
-    typing_func: Callable[[T], T],
+    typing_func: Callable[..., Any],
     excep_raise: Type[Exception] = TypeError,
     cache_size: int = 0,
     severity: str = "env",
     **kwargs: Any,
-) -> Callable[[Type[T]], Type[T]]:
-    def new_with_match_typing(cls_, *args, **kwargs):
-        def add_match_typing(obj: object, attr: str) -> bool:
+) -> Any:
+    def new_with_match_typing(cls_: Type[T], *args: Any, **kwargs: Any) -> T:
+        def add_match_typing(obj: T, attr: str) -> bool:
             if (
                 hasattr(getattr(cls_, attr), "__annotations__")
                 and getattr(cls_, attr).__class__.__name__ != "property"
-                and not hasattr(getattr(x, attr), "__fe_strng_mtch__")
+                and not hasattr(getattr(obj, attr), "__fe_strng_mtch__")
             ):
-                type_annotations = getattr(getattr(cls_, attr), "__annotations__")
+                type_annotations: dict[str, Any] = getattr(getattr(cls_, attr), "__annotations__")
                 return len([i for i in type_annotations.keys() if i != "return"]) > 0
             return False
 
-        x = object.__new__(cls_)
-        [
-            setattr(
-                x,
-                cls_func,
-                MethodType(
-                    typing_func(
-                        getattr(x, cls_func),
-                        excep_raise=excep_raise,
-                        cache_size=cache_size,
-                        subclass=True,
-                        severity=severity,
-                    ),
+        x: T = object.__new__(cls_)
+        for cls_func in dir(x):
+            if cls_func not in exclude_builtins and add_match_typing(x, cls_func):
+                setattr(
                     x,
-                ),
-            )
-            for cls_func in dir(x)
-            if cls_func not in exclude_builtins and add_match_typing(x, cls_func)
-        ]
+                    cls_func,
+                    MethodType(
+                        typing_func(
+                            getattr(x, cls_func),
+                            excep_raise=excep_raise,
+                            cache_size=cache_size,
+                            subclass=True,
+                            severity=severity,
+                        ),
+                        x,
+                    ),
+                )
         return x
 
     return new_with_match_typing
@@ -107,27 +108,28 @@ def install_st_m() -> None:
             os.environ["ST_MODULES_INSTALLED"] = "1"
 
 
-def action(f: Any, frefs: Any, type_function: Any) -> Any:
+def action(f: Callable[..., Any], frefs: str, type_function: Any) -> Any:
     """
     This code is original from Ruud van der Ham https://github.com/salabim/easy_property
     """
-    if f.__qualname__ == action.qualname:
-        if any(action.f[fref] is not None for fref in frefs.split("_")):
+    _action: Any = action
+    if f.__qualname__ == _action.qualname:
+        if any(_action.f[fref] is not None for fref in frefs.split("_")):
             raise AttributeError("decorator defined twice")
     else:
-        action.f.update({}.fromkeys(action.f, None))  # reset all values to None
-        action.qualname = f.__qualname__
-    action.f.update({}.fromkeys(frefs.split("_"), f))  # set all frefs values to f
+        _action.f.update({}.fromkeys(_action.f, None))  # reset all values to None
+        _action.qualname = f.__qualname__
+    _action.f.update({}.fromkeys(frefs.split("_"), f))  # set all frefs values to f
 
     # this line was added by myself
-    action.f["setter"] = (
-        type_function(action.f["setter"]) if action.f["setter"] is not None else None
+    _action.f["setter"] = (
+        type_function(_action.f["setter"]) if _action.f["setter"] is not None else None
     )
 
     return property(
         *(
-            action.f[ref] if (ref != "documenter" or action.f[ref] is None) else action.f[ref](0)
-            for ref in action.f
+            _action.f[ref] if (ref != "documenter" or _action.f[ref] is None) else _action.f[ref](0)
+            for ref in _action.f
         )
     )
 

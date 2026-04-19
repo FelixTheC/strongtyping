@@ -9,64 +9,86 @@
 [![Documentation Status](https://readthedocs.org/projects/strongtyping/badge/?version=latest)](https://strongtyping.readthedocs.io/en/latest/?badge=latest)
 [![](https://img.shields.io/pypi/dm/strongtyping.svg)](https://pypi.org/project/strongtyping/)
 
-
-[__*strongtyping*__](https://github.com/FelixTheC/strongtyping) gives you a handy decorator which checks <b>at runtime</b> whether a function has been called with the correct parameter types.<br> 
+[__*strongtyping*__](https://github.com/FelixTheC/strongtyping) gives you a handy decorator which checks <b>at
+runtime</b> whether a function has been called with the correct parameter types.<br>
 It raises <b><em>TypeMismatch</em></b> if the parameters used in a function call are invalid.</p>
 
 ### The Problem
 
-Even if you use an advanced IDE which can highlight typing issues, in bigger projects you'll probably find yourself struggling through long debugging sessions before realising the issue was due to the _wrong type of argument_.  These bugs are tricky to spot because they don't necessarily crash the program, but the output is still unexpected or just plain wrong.  For example:
+Even if you use an advanced IDE which can highlight typing issues, in bigger projects you'll probably find yourself
+struggling through long debugging sessions before realising the issue was due to the _wrong type of argument_. These
+bugs are tricky to spot because they don't necessarily crash the program, but the output is still unexpected or just
+plain wrong. For example:
 
 ```python
->>> def multiplier(a: int, b: int):
-...     return a * b
+>> >
+
+def multiplier(a: int, b: int):
+    ...
 
 
->>> product = multiplier(3, 4)
+return a * b
+
+>> > product = multiplier(3, 4)
 12
 
->>> product_2 = multiplier('Hello', 'World') # Will be highlighted in some IDE's
+>> > product_2 = multiplier('Hello', 'World')  # Will be highlighted in some IDE's
 TypeError
 
->>> product_3 = multiplier('Hello', 4)
+>> > product_3 = multiplier('Hello', 4)
 'HelloHelloHelloHello'
 # No Exception but the result isn’t really what we expect
 ```
+
 ___
-Without `strongtyping` you have to check for every valid type of every parameter in every function, which creates a lot of noisy/bloated code and begs the questions "Why use Python type hinting at all?":
+Without `strongtyping` you have to check for every valid type of every parameter in every function, which creates a lot
+of noisy/bloated code and begs the questions "Why use Python type hinting at all?":
 ___
 
 ```python
->>> def multipler(a: int, b: int):
-...     if isinstance(a, int) and isinstance(b, int):
-...         return a * b
+>> >
+
+def multipler(a: int, b: int):
+    ...
+
+
+if isinstance(a, int) and isinstance(b, int):
+    ...
+return a * b
 
 ```
 
 ### The Solution
 
-I love Python and its freedom, but with the new option of adding _type hints_ I wanted to get rid of writing `if isinstance(value, whatever)` repeatedly in my programs, so I decided to create `strongtyping`...
+I love Python and its freedom, but with the new option of adding _type hints_ I wanted to get rid of writing
+`if isinstance(value, whatever)` repeatedly in my programs, so I decided to create `strongtyping`...
 
-My solution is a simple decorator called `@match_typing` which will check <b>at runtime</b> whether the parameters you provide to a function are valid, based on type hints you've already defined in the `def` line.  Here are some examples:
- 
+My solution is a simple decorator called `@match_typing` which will check <b>at runtime</b> whether the parameters you
+provide to a function are valid, based on type hints you've already defined in the `def` line. Here are some examples:
+
 ```python
 from typing import List, Union
 import datetime
 from strongtyping.strong_typing import match_typing
 
+
 @match_typing
 def func_a(a: str, b: int, c: list):
     ...
+
 
 func_a('1', 2, [i for i in range(5)])
 # >>> True
 
 func_a(1, 2, [i for i in range(5)])
+
+
 # >>> will raise a TypeMismatch Exception
 
 @match_typing
 def func_e(a: List[Union[str, int]], b: List[Union[str, int, tuple]]):
     return f'{len(a)}-{len(b)}'
+
 
 func_e([1, '2', 3, '4'], [5, ('a', 'b'), '10'])
 # >>> '4-3'
@@ -76,14 +98,16 @@ func_e([5, ('a', 'b'), '10'], [1, '2', 3, datetime.date])
 ```
 
 ## Requirements
+
 <b>Python 3.13</b>
 
 ## Optional requirements
+
 - ujson
 - pytest
- 
 
 ## What's included
+
 #### from strongtyping.strong_typing import
 
 * `@match_typing`
@@ -92,23 +116,19 @@ func_e([5, ('a', 'b'), '10'], [1, '2', 3, datetime.date])
 * `@setter`
 * `@getter_setter`
 
-#### from strongtyping.type_namedtuple import 
-* `typed_namedtuple`
+#### from strongtyping.type_namedtuple import
+
+* `@typed_namedtuple`
+
+#### from strongtyping.exceptions import
+
+* `@TypeMismatch`
+* `@ValidationError`
+* `@UndefinedKey`
 
 #### from strongtyping.docs_from_typing import
+
 * `@class_docs_from_typing`
 * `@rest_docs_from_typing`
 * `@numpy_docs_from_typing`
-
-#### from strongtyping.types import 
-* `Validator`
-* `IterValidator`
-
-
-## Extension
-#### strongtpying_module
-
-- A __package__ I wrote in __Cython__ to speed up parameter checking.  This package provides a speed boost of __over 300%__.
-- you can simply install this package with `pip install strongtyping-modules`
-- for more detailed information please check out the [README](https://github.com/FelixTheC/strongtyping_modules/blob/master/README.md)
 

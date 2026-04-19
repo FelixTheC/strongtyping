@@ -7,7 +7,8 @@
 import pytest
 
 from strongtyping.docstring_typing import getter_setter as dt_getter_setter, setter as dt_setter
-from strongtyping.strong_typing import TypeMismatch, getter_setter, setter
+from strongtyping.exceptions import TypeMismatch
+from strongtyping.strong_typing import getter_setter, setter
 
 
 class Dummy:

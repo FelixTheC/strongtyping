@@ -5,7 +5,6 @@
 @author: felix
 """
 import json
-import os
 import sys
 from dataclasses import dataclass
 from datetime import datetime
@@ -25,6 +24,7 @@ from typing import (
     Set,
     Tuple,
     Type,
+    TypeGuard,
     TypeVar,
     Union,
 )
@@ -34,9 +34,9 @@ import pytest
 import ujson as ujson
 
 from strongtyping.config import SEVERITY_LEVEL
+from strongtyping.exceptions import TypeMismatch
 from strongtyping.strong_typing import match_class_typing, match_typing
 from strongtyping.strong_typing_utils import (
-    TypeMismatch,
     check_type,
     checking_typing_dict,
     checking_typing_json,
@@ -446,8 +446,8 @@ def test_with_dict():
         return f"{a}-{b}"
 
     assert (
-        func_a({"a": 5, "b": 2}, {("hello", "world"): 10, ("foo", "bar"): 6})
-        == "{'a': 5, 'b': 2}-{('hello', 'world'): 10, ('foo', 'bar'): 6}"
+            func_a({"a": 5, "b": 2}, {("hello", "world"): 10, ("foo", "bar"): 6})
+            == "{'a': 5, 'b': 2}-{('hello', 'world'): 10, ('foo', 'bar'): 6}"
     )
 
     with pytest.raises(TypeMismatch):
@@ -1119,7 +1119,7 @@ def test_strongtyping_modules_integration():
         from strongtyping_modules.strongtyping_modules import list_elements
 
         with mock.patch(
-            "strongtyping.strong_typing_utils.list_elements", side_effect=list_elements
+                "strongtyping.strong_typing_utils.list_elements", side_effect=list_elements
         ) as mocked_list_module:
 
             @match_typing
@@ -1236,7 +1236,6 @@ def test_with_binary_union_operator():
 
 @pytest.mark.skipif(sys.version_info.minor < 13, reason="complex TypeVar available since 3.13")
 def test_typevar():
-
     any_type = TypeVar("any_type")
     my_type = TypeVar("my_type", str, bytes)
     my_bound_type = TypeVar("my_bound_type", bound=str)
@@ -1299,17 +1298,17 @@ def test_pep604_union_syntax():
     assert check_type("hello", str | int) is True
     assert check_type(42, str | int) is True
     assert check_type(3.14, str | int) is False
-    
+
     # Test with None (Optional-like)
     assert check_type([], list[str] | None) is True
     assert check_type(None, list[str] | None) is True
     assert check_type("not a list", list[str] | None) is False
-    
+
     # Test complex nested types
     assert check_type([1, 2, 3], list[int] | dict[str, int]) is True
-    assert check_type({"a": 1}, list[int] | dict[str, int]) is True  
+    assert check_type({"a": 1}, list[int] | dict[str, int]) is True
     assert check_type("neither", list[int] | dict[str, int]) is False
-    
+
     # Test three-way union
     assert check_type("text", str | int | list) is True
     assert check_type(123, str | int | list) is True
@@ -1324,9 +1323,9 @@ def test_pep604_vs_traditional_union():
     # Both should behave identically
     pep604_type = str | int
     traditional_type = Union[str, int]
-    
+
     test_values = ["hello", 42, 3.14, [], None]
-    
+
     for value in test_values:
         pep604_result = check_type(value, pep604_type)
         traditional_result = check_type(value, traditional_type)
@@ -1335,21 +1334,24 @@ def test_pep604_vs_traditional_union():
 
 def test_pep604_with_decorators():
     """Test PEP 604 union syntax works with @match_typing decorator"""
+
     @match_typing
     def process_value(x: str | int | None) -> str:
         if x is None:
             return "none"
         return str(x)
-    
+
     assert process_value("hello") == "hello"
-    assert process_value(42) == "42" 
+    assert process_value(42) == "42"
     assert process_value(None) == "none"
-    
+
     with pytest.raises(TypeMismatch):
         process_value([1, 2, 3])
 
+
 def test_annotated_function():
     """Test that annotated functions work correctly with @match_typing"""
+
     @match_typing
     def annotated_func(x: Annotated[int, lambda x: x > 0]) -> str:
         return f"Processed: {x}"
@@ -1359,8 +1361,10 @@ def test_annotated_function():
     with pytest.raises(TypeMismatch):
         annotated_func(-10)
 
+
 def test_annotated_function_with_string_info():
     """Test that annotated functions work correctly with @match_typing"""
+
     @match_typing
     def annotated_func(x: Annotated[int, "Should be greater than zero and even"]) -> str:
         return f"Processed: {x}"
@@ -1370,11 +1374,14 @@ def test_annotated_function_with_string_info():
     # text metadata information is not supported
     assert annotated_func(5) == "Processed: 5"
 
+
 def is_even(value: int) -> bool:
     return value % 2 == 0
 
+
 def test_annotated_function_with_multiple_checks():
     """Test that annotated functions work correctly with @match_typing"""
+
     @match_typing
     def annotated_func(x: Annotated[int, lambda x: x > 0, is_even, "lorem ipsum dolor"]) -> str:
         return f"Processed: {x}"
@@ -1383,6 +1390,23 @@ def test_annotated_function_with_multiple_checks():
 
     with pytest.raises(TypeMismatch):
         annotated_func(3)
+
+
+def test_with_binary_union_operator():
+    @match_typing
+    def func_e(a, b) -> TypeGuard[str]:
+        return f"{len(a)}-{len(b)}"
+
+    assert func_e([1, "2", 3, "4"], [5, ("a", "b"), "10"]) == "4-3"
+
+
+def test_type_guard_fails():
+    @match_typing
+    def func_e(a, b) -> TypeGuard[int]:
+        return f"{len(a)}-{len(b)}"
+
+    with pytest.raises(TypeMismatch):
+        assert func_e([1, "2", 3, "4"], [5, ("a", "b"), "10"]) == "4-3"
 
 
 if __name__ == "__main__":

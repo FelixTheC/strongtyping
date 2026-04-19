@@ -10,8 +10,8 @@ try:
 except ImportError:
     CaseInsensitiveDict = UNIMPORTED
 
+from strongtyping.exceptions import TypeMismatch
 from strongtyping.strong_typing import match_typing
-from strongtyping.strong_typing_utils import TypeMismatch
 
 
 def test_int_float_duck_typing():
