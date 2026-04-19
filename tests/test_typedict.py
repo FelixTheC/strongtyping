@@ -10,10 +10,10 @@ from typing import List, NotRequired, Required, TypedDict, Union, Unpack
 
 import pytest
 
+from strongtyping.exceptions import TypeMismatch, UndefinedKey, ValidationError
 from strongtyping.helpers import validate_typed_dict
 from strongtyping.st_types import Validator
 from strongtyping.strong_typing import match_class_typing, match_typing
-from strongtyping.strong_typing_utils import TypeMismatch, UndefinedKey, ValidationError
 
 
 def test_typedict():

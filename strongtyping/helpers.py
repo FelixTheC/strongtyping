@@ -1,8 +1,8 @@
 import re
 from typing import Any, Callable, Optional, Sized, Type, TypeVar
 
+from strongtyping.exceptions import TypeMismatch, ValidationError
 from strongtyping.strong_typing import match_typing
-from strongtyping.strong_typing_utils import TypeMismatch, ValidationError
 
 T = TypeVar("T")
 

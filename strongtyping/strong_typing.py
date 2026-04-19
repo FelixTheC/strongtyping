@@ -11,9 +11,8 @@ from typing import Any, Callable, NotRequired, Required, Type, get_args, get_ori
 from strongtyping._utils import _severity_level, action, remove_subclass
 from strongtyping.cached_set import CachedSet
 from strongtyping.config import SEVERITY_LEVEL
+from strongtyping.exceptions import TypeMismatch, UndefinedKey
 from strongtyping.strong_typing_utils import (
-    TypeMismatch,
-    UndefinedKey,
     check_type,
     checking_typing_typedict_values,
     default_return_queue,

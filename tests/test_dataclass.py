@@ -7,8 +7,8 @@ from dataclasses import dataclass, field
 
 import pytest
 
+from strongtyping.exceptions import TypeMismatch
 from strongtyping.strong_typing import match_class_typing
-from strongtyping.strong_typing_utils import TypeMismatch
 
 
 def test_create_instance():

@@ -6,7 +6,6 @@
 """
 
 import inspect
-import sys
 import types
 import typing
 from collections import deque
@@ -16,31 +15,12 @@ from queue import Queue
 from typing import Any, TypeVar
 
 from strongtyping._utils import ORIGINAL_DUCK_TYPES
+from strongtyping.exceptions import ValidationError
 
 empty = object()
 default_return_queue: Queue[Any] = Queue()
 
 T = TypeVar("T")
-
-
-class TypeMismatch(AttributeError):
-    def __init__(self, message: str, failed_params: Any = None, param_values: Any = None,
-                 annotations: Any = None) -> None:
-        super().__init__()
-        print(message, file=sys.stderr)
-
-
-class ValidationError(Exception):
-    def __init__(self, message: str) -> None:
-        super().__init__()
-        print(message, file=sys.stderr)
-
-
-class UndefinedKey(Exception):
-    def __init__(self, message: str) -> None:
-        super().__init__()
-        print(message, file=sys.stderr)
-
 
 typing_base_class = typing._GenericAlias  # type: ignore
 

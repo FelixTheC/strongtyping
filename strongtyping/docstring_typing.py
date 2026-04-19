@@ -16,7 +16,7 @@ from typing import Any
 
 from strongtyping._utils import _get_new, _severity_level, action, remove_subclass
 from strongtyping.cached_set import CachedSet
-from strongtyping.strong_typing_utils import TypeMismatch
+from strongtyping.exceptions import TypeMismatch
 
 TYPE_EXTRACTION_PATTERN = r"(^[:a-zA-Z0-9 _-]+(:))"
 PATTERN_1 = r""

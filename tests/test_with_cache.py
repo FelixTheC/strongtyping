@@ -11,8 +11,8 @@ from typing import List, Optional
 
 import pytest
 
+from strongtyping.exceptions import TypeMismatch
 from strongtyping.strong_typing import match_class_typing, match_typing
-from strongtyping.strong_typing_utils import TypeMismatch
 
 
 def test_func_with_cache():
