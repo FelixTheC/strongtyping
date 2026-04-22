@@ -2,28 +2,29 @@ site_name: strongtyping
 site_url: https://github.com/FelixTheC/strongtyping
 repo_name: 'FelixTheC-strongtyping'
 nav:
-    - Home: 'index.md'
-    - User's guide:
-        - 'Installation': 'install.md'
-    - Runtime Typechecking:
-        - 'match_typing': 'match_typing.md'
-        - 'match_class_typing': 'match_class_typing.md'
-        - 'severity_level': 'severity_level.md'
-        - 'typed_namedtuple': 'namedtuple.md'
-        - 'getter / setter': 'setter.md'
-        - 'getter_setter': 'getter_setter.md'
-    - Additional Tools:
-        - 'docs_from_typing': 'docs_from_typing.md'
-        - 'rest_docs_from_typing': 'rest_docs_from_typing.md'
-        - 'numpy_docs_from_typing': 'numpy_docs_from_typing.md'
-    - Custom Types:
-        - 'Validator - type': 'validator.md'
-        - 'IterValidator - type': 'itervalidator.md'
-        - 'FrozenType': 'frozentype.md'
-    - About:
-        - 'License': 'license.md'
-        - 'Release Notes': 'release-notes.md'
-        - 'Authors': 'authors.md'
-        - 'Special thanks': 'special_thanks.md'
+  - Home: 'index.md'
+  - User's guide:
+      - 'Installation': 'install.md'
+  - Runtime Typechecking:
+      - 'match_typing': 'match_typing.md'
+      - 'match_class_typing': 'match_class_typing.md'
+      - 'work_with_annotated': 'annotated.md'
+      - 'severity_level': 'severity_level.md'
+      - 'typed_namedtuple': 'namedtuple.md'
+      - 'getter / setter': 'setter.md'
+      - 'getter_setter': 'getter_setter.md'
+  - Additional Tools:
+      - 'docs_from_typing': 'docs_from_typing.md'
+      - 'rest_docs_from_typing': 'rest_docs_from_typing.md'
+      - 'numpy_docs_from_typing': 'numpy_docs_from_typing.md'
+  - Custom Types:
+      - 'Validator - type': 'validator.md'
+      - 'IterValidator - type': 'itervalidator.md'
+      - 'FrozenType': 'frozentype.md'
+  - About:
+      - 'License': 'license.md'
+      - 'Release Notes': 'release-notes.md'
+      - 'Authors': 'authors.md'
+      - 'Special thanks': 'special_thanks.md'
 theme: readthedocs
-extra_css: [extra.css]
+extra_css: [ extra.css ]
