@@ -94,7 +94,7 @@ disallow_incomplete_defs = true
 check_untyped_defs = true
 
 [tool.cibuildwheel]
-build = "cp313-*"
+build = "cp313-* cp314-*"
 skip = "pp* *musllinux*"
 test-skip = "*"
 before-build = "python -m pip install --upgrade pip setuptools wheel mypy librt"
