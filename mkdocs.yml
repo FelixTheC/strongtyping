@@ -5,6 +5,7 @@ nav:
   - Home: 'index.md'
   - User's guide:
       - 'Installation': 'install.md'
+      - 'AI Agent Ready' : 'ai_agent_ready.md'
   - Runtime Typechecking:
       - 'match_typing': 'match_typing.md'
       - 'match_class_typing': 'match_class_typing.md'

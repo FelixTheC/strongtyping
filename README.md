@@ -16,7 +16,7 @@
 <p>Decorator which <b>checks at Runtime</b> whether the function is called with the correct type of parameters.<br> 
 And <b><em>raises</em> TypeMisMatch</b> if the used parameters in a function call where invalid.</p>
 
-# This is the release for Python-3.13 and above
+# This is the release for Python-3.14 and above
 
 - If you need a different version please checkout the release Tags 2.\*.*
 
@@ -24,5 +24,17 @@ And <b><em>raises</em> TypeMisMatch</b> if the used parameters in a function cal
 
 - Since __3.13.6__ `mypyc` is used to compile the core logic code.
 - This results in a significant performance boost from around __5x faster__, especially for large containers.
+
+### 🤖 AI Agent Ready
+
+This library includes [Agent Skills](https://agentskills.io/) for AI coding assistants (like Claude Code, Cursor, and
+GitHub Copilot). These skills provide the AI with specialized knowledge on how to apply runtime type checking, handle
+`TypeMismatch` exceptions, and follow best practices when using `strongtyping` in your codebase.
+
+You can validate the skills by running:
+
+```bash
+pytest tests/test_skills.py
+```
 
 ## [Docs have been moved to 'readthedocs'](https://strongtyping.readthedocs.io/en/latest/#the-solution)

@@ -6,9 +6,13 @@ authors = [
 ]
 description = "Decorator which checks whether the function is called with the correct type of parameters"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.14"
+# Only include ACTUAL runtime dependencies here
 dependencies = [
-    "ujson==5.12.0",
+    "ujson>=5.12.0",
+    "librt>=0.9.0",
+    "typing-extensions>=4.4.0",
+    "cibuildwheel>=3.4.1",
 ]
 classifiers = [
     "License :: OSI Approved :: MIT License",
@@ -16,85 +20,57 @@ classifiers = [
     "Programming Language :: Python :: 3.14",
     "Programming Language :: Python :: 3.15",
 ]
-license = { text = "MIT License", format = 'SPDX' }
+license = { text = "MIT License" }
 
 [project.urls]
 Homepage = "https://github.com/FelixTheC/strongtyping"
 Repository = "https://github.com/FelixTheC/strongtyping"
 Documentation = "https://strongtyping.readthedocs.io/en/latest/"
 
+# --- BUILD SYSTEM ---
+# Since you are using mypyc, setuptools is currently the most stable backend
+# for handling C-extensions via a setup.py or build script.
+[build-system]
+requires = ["setuptools>=61.0", "wheel", "mypy>=1.20.1"]
+build-backend = "setuptools.build_meta"
+
 [tool.setuptools]
+package-dir = { "" = "src" }
 packages = ["strongtyping", "strongtyping-stubs"]
 include-package-data = true
 
 [tool.setuptools.package-data]
 "strongtyping-stubs" = ["**/*.py", "**/*.pyi"]
+"strongtyping" = ["py.typed", "skills/**/*"]
 
-[tool.black]
-line-length = 100
-target-version = ['py313']
+# --- UV DEPENDENCY GROUPS ---
+# Move your testing and dev tools here so they don't bloat your production install
+[dependency-groups]
+dev = [
+    "mypy[mypyc]>=1.20.1",
+    "pytest>=9.0.3",
+    "pytest-cov>=7.1.0",
+    "codecov>=2.1.13",
+    "black>=24.0.0",
+    "isort>=5.13.0",
+    "ruff>=0.3.0",
+]
 
-#[tool.bumpver]
-#current_version = "1970.1.1"
-#version_pattern = "YYYY.MM.INC1"
-#commit_message = "Bump version {old_version} -> {new_version}"
-#commit = true
-#tag = false
-#push = false
-#
-#[tool.bumpver.file_patterns]
-#"pyproject.toml" = ['current_version = "{version}"']
-#"setup.py" = ['version="{pep440_version}"']
-#"README.md" = ['**Last release:** {version}']
-
-[tool.isort]
-combine_as_imports = true
-line_length = 100
-profile = "black"
-
+# --- TOOL CONFIGS ---
 [tool.ruff]
-exclude = ["strongtyping/tests"]
 line-length = 100
 target-version = "py313"
-
-[tool.poetry]
-name = "strongtyping"
-version = "3.13.4"
-description = "Decorator which checks whether the function is called with the correct type of parameters"
-authors = ["FelixTheC <felixeisenmenger@gmx.net>"]
-license = "MIT"
-packages = [
-    { include = "strongtyping" },
-    { include = "strongtyping-stubs" },
-]
-exclude = ["strongtyping/tests"]
-
-[tool.poetry.dependencies]
-python = ">=3.10,<4.0"
-ujson = "5.6.0"
-mypy = "1.20.1"
-librt = "0.9.0"
-
-[tool.poetry.group.dev.dependencies]
-pytest = "8.4.2"
-pytest-cov = "6.3.0"
-codecov = "2.1.13"
+src = ["src"]
+exclude = ["src/strongtyping/tests"]
 
 [tool.mypy]
 python_version = "3.13"
 strict = true
-exclude = '^tests/'
-warn_unused_ignores = true
-warn_redundant_casts = true
-warn_unused_configs = true
-no_implicit_optional = true
-disallow_any_generics = true
-disallow_untyped_defs = true
-disallow_incomplete_defs = true
-check_untyped_defs = true
+mypy_path = "src"
+exclude = ['^tests/']
 
 [tool.cibuildwheel]
-build = "cp313-* cp314-*"
+build = "cp314-*"
 skip = "pp* *musllinux*"
 test-skip = "*"
 before-build = "python -m pip install --upgrade pip setuptools wheel mypy librt"
@@ -107,7 +83,3 @@ archs = ["x86_64", "arm64"]
 
 [tool.cibuildwheel.windows]
 archs = ["AMD64"]
-
-[build-system]
-requires = ["setuptools>=61.0", "wheel", "mypy", "librt"]
-build-backend = "setuptools.build_meta"
