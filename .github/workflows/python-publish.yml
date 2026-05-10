@@ -111,9 +111,9 @@ jobs:
         uses: astral-sh/setup-uv@v5
 
       - name: Build wheels via cibuildwheel
-        uses: pypa/cibuildwheel@v2.22.0
+        uses: pypa/cibuildwheel@v3.4.1
         env:
-          CIBW_BUILD_FRONTEND: "build[uv]"
+          CIBW_BUILD_FRONTEND: "uv"
           CIBW_BUILD: "cp${{ needs.setup.outputs.python-short }}-*"
           CIBW_BEFORE_BUILD: "uv pip install mypy[mypyc] librt"
 
