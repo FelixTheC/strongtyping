@@ -8,60 +8,117 @@ on:
     types: [ created ]
 
 jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      python-version: ${{ steps.set-python-version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Extract min required python version
+        id: set-python-version
+        run: |
+          # Use tomllib for robust parsing (Python 3.11+)
+          VERSION=$(python3 -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['requires-python'].replace('>=', '').strip())")
+          echo "Extracted version: $VERSION"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+  update_version:
+    needs: setup
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Set Release version
+        run: uv version ${{ github.event.release.tag_name }}
+
+      - name: Commit and push changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add pyproject.toml
+          git commit -m "chore: bump version to ${{ github.event.release.tag_name }}"
+          git push
+
+  build_sdist:
+    needs: [ setup, update_version ]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Build sdist
+        run: uv build --sdist
+
+      - name: Upload sdist
+        uses: actions/upload-artifact@v4
+        with:
+          name: sdist
+          path: dist/*.tar.gz
+
   build_wheels:
-    name: Build wheels on ${{ matrix.os }} (Python ${{ matrix.python-version }})
+    needs: [ setup, update_version ]
+    name: Build wheels on ${{ matrix.os }} for Python ${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: false
       matrix:
         os: [ ubuntu-latest, macos-latest, windows-latest ]
-        python-version: [ "3.13", "3.14" ]
+        python-version: [ "${{ needs.setup.outputs.python-version }}" ]
 
     steps:
-      - uses: actions/checkout@v5
-
-      - name: Set up Python
-        uses: actions/setup-python@v6
+      - uses: actions/checkout@v4
         with:
-          python-version: ${{ matrix.python-version }}
+          ref: main
 
-      - name: Install cibuildwheel
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install --upgrade build setuptools wheel mypy[mypyc]
-          python -m pip install cibuildwheel          
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
 
-      - name: Build wheels
-        run: python -m cibuildwheel --output-dir wheelhouse
+      - name: Build wheels via cibuildwheel
+        uses: pypa/cibuildwheel@v2.22.0
+        env:
+          CIBW_BUILD_FRONTEND: "uv"
+          # Only build for the specific Python version extracted earlier
+          CIBW_BUILD: "cp${{ matrix.python-version | replace('.', '') }}-*"
+          CIBW_BEFORE_BUILD: "uv pip install mypy[mypyc] librt"
 
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
-          name: wheels-${{ matrix.os }}
-          path: wheelhouse/*
+          name: wheels-${{ matrix.os }}-${{ matrix.python-version }}
+          path: ./wheelhouse/*.whl
 
   publish:
     name: Publish to PyPI
-    needs: build_wheels
+    needs: [ build_wheels, build_sdist ]
     runs-on: ubuntu-latest
-
+    permissions:
+      id-token: write
+      contents: read
     steps:
-      - name: Download all wheels
+      - name: Download sdist and wheels
         uses: actions/download-artifact@v4
         with:
           path: dist
+          merge-multiple: true
 
-      - name: Flatten wheel directories
-        shell: bash
-        run: |
-          find dist -type f -name "*.whl" -exec mv {} dist/ \;
-          find dist -type d -empty -delete
-
-      - name: Install twine
-        run: python -m pip install --upgrade twine
-
-      - name: Upload to PyPI
-        env:
-          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-        run: python -m twine upload dist/* --verbose --skip-existing
+      - name: Publish package distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: ${{ secrets.PYPI_USERNAME }}
+          password: ${{ secrets.PYPI_PASSWORD }}

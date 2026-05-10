@@ -7,12 +7,11 @@ authors = [
 description = "Decorator which checks whether the function is called with the correct type of parameters"
 readme = "README.md"
 requires-python = ">=3.14"
-# Only include ACTUAL runtime dependencies here
+
 dependencies = [
     "ujson>=5.12.0",
-    "librt>=0.9.0",
+    "librt>=0.10.0",
     "typing-extensions>=4.4.0",
-    "cibuildwheel>=3.4.1",
 ]
 classifiers = [
     "License :: OSI Approved :: MIT License",
@@ -54,6 +53,7 @@ dev = [
     "black>=24.0.0",
     "isort>=5.13.0",
     "ruff>=0.3.0",
+    "cibuildwheel>=3.4.1",
 ]
 
 # --- TOOL CONFIGS ---
@@ -70,7 +70,7 @@ mypy_path = "src"
 exclude = ['^tests/']
 
 [tool.cibuildwheel]
-build = "cp314-*"
+build = "cp314-* cp315-*"
 skip = "pp* *musllinux*"
 test-skip = "*"
 before-build = "python -m pip install --upgrade pip setuptools wheel mypy librt"
