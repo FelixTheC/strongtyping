@@ -94,7 +94,7 @@ jobs:
         env:
           CIBW_BUILD_FRONTEND: "uv"
           # Only build for the specific Python version extracted earlier
-          CIBW_BUILD: "cp${{ matrix.python-version | replace('.', '') }}-*"
+          #          CIBW_BUILD: "cp${{ matrix.python-version | replace('.', '') }}-*"
           CIBW_BEFORE_BUILD: "uv pip install mypy[mypyc] librt"
 
       - name: Upload wheels
