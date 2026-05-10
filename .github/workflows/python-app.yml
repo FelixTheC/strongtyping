@@ -54,4 +54,4 @@ jobs:
 
       - name: Run coverage
         run: |
-          codecov --token=${{ secrets.CODECOV_TOKEN }}
+          uv run codecov --token=${{ secrets.CODECOV_TOKEN }}

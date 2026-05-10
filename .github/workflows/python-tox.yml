@@ -4,11 +4,9 @@ on:
   push:
     branches:
       - 'py_3_13'
-      - 'py_3_14'
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
