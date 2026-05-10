@@ -10,6 +10,7 @@
 [![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336)](https://pycqa.github.io/isort/)
 [![Documentation Status](https://readthedocs.org/projects/strongtyping/badge/?version=latest)](https://strongtyping.readthedocs.io/en/latest/?badge=latest)
 [![](https://img.shields.io/pypi/dm/strongtyping.svg)](https://pypi.org/project/strongtyping/)
+[![AI Agents](https://img.shields.io/badge/AI_Agents-SKILL.md-blue?logo=robotframework&logoColor=white)](SKILL.md)
 
 # Strong Typing
 
@@ -37,4 +38,4 @@ You can validate the skills by running:
 pytest tests/test_skills.py
 ```
 
-## [Docs have been moved to 'readthedocs'](https://strongtyping.readthedocs.io/en/latest/#the-solution)
+## [Docs are available on 'readthedocs'](https://strongtyping.readthedocs.io/en/latest/#the-solution)
