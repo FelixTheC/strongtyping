@@ -115,7 +115,6 @@ jobs:
         env:
           CIBW_BUILD_FRONTEND: "uv"
           CIBW_BUILD: "cp${{ needs.setup.outputs.python-short }}-*"
-          CIBW_BEFORE_BUILD: "uv pip install mypy[mypyc] librt"
 
       - name: Upload wheels
         uses: actions/upload-artifact@v4

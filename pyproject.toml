@@ -35,7 +35,7 @@ addopts = "--cov=strongtyping --cov-report=term-missing"
 # Since you are using mypyc, setuptools is currently the most stable backend
 # for handling C-extensions via a setup.py or build script.
 [build-system]
-requires = ["setuptools>=61.0", "wheel", "mypy>=1.20.1"]
+requires = ["setuptools>=61.0", "wheel", "mypy>=1.20.1", "mypy[mypyc]>=1.20.1", "librt>=0.10.0"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
