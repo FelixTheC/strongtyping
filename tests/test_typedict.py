@@ -6,13 +6,11 @@
 """
 import sys
 import uuid
-from typing import List, NotRequired, Required, TypedDict, Union, Unpack
+from typing import Annotated, List, NotRequired, Required, TypedDict, Union, Unpack
 
 import pytest
-
 from strongtyping.exceptions import TypeMismatch, UndefinedKey, ValidationError
 from strongtyping.helpers import validate_typed_dict
-from strongtyping.st_types import Validator
 from strongtyping.strong_typing import match_class_typing, match_typing
 
 
@@ -25,7 +23,9 @@ def test_typedict():
         country: str
         product_codes: List[str]
 
-    assert SalesSummary({"sales": 10, "country": "Foo", "product_codes": ["1", "2", "3"]})
+    assert SalesSummary(
+        {"sales": 10, "country": "Foo", "product_codes": ["1", "2", "3"]}
+    )
 
     with pytest.raises(TypeMismatch):
         SalesSummary({"sales": "Foo", "country": 10, "product_codes": [1, 2, 3]})
@@ -66,13 +66,23 @@ def test_typedict_with_validator():
     def cluster(val: AllowedDicts):
         return True
 
-    assert cluster({"sales": 10, "country": "Europe", "product_codes": "Hello World".split()})
+    assert cluster(
+        {"sales": 10, "country": "Europe", "product_codes": "Hello World".split()}
+    )
 
     with pytest.raises(ValidationError):
-        cluster({"sales": 10, "country": "123456789", "product_codes": "Hello World".split()})
+        cluster(
+            {
+                "sales": 10,
+                "country": "123456789",
+                "product_codes": "Hello World".split(),
+            }
+        )
 
     with pytest.raises(TypeMismatch):
-        cluster({"sales": "10", "country": "Europe", "product_codes": "Hello World".split()})
+        cluster(
+            {"sales": "10", "country": "Europe", "product_codes": "Hello World".split()}
+        )
         cluster({"sales": 10, "country": "Europe", "product_codes": list(range(10))})
 
 
@@ -136,7 +146,9 @@ def test_use_typed_dict_total_false_class_as_function_parameter_to_validate():
 
     @match_typing
     def move_to(pos: Vector):
-        print(f'moving to ({pos.get("x", 1.0)}, {pos.get("y", 1.0)}, {pos.get("z", 1)})')
+        print(
+            f'moving to ({pos.get("x", 1.0)}, {pos.get("y", 1.0)}, {pos.get("z", 1)})'
+        )
         return True
 
     assert move_to({})
@@ -336,11 +348,11 @@ def test_validator_as_type():
 
     @match_class_typing(throw_on_undefined=True)
     class User(TypedDict):
-        id: Validator[str, lambda x: is_convertible_to_uuid(x)]
-        username: Validator[str, lambda x: 10 <= len(x) >= 15]
+        id: Annotated[str, lambda x: is_convertible_to_uuid(x)]
+        username: Annotated[str, lambda x: 10 <= len(x) >= 15]
         description: str | None
 
-    with pytest.raises(ValidationError):
+    with pytest.raises(TypeMismatch):
         User({"id": "0123", "username": "test", "description": None})
 
     assert User(
@@ -351,19 +363,22 @@ def test_validator_as_type():
         }
     )
 
+    assert (
+        validate_typed_dict(
+            User,
+            {
+                "id": "12345685",
+                "username": "loremipsumdolor",
+                "description": None,
+            },
+        )
+        == False
+    )
+
     assert validate_typed_dict(
         User,
         {
             "id": "63f24361-57cc-42b2-9310-06af5bd3eff4",
-            "username": "loremipsumdolor",
-            "description": None,
-        },
-    )
-
-    assert not validate_typed_dict(
-        User,
-        {
-            "id": "12345685",
             "username": "loremipsumdolor",
             "description": None,
         },

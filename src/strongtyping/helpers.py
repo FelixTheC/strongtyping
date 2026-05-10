@@ -10,12 +10,12 @@ T = TypeVar("T")
 def validate_typed_dict(base: Type[Any], /, data: dict[Any, Any]) -> bool:
     # noinspection PyTypeHints
     @match_typing
-    def inner(obj: Any) -> None:
-        pass
-
-    inner.__annotations__["obj"] = base
+    def inner(obj) -> None:
+        None
 
     try:
+        if callable(base):
+            inner(base(**data))
         inner(data)
     except (TypeMismatch, ValidationError):
         return False

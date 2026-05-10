@@ -1,7 +1,6 @@
 from typing import Annotated, TypedDict
 
 import pytest
-
 from strongtyping.exceptions import TypeMismatch, ValidationError
 from strongtyping.helpers import (
     Gt,
@@ -16,10 +15,11 @@ from strongtyping.helpers import (
     Regex,
     validate_typed_dict,
 )
-from strongtyping.strong_typing import match_typing
+from strongtyping.strong_typing import match_class_typing, match_typing
 
 
 def test_validate_typed_dict():
+    @match_class_typing
     class MyDict(TypedDict):
         a: int
         b: str
