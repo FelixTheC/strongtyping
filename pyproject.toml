@@ -26,6 +26,11 @@ Homepage = "https://github.com/FelixTheC/strongtyping"
 Repository = "https://github.com/FelixTheC/strongtyping"
 Documentation = "https://strongtyping.readthedocs.io/en/latest/"
 
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+addopts = "--cov=strongtyping --cov-report=term-missing"
+
 # --- BUILD SYSTEM ---
 # Since you are using mypyc, setuptools is currently the most stable backend
 # for handling C-extensions via a setup.py or build script.
@@ -72,7 +77,7 @@ mypy_path = "src"
 exclude = ['^tests/']
 
 [tool.cibuildwheel]
-build = "cp314-* cp315-*"
+build = "cp313-* cp314-* cp315-*"
 skip = "pp* *musllinux*"
 test-skip = "*"
 before-build = "python -m pip install --upgrade pip setuptools wheel mypy librt"

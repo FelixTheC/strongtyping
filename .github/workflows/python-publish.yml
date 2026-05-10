@@ -12,6 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       python-version: ${{ steps.set-python-version.outputs.version }}
+      python-short: ${{ steps.set-python-short.outputs.short }}
     steps:
       - uses: actions/checkout@v4
 
@@ -25,14 +26,18 @@ jobs:
         run: |
           # Use tomllib for robust parsing (Python 3.11+)
           VERSION=$(python3 -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['requires-python'].replace('>=', '').strip())")
+          SHORT=$(python3 -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['requires-python'].replace('>=', '').strip().replace('.',''))")
           echo "Extracted version: $VERSION"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "short=$SHORT" >> "$GITHUB_OUTPUT"
 
   update_version:
     needs: setup
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    outputs:
+      new-sha: ${{ steps.get-sha.outputs.sha }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -57,7 +62,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: main
+          ref: ${{ needs.update_version.outputs.new-sha }}
+
+      - name: Setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ needs.setup.outputs.python-version }}
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5
@@ -73,17 +83,21 @@ jobs:
 
   build_wheels:
     needs: [ setup, update_version ]
-    name: Build wheels on ${{ matrix.os }} for Python ${{ matrix.python-version }}
+    name: Build wheels on ${{ matrix.os }} for Python ${{ needs.setup.outputs.python-version }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ ubuntu-latest, macos-latest, windows-latest ]
-        python-version: [ "${{ needs.setup.outputs.python-version }}" ]
 
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: main
+          ref: ${{ needs.update_version.outputs.new-sha }}
+
+      - name: Setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ needs.setup.outputs.python-version }}
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5
@@ -92,14 +106,13 @@ jobs:
         uses: pypa/cibuildwheel@v2.22.0
         env:
           CIBW_BUILD_FRONTEND: "build[uv]"
-          # Only build for the specific Python version extracted earlier
-          #          CIBW_BUILD: "cp${{ matrix.python-version | replace('.', '') }}-*"
+          CIBW_BUILD: "cp${{ needs.setup.outputs.python-short }}-*"
           CIBW_BEFORE_BUILD: "uv pip install mypy[mypyc] librt"
 
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
-          name: wheels-${{ matrix.os }}-${{ matrix.python-version }}
+          name: wheels-${{ matrix.os }}-${{ needs.setup.outputs.python-version }}
           path: ./wheelhouse/*.whl
 
   publish:
