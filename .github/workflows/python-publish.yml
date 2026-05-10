@@ -11,8 +11,8 @@ jobs:
   setup:
     runs-on: ubuntu-latest
     outputs:
-      python-version: ${{ steps.set-python-version.outputs.version }}
-      python-short: ${{ steps.set-python-short.outputs.short }}
+      python-version: ${{ steps.extract.outputs.version }}
+      python-short: ${{ steps.extract.outputs.short }}
     steps:
       - uses: actions/checkout@v4
 
@@ -21,15 +21,19 @@ jobs:
         with:
           python-version: "3.13"
 
-      - name: Extract min required python version
-        id: set-python-version
+      - name: Extract Python version info
+        id: extract
         run: |
-          # Use tomllib for robust parsing (Python 3.11+)
-          VERSION=$(python3 -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['requires-python'].replace('>=', '').strip())")
-          SHORT=$(python3 -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['requires-python'].replace('>=', '').strip().replace('.',''))")
-          echo "Extracted version: $VERSION"
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "short=$SHORT" >> "$GITHUB_OUTPUT"
+          PYTHON_CODE=$(cat <<EOF
+          import tomllib
+          with open('pyproject.toml', 'rb') as f:
+              data = tomllib.load(f)
+              req = data['project']['requires-python'].replace('>=', '').strip()
+              print(f"version={req}")
+              print(f"short={req.replace('.', '')}")
+          EOF
+          )
+          python3 -c "$PYTHON_CODE" >> "$GITHUB_OUTPUT"
 
   update_version:
     needs: setup
@@ -51,10 +55,14 @@ jobs:
         run: uv version ${{ github.event.release.tag_name }}
 
       - name: Commit and push changes
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          force: true
+        id: get-sha
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add pyproject.toml
+          git commit -m "chore: bump version to ${{ github.event.release.tag_name }}"
+          git push
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
   build_sdist:
     needs: [ setup, update_version ]
@@ -103,11 +111,10 @@ jobs:
         uses: astral-sh/setup-uv@v5
 
       - name: Build wheels via cibuildwheel
-        uses: pypa/cibuildwheel@v2.22.0
+        uses: pypa/cibuildwheel@v3.4.1
         env:
-          CIBW_BUILD_FRONTEND: "build[uv]"
-          CIBW_BUILD: "cp${{ needs.setup.outputs.python-short }}-*"
-          CIBW_BEFORE_BUILD: "uv pip install mypy[mypyc] librt"
+          CIBW_BUILD_FRONTEND: "uv"
+      #          CIBW_BUILD: "cp${{ needs.setup.outputs.python-short }}-*"
 
       - name: Upload wheels
         uses: actions/upload-artifact@v4
@@ -131,6 +138,3 @@ jobs:
 
       - name: Publish package distributions to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          user: ${{ secrets.PYPI_USERNAME }}
-          password: ${{ secrets.PYPI_PASSWORD }}

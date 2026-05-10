@@ -1,12 +1,12 @@
 [project]
 name = "strongtyping"
-version = "3.13.7"
+version = "3.14.0.post7"
 authors = [
     { name = "FelixTheC", email = "fberndt87@gmail.com" },
 ]
 description = "Decorator which checks whether the function is called with the correct type of parameters"
 readme = "README.md"
-requires-python = ">=3.14"
+requires-python = ">=3.13"
 
 dependencies = [
     "ujson>=5.12.0",
@@ -35,7 +35,7 @@ addopts = "--cov=strongtyping --cov-report=term-missing"
 # Since you are using mypyc, setuptools is currently the most stable backend
 # for handling C-extensions via a setup.py or build script.
 [build-system]
-requires = ["setuptools>=61.0", "wheel", "mypy>=1.20.1"]
+requires = ["setuptools>=61.0", "wheel", "mypy>=1.20.1", "mypy[mypyc]>=1.20.1", "librt>=0.10.0"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
@@ -77,10 +77,9 @@ mypy_path = "src"
 exclude = ['^tests/']
 
 [tool.cibuildwheel]
-build = "cp313-* cp314-* cp315-*"
+build = "cp313-* cp314-*"
 skip = "pp* *musllinux*"
 test-skip = "*"
-before-build = "python -m pip install --upgrade pip setuptools wheel mypy librt"
 
 [tool.cibuildwheel.linux]
 archs = ["x86_64"]
