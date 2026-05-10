@@ -33,7 +33,15 @@ jobs:
     permissions:
       security-events: write
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v4 # Use @v4 for better stability
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      # Snyk works best with a requirements.txt if uv.lock isn't natively picked up
+      - name: Generate requirements.txt for Snyk
+        run: uv export --format requirements-txt > requirements.txt
+
       - name: Run Snyk to check for vulnerabilities
         uses: snyk/actions/python-3.12@master
         continue-on-error: true # To make sure that SARIF upload gets called
@@ -41,6 +49,11 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           args: --sarif-file-output=snyk.sarif
+
+        # Debugging step: helpful if the next step fails again
+      - name: Check if SARIF was created
+        run: ls -l snyk.sarif || echo "SARIF file NOT found"
+        
       - name: Upload result to GitHub Code Scanning
         uses: github/codeql-action/upload-sarif@v4
         with:
