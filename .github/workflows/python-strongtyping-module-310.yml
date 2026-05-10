@@ -44,11 +44,11 @@ jobs:
         uses: astral-sh/setup-uv@v5
 
       - name: Install dependencies
-        run: uv sync --no-install-project
+        run: uv sync
 
       - name: Install strongtyping-modules and dependencies
         run: uv add strongtyping-modules
 
       - name: Test with pytest
         run: |
-          pytest tests
+          uv run pytest tests

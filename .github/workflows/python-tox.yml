@@ -23,10 +23,10 @@ jobs:
         uses: astral-sh/setup-uv@v5
 
       - name: Install dependencies
-        run: uv sync --no-install-project
+        run: uv sync
 
       - name: Install dependencies
         run: uv add tox
 
       - name: Run tox
-        run: tox
+        run: uv run tox

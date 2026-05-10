@@ -40,13 +40,13 @@ jobs:
         uses: astral-sh/setup-uv@v5
 
       - name: Install dependencies
-        run: uv sync --no-install-project
+        run: uv sync
 
-      - name: Check with isort
-        run: isort strongtyping --check-only
+      - name: Linting
+        run: uv run ruff check src/strongtyping
 
-      - name: Lint with black
-        run: python -m black strongtyping --check
+      - name: Python Format
+        run: uv run ruff format src/strongtyping --check
 
       - name: Test with pytest
         run: |
