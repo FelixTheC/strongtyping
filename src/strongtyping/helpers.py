@@ -10,7 +10,7 @@ T = TypeVar("T")
 def validate_typed_dict(base: Type[Any], /, data: dict[Any, Any]) -> bool:
     # noinspection PyTypeHints
     @match_typing
-    def inner(obj) -> None:
+    def inner(obj: Any) -> None:
         None
 
     try:
