@@ -25,8 +25,5 @@ jobs:
       - name: Install dependencies
         run: uv sync
 
-      - name: Install dependencies
-        run: uv add tox
-
       - name: Run tox
         run: uv run tox

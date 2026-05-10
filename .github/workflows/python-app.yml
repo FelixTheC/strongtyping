@@ -50,7 +50,7 @@ jobs:
 
       - name: Test with pytest
         run: |
-          pytest tests --cov=strongtyping
+          uv run pytest tests --cov=strongtyping
 
       - name: Run coverage
         run: |
