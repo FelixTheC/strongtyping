@@ -91,7 +91,7 @@ jobs:
       - name: Build wheels via cibuildwheel
         uses: pypa/cibuildwheel@v2.22.0
         env:
-          CIBW_BUILD_FRONTEND: "uv"
+          CIBW_BUILD_FRONTEND: "build[uv]"
           # Only build for the specific Python version extracted earlier
           #          CIBW_BUILD: "cp${{ matrix.python-version | replace('.', '') }}-*"
           CIBW_BEFORE_BUILD: "uv pip install mypy[mypyc] librt"
