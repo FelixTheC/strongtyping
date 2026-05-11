@@ -53,5 +53,6 @@ jobs:
           uv run pytest tests --cov=strongtyping
 
       - name: Run coverage
-        run: |
-          uv run codecov --token=${{ secrets.CODECOV_TOKEN }}
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}

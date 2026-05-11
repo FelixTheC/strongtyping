@@ -54,7 +54,6 @@ dev = [
     "mypy[mypyc]>=1.20.1",
     "pytest>=9.0.3",
     "pytest-cov>=7.1.0",
-    "codecov>=2.1.13",
     "black>=24.0.0",
     "isort>=5.13.0",
     "ruff>=0.3.0",
