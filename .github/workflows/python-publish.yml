@@ -93,6 +93,8 @@ jobs:
     needs: [ setup, update_version ]
     name: Build wheels on ${{ matrix.os }} for Python ${{ needs.setup.outputs.python-version }}
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
     strategy:
       matrix:
         os: [ ubuntu-latest, macos-latest, windows-latest ]
