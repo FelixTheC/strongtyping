@@ -104,7 +104,6 @@ c. The disclaimer of warranties and limitation of liability provided above shall
 
 a. This Public License applies for the term of the Copyright and Similar Rights licensed here. However, if You fail to comply with this Public License, then Your rights under this Public License terminate automatically.
 
-
 b. Where Your right to use the Licensed Material has terminated under Section 6(a), it reinstates:
 
 1. automatically as of the date the violation is cured, provided it is cured within 30 days of Your discovery of the violation; or
