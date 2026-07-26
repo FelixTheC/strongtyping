@@ -40,13 +40,14 @@ SEVERITY_CONFIG = {
 }
 
 
-def _severity_level(severity_: Union[str, SEVERITY_LEVEL]) -> SEVERITY_LEVEL | int:
+def get_severity_level(severity_: Union[str, SEVERITY_LEVEL]) -> int:
     if severity_ == "env":
         _level = os.environ.get("ST_SEVERITY", "1")
         try:
             return int(_level)
         except (TypeError, ValueError):
-            return int(SEVERITY_CONFIG.get(_level, SEVERITY_LEVEL.ENABLED))
+            level = SEVERITY_CONFIG.get(_level, SEVERITY_LEVEL.ENABLED)
+            return level.value
     else:
         return (
             int(severity_.value)

@@ -1,5 +1,9 @@
 from _typeshed import Incomplete
-from strongtyping._utils import action as action, remove_subclass as remove_subclass
+from strongtyping._utils import (
+    action as action,
+    get_severity_level as get_severity_level,
+    remove_subclass as remove_subclass,
+)
 from strongtyping.cached_set import CachedSet as CachedSet
 from strongtyping.config import SEVERITY_LEVEL as SEVERITY_LEVEL
 from strongtyping.exceptions import TypeMismatch as TypeMismatch, UndefinedKey as UndefinedKey

@@ -8,7 +8,7 @@ from functools import wraps
 from string import Template
 from typing import Any, Callable, NotRequired, Required, Type, get_args, get_origin
 
-from strongtyping._utils import _severity_level, action, remove_subclass
+from strongtyping._utils import action, get_severity_level, remove_subclass
 from strongtyping.cached_set import CachedSet
 from strongtyping.config import SEVERITY_LEVEL
 from strongtyping.exceptions import TypeMismatch, UndefinedKey
@@ -60,13 +60,16 @@ def match_typing(
 
         arg_names = [name for name in inspect.signature(func).parameters]
         annotations = func.__annotations__
-        severity_level = _severity_level(severity)
+        severity_level = get_severity_level(severity)
 
         @wraps(func)
         def inner(*args: Any, **kwargs: Any) -> Any:
             if arg_names and severity_level > SEVERITY_LEVEL.DISABLED.value:
                 args = remove_subclass(args, subclass)
-                if cached_set is not None and func.__name__ not in CACHE_IGNORE_CLASS_FUNCTIONS:
+                if (
+                    cached_set is not None
+                    and func.__name__ not in CACHE_IGNORE_CLASS_FUNCTIONS
+                ):
                     # check if func with args and kwargs was checked once before with positive result
                     arg_vals = args.__str__() if args else None
                     kwarg_vals = kwargs.__str__() if args else None
@@ -113,7 +116,9 @@ def match_typing(
                     return default_return_queue.queue.pop()
 
                 if failed_params or failed_unpacking:
-                    annotated_values = {arg_name: arg for arg, arg_name in zip(args, arg_names)}
+                    annotated_values = {
+                        arg_name: arg for arg, arg_name in zip(args, arg_names)
+                    }
 
                     for kwarg_name, kwarg in kwargs.items():
                         annotated_values[kwarg_name] = kwarg
@@ -145,7 +150,10 @@ def match_typing(
                         severity_level,
                     )
 
-                if cached_set is not None and func.__name__ not in CACHE_IGNORE_CLASS_FUNCTIONS:
+                if (
+                    cached_set is not None
+                    and func.__name__ not in CACHE_IGNORE_CLASS_FUNCTIONS
+                ):
                     cached_set.add(cached_key)
 
             if annotations.get("return"):
@@ -264,7 +272,9 @@ class MatchTypedDict:
             arguments: Any = kwargs if kwargs else args[0]
             if not self.check_annotations():
                 raise TypeError("A NotRequired field can not contain Required")
-            if not checking_typing_typedict_values(arguments, self.__annotations__, self.__total__):
+            if not checking_typing_typedict_values(
+                arguments, self.__annotations__, self.__total__
+            ):
                 raise self.excep_raise(self.create_error_msg(arguments))
         if self.cls:
             cls = self.cls(*args, **kwargs)
@@ -295,7 +305,7 @@ def match_class_typing(cls: Type[Any] | None = None, **kwargs: Any) -> Any:
         ]
 
     def __add_decorator(_cls: Type[Any]) -> None:
-        severity_level = _severity_level(severity)
+        severity_level = get_severity_level(severity)
         if severity_level > SEVERITY_LEVEL.DISABLED.value:
             for method in __find_methods(_cls):
                 try:

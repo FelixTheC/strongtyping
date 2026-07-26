@@ -10,6 +10,9 @@ ORIGINAL_DUCK_TYPES: Any
 def remove_subclass(args: Any, subclass: bool) -> Any: ...
 
 SEVERITY_CONFIG: Incomplete
+
+def get_severity_level(severity_: str | SEVERITY_LEVEL) -> int: ...
+
 exclude_builtins: Incomplete
 
 def install_st_m() -> None: ...
