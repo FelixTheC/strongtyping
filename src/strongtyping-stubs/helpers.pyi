@@ -2,7 +2,7 @@ from strongtyping.exceptions import TypeMismatch as TypeMismatch, ValidationErro
 from strongtyping.strong_typing import match_typing as match_typing
 from typing import Any, Callable, Sized, TypeVar
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 def validate_typed_dict(base: type[Any], /, data: dict[Any, Any]) -> bool: ...
 def Gt(limit: int, /) -> Callable[[int], bool]: ...

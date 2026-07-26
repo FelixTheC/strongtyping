@@ -1,8 +1,16 @@
-from _typeshed import Incomplete
 from strongtyping.docstring_typing import check_doc_str_type as check_doc_str_type
-from strongtyping.strong_typing import check_type as check_type, match_typing as match_typing
-from typing import List, Tuple, Union
+from strongtyping.strong_typing import match_typing as match_typing
+from strongtyping.strong_typing_utils import check_type as check_type
+from typing import Any
 
-use_match_typing: Incomplete
+use_match_typing: dict[bool, Any]
 
-def typed_namedtuple(typename: str, field_names: Union[List[str], str, List[Tuple[str, object]]], *, rename: bool = ..., defaults: Union[list, tuple] = ..., module: str = ...) -> type: ...
+@match_typing
+def typed_namedtuple(
+    typename: str,
+    field_names: list[str] | str | list[tuple[str, object]],
+    *,
+    rename: bool = False,
+    defaults: list[Any] | tuple[Any, ...] | None = None,
+    module: str | None = None,
+) -> type: ...

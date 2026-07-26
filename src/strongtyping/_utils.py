@@ -40,15 +40,19 @@ SEVERITY_CONFIG = {
 }
 
 
-def _severity_level(severity_: Union[str, SEVERITY_LEVEL]) -> int:
+def _severity_level(severity_: Union[str, SEVERITY_LEVEL]) -> SEVERITY_LEVEL | int:
     if severity_ == "env":
         _level = os.environ.get("ST_SEVERITY", "1")
         try:
             return int(_level)
         except (TypeError, ValueError):
-            return int(SEVERITY_CONFIG[_level].value)
+            return int(SEVERITY_CONFIG.get(_level, SEVERITY_LEVEL.ENABLED))
     else:
-        return int(severity_.value) if isinstance(severity_, SEVERITY_LEVEL) else int(severity_)
+        return (
+            int(severity_.value)
+            if isinstance(severity_, SEVERITY_LEVEL)
+            else int(severity_)
+        )
 
 
 exclude_builtins = dir(object)
@@ -68,7 +72,9 @@ def _get_new(
                 and getattr(cls_, attr).__class__.__name__ != "property"
                 and not hasattr(getattr(obj, attr), "__fe_strng_mtch__")
             ):
-                type_annotations: dict[str, Any] = getattr(getattr(cls_, attr), "__annotations__")
+                type_annotations: dict[str, Any] = getattr(
+                    getattr(cls_, attr), "__annotations__"
+                )
                 return len([i for i in type_annotations.keys() if i != "return"]) > 0
             return False
 
@@ -128,7 +134,9 @@ def action(f: Callable[..., Any], frefs: str, type_function: Any) -> Any:
 
     return property(
         *(
-            _action.f[ref] if (ref != "documenter" or _action.f[ref] is None) else _action.f[ref](0)
+            _action.f[ref]
+            if (ref != "documenter" or _action.f[ref] is None)
+            else _action.f[ref](0)
             for ref in _action.f
         )
     )

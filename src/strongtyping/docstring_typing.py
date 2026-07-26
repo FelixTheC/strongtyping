@@ -14,13 +14,17 @@ import warnings
 from types import FunctionType, MethodType
 from typing import Any
 
-from strongtyping._utils import _get_new, _severity_level, action, remove_subclass
+from strongtyping._utils import (_get_new, _severity_level, action,
+                                 remove_subclass)
 from strongtyping.cached_set import CachedSet
+from strongtyping.config import SEVERITY_LEVEL
 from strongtyping.exceptions import TypeMismatch
 
 TYPE_EXTRACTION_PATTERN = r"(^[:a-zA-Z0-9 _-]+(:))"
 PATTERN_1 = r""
-EXTRACT_PARAM_NAME_PATTERN = r"(?::(param|parameter|arg|argument|key|keyword|type|vartype)\W)"
+EXTRACT_PARAM_NAME_PATTERN = (
+    r"(?::(param|parameter|arg|argument|key|keyword|type|vartype)\W)"
+)
 TUPLE_PATTERN = r"\(([^)]+)\)"
 PATTERN = r"[\(\)\[\[]"
 OR_PATTERN = r"([\(\[]\w+)\W+(or)\W+(\w+)"
@@ -56,7 +60,9 @@ def get_container_types(ttype_of: str) -> typing.Optional[tuple[Any, ...]]:
     sub_pattern = sub_pattern if ", " not in ttype_of else sub_pattern[0]
     try:
         container_types = tuple(
-            param_attr(re.sub(REMOVE_PATTERN, "", t).strip()) for t in sub_pattern if t != "or"
+            param_attr(re.sub(REMOVE_PATTERN, "", t).strip())
+            for t in sub_pattern
+            if t != "or"
         )
     except TypeError:
         container_types = None
@@ -73,7 +79,8 @@ def get_or_types(ttype: str) -> list[str]:
 def is_tuple(arg: Any, type_of: str) -> bool:
     container_types = get_container_types(type_of)
     sub_types = (
-        all(isinstance(a, container_types) for a in arg) and len(arg) == len(container_types)
+        all(isinstance(a, container_types) for a in arg)
+        and len(arg) == len(container_types)
         if container_types
         else True
     )
@@ -82,7 +89,9 @@ def is_tuple(arg: Any, type_of: str) -> bool:
 
 def is_list(arg: Any, type_of: str) -> bool:
     container_types = get_container_types(type_of)
-    sub_types = all(isinstance(a, container_types) for a in arg) if container_types else True
+    sub_types = (
+        all(isinstance(a, container_types) for a in arg) if container_types else True
+    )
     return isinstance(arg, list) and sub_types
 
 
@@ -148,13 +157,17 @@ def extract_docstring_param_types(func: typing.Callable[..., Any]) -> dict[str, 
         if is_param_info(string)
     ]
     docstring: list[tuple[str, str]] = [
-        separate_param_type(string) for string in doc.split("\n") if is_type_info(string)
+        separate_param_type(string)
+        for string in doc.split("\n")
+        if is_type_info(string)
     ]
     docstring += [tuple(reversed(p)) for p in param if len(p) > 1]  # type: ignore
     _docstring_types = {ds[0]: ds[1] for ds in docstring}
     # there is mismatch when user will mix type and param to bring them in the right order
     # we will look at the signature and recreate the previous dict to the final one
-    return {k: _docstring_types.get(k, k) for k in inspect.signature(func).parameters.keys()}
+    return {
+        k: _docstring_types.get(k, k) for k in inspect.signature(func).parameters.keys()
+    }
 
 
 def match_docstring(
@@ -164,14 +177,18 @@ def match_docstring(
     cache_size: int = 0,
     subclass: bool = False,
     severity: str = "env",
-    **kwargs: Any,
+    **kwargs_: Any,
 ) -> Any:
     cached_set = None if cache_size == 0 else CachedSet(cache_size)
 
     def wrapper(func: typing.Callable[..., Any]) -> Any:
         docstring_types = extract_docstring_param_types(func)
 
-        severity_level = _severity_level(severity)
+        severity_level_: SEVERITY_LEVEL | int = _severity_level(severity)
+        if isinstance(severity_level_, SEVERITY_LEVEL):
+            severity_level = severity_level_.value
+        else:
+            severity_level = severity_level_
 
         @functools.wraps(func)
         def inner(*args: Any, **kwargs: Any) -> Any:
@@ -230,11 +247,17 @@ def match_class_docstring(
     **kwargs: Any,
 ) -> Any:
     def wrapper(cls: typing.Type[Any]) -> Any:
-        severity_level = _severity_level(severity)
+        severity_level_: SEVERITY_LEVEL | int = _severity_level(severity)
+        if isinstance(severity_level_, SEVERITY_LEVEL):
+            severity_level = severity_level_.value
+        else:
+            severity_level = severity_level_
 
         def inner(*args: Any, **kwargs: Any) -> Any:
             if severity_level > 0:
-                cls.__new__ = _get_new(match_docstring, excep_raise, cache_size, severity, **kwargs)
+                cls.__new__ = _get_new(
+                    match_docstring, excep_raise, cache_size, severity, **kwargs
+                )
                 if hasattr(cls.__init__, "__annotations__"):
                     cls.__init__ = match_docstring(cls.__init__)
             return cls(*args, **kwargs)

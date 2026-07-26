@@ -2,7 +2,7 @@
 name = "strongtyping"
 version = "3.14.2"
 authors = [
-    { name = "FelixTheC", email = "fberndt87@gmail.com" },
+    { name = "FelixTheC" },
 ]
 description = "Decorator which checks whether the function is called with the correct type of parameters"
 readme = "README.md"

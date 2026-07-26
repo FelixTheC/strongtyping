@@ -1,7 +1,9 @@
 from _typeshed import Incomplete
-from typing import Any, Union
+from collections import deque
+from typing import Any
 
-class CachedSet(set):
-    memory_limit: Incomplete
-    def __init__(self, memory_limit: Union[int, float] = ..., *args: Any, **kwargs: Any) -> None: ...
+class CachedSet(set[Any]):
+    order: deque[Any]
+    max_size: Incomplete
+    def __init__(self, memory_limit: int | float = 1, *args: Any, **kwargs: Any) -> None: ...
     def add(self, element: Any) -> None: ...

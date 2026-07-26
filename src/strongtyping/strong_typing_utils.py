@@ -40,7 +40,9 @@ def get_possible_types(typ_to_check: Any, origin_name: str = "") -> Any:
         return typ_to_check
 
     if hasattr(typ_to_check, "__args__") and typ_to_check.__args__ is not None:
-        return tuple(typ for typ in typ_to_check.__args__ if not isinstance(typ, TypeVar))
+        return tuple(
+            typ for typ in typ_to_check.__args__ if not isinstance(typ, TypeVar)
+        )
     else:
         return None
 
@@ -62,7 +64,9 @@ def get_origins(typ_to_check: Any) -> tuple[Any, str]:
     if isinstance(typ_to_check, MatchTypedDict):
         return typ_to_check, typ_to_check.__class__.__name__
 
-    if hasattr(typ_to_check, "__annotations__") and hasattr(typ_to_check, "__orig_bases__"):
+    if hasattr(typ_to_check, "__annotations__") and hasattr(
+        typ_to_check, "__orig_bases__"
+    ):
         if typ_to_check.__orig_bases__:
             orig_base = typ_to_check.__orig_bases__[0].__name__
         else:
@@ -72,15 +76,25 @@ def get_origins(typ_to_check: Any) -> tuple[Any, str]:
     if typing.is_typeddict(typ_to_check):
         return typ_to_check, typ_to_check.__class__.__name__
 
-    if hasattr(typ_to_check, "__class__") and typ_to_check.__class__.__name__ == "_AnyMeta":
+    if (
+        hasattr(typ_to_check, "__class__")
+        and typ_to_check.__class__.__name__ == "_AnyMeta"
+    ):
         return typ_to_check, typ_to_check.__class__.__name__
 
     if hasattr(typ_to_check, "__origin__") or hasattr(typ_to_check, "__orig_bases__"):
-        if hasattr(typ_to_check, "__origin__") and hasattr(typ_to_check.__origin__, "__name__"):
+        if hasattr(typ_to_check, "__origin__") and hasattr(
+            typ_to_check.__origin__, "__name__"
+        ):
             origin = typ_to_check.__origin__
             origin_name = origin.__name__
-        elif hasattr(typ_to_check, "__origin__") or hasattr(typ_to_check, "__orig_bases__"):
-            if hasattr(typ_to_check, "__origin__") and typ_to_check.__origin__ is not None:
+        elif hasattr(typ_to_check, "__origin__") or hasattr(
+            typ_to_check, "__orig_bases__"
+        ):
+            if (
+                hasattr(typ_to_check, "__origin__")
+                and typ_to_check.__origin__ is not None
+            ):
                 origin = typ_to_check.__origin__
             else:
                 origin = typ_to_check.__orig_bases__
@@ -89,11 +103,15 @@ def get_origins(typ_to_check: Any) -> tuple[Any, str]:
         origin_name = origin._name  # type: ignore
     else:
         if hasattr(typ_to_check, "_name"):
-            origin_name = typ_to_check._name if typ_to_check._name is not None else origin_name
+            origin_name = (
+                typ_to_check._name if typ_to_check._name is not None else origin_name
+            )
     return origin, origin_name
 
 
-def checking_typing_dict(arg: Any, possible_types: Any, *args: Any, **kwargs: Any) -> bool:
+def checking_typing_dict(
+    arg: Any, possible_types: Any, *args: Any, **kwargs: Any
+) -> bool:
     if not isinstance(arg, dict):
         return False
     if isinstance(arg, dict) and not possible_types:
@@ -114,7 +132,9 @@ def checking_typing_dict(arg: Any, possible_types: Any, *args: Any, **kwargs: An
         return result_key and result_val
 
 
-def checking_typing_set(arg: Any, possible_types: Any, *args: Any, **kwargs: Any) -> bool:
+def checking_typing_set(
+    arg: Any, possible_types: Any, *args: Any, **kwargs: Any
+) -> bool:
     if not possible_types:
         return isinstance(arg, set)
     possible_type = possible_types[0]
@@ -123,12 +143,15 @@ def checking_typing_set(arg: Any, possible_types: Any, *args: Any, **kwargs: Any
     )
 
 
-def checking_typing_type(arg: Any, possible_types: Any, *args: Any, **kwargs: Any) -> bool:
+def checking_typing_type(
+    arg: Any, possible_types: Any, *args: Any, **kwargs: Any
+) -> bool:
     try:
         arguments = arg.__mro__
     except AttributeError:
         return any(
-            check_type(arg, possible_type, mro=False, **kwargs) for possible_type in possible_types
+            check_type(arg, possible_type, mro=False, **kwargs)
+            for possible_type in possible_types
         )
     else:
         return any(
@@ -137,7 +160,9 @@ def checking_typing_type(arg: Any, possible_types: Any, *args: Any, **kwargs: An
         )
 
 
-def checking_typing_union(arg: Any, possible_types: Any, mro: bool, **kwargs: Any) -> bool:
+def checking_typing_union(
+    arg: Any, possible_types: Any, mro: bool, **kwargs: Any
+) -> bool:
     if mro:
         return any(pssble_type in arg for pssble_type in possible_types)
     try:
@@ -151,7 +176,9 @@ def checking_typing_union(arg: Any, possible_types: Any, mro: bool, **kwargs: An
             return validate_object(arg, kwargs.get("validation_with"))
 
 
-def checking_typing_optional(arg: Any, possible_types: Any, mro: bool, **kwargs: Any) -> bool:
+def checking_typing_optional(
+    arg: Any, possible_types: Any, mro: bool, **kwargs: Any
+) -> bool:
     return arg is None or check_type(arg, possible_types[0])
 
 
@@ -159,14 +186,20 @@ def checking_typing_iterator(arg: object, *args: Any, **kwargs: Any) -> bool:
     return hasattr(arg, "__iter__") and hasattr(arg, "__next__")
 
 
-def checking_typing_callable(arg: Any, possible_types: Any, *args: Any, **kwargs: Any) -> bool:
+def checking_typing_callable(
+    arg: Any, possible_types: Any, *args: Any, **kwargs: Any
+) -> bool:
     insp = inspect.signature(arg)
     return_val = insp.return_annotation == possible_types[-1]
     params = insp.parameters
-    return return_val and all(p.annotation == pt for p, pt in zip(params.values(), possible_types))
+    return return_val and all(
+        p.annotation == pt for p, pt in zip(params.values(), possible_types)
+    )
 
 
-def checking_typing_tuple(arg: Any, possible_types: Any, *args: Any, **kwargs: Any) -> bool:
+def checking_typing_tuple(
+    arg: Any, possible_types: Any, *args: Any, **kwargs: Any
+) -> bool:
     if not possible_types:
         return isinstance(arg, tuple)
     if Ellipsis in possible_types and isinstance(arg, tuple):
@@ -175,10 +208,15 @@ def checking_typing_tuple(arg: Any, possible_types: Any, *args: Any, **kwargs: A
         return checking_ellipsis(arg, possible_types, **kwargs)
     if not isinstance(arg, tuple) or not (len(arg) == len(possible_types)):
         return False
-    return all(check_type(argument, typ, **kwargs) for argument, typ in zip(arg, possible_types))
+    return all(
+        check_type(argument, typ, **kwargs)
+        for argument, typ in zip(arg, possible_types)
+    )
 
 
-def checking_typing_list(arg: Any, possible_types: Any, *args: Any, **kwargs: Any) -> bool:
+def checking_typing_list(
+    arg: Any, possible_types: Any, *args: Any, **kwargs: Any
+) -> bool:
     if not isinstance(arg, list):
         return False
     if isinstance(arg, list) and not possible_types:
@@ -191,7 +229,9 @@ def checking_ellipsis(arg: Any, possible_types: Any, *args: Any, **kwargs: Any) 
     return all(check_type(argument, possible_types[0], **kwargs) for argument in arg)
 
 
-def checking_typing_json(arg: Any, possible_types: Any, *args: Any, **kwargs: Any) -> bool:
+def checking_typing_json(
+    arg: Any, possible_types: Any, *args: Any, **kwargs: Any
+) -> bool:
     try:
         possible_types.dumps(arg)
     except TypeError:
@@ -200,11 +240,15 @@ def checking_typing_json(arg: Any, possible_types: Any, *args: Any, **kwargs: An
         return True
 
 
-def checking_typing_generator(arg: Any, possible_types: Any, *args: Any, **kwargs: Any) -> bool:
+def checking_typing_generator(
+    arg: Any, possible_types: Any, *args: Any, **kwargs: Any
+) -> bool:
     return hasattr(arg, "send") and hasattr(arg, "throw") and hasattr(arg, "__next__")
 
 
-def checking_typing_literal(arg: Any, possible_types: Any, *args: Any, **kwargs: Any) -> bool:
+def checking_typing_literal(
+    arg: Any, possible_types: Any, *args: Any, **kwargs: Any
+) -> bool:
     return arg in possible_types
 
 
@@ -238,13 +282,17 @@ def checking_typing_validator(
         return res_ct
 
 
-def checking_typing_itervalidator(arg: Any, possible_types: Any, *args: Any, **kwargs: Any) -> bool:
+def checking_typing_itervalidator(
+    arg: Any, possible_types: Any, *args: Any, **kwargs: Any
+) -> bool:
     required_type, validation = possible_types
     res: bool = check_type(arg, required_type, validation_with=validation, **kwargs)
     return res
 
 
-def checking_typing_iterable(arg: Any, possible_types: Any, *args: Any, **kwargs: Any) -> bool:
+def checking_typing_iterable(
+    arg: Any, possible_types: Any, *args: Any, **kwargs: Any
+) -> bool:
     if not hasattr(arg, "__iter__"):
         return False
     pssble_type = possible_types[0]
@@ -255,16 +303,22 @@ def checking_typing_typedict_values(
     args: dict[Any, Any], required_types: dict[Any, Any], total: bool
 ) -> bool:
     if total:
-        return all(check_type(args.get(key), val) for key, val in required_types.items())
+        return all(
+            check_type(args.get(key), val) for key, val in required_types.items()
+        )
     fields_to_check = {key: val for key, val in required_types.items() if key in args}
     return all(check_type(args[key], val) for key, val in fields_to_check.items())
 
 
-def checking_typing_class(arg: Any, possible_types: Any, *args: Any, **kwargs: Any) -> bool:
+def checking_typing_class(
+    arg: Any, possible_types: Any, *args: Any, **kwargs: Any
+) -> bool:
     return isinstance(arg, possible_types)
 
 
-def checking_typing_typeddict(arg: Any, possible_types: Any, *args: Any, **kwargs: Any) -> bool:
+def checking_typing_typeddict(
+    arg: Any, possible_types: Any, *args: Any, **kwargs: Any
+) -> bool:
     total = getattr(possible_types, "__total__", True)
     required_fields = getattr(possible_types, "__annotations__", {})
     res: bool = checking_typing_typedict_values(arg, required_fields, total)
@@ -287,7 +341,9 @@ def checking_typing_typeddict_notrequired(
     return res
 
 
-def checking_typing_unpack(arg: Any, possible_types: Any, *args: Any, **kwargs: Any) -> bool:
+def checking_typing_unpack(
+    arg: Any, possible_types: Any, *args: Any, **kwargs: Any
+) -> bool:
     if typing.is_typeddict(possible_types[0]) and isinstance(arg, dict):
         typed_dict_obj: Any = possible_types[0]
         return all(
@@ -297,7 +353,9 @@ def checking_typing_unpack(arg: Any, possible_types: Any, *args: Any, **kwargs: 
     return False
 
 
-def validate_object(value: Any, validation_func: Callable[[Any], bool] | None = None) -> bool:
+def validate_object(
+    value: Any, validation_func: Callable[[Any], bool] | None = None
+) -> bool:
     if validation_func:
         return validation_func(value)
     return True
@@ -332,7 +390,7 @@ def check_typevar(arg: Any, possible_types: Any, *args: Any, **kwargs: Any) -> b
 supported_typings = vars()
 
 
-def check_annotated_type(argument: Any, type_of: Any) -> bool:
+def check_annotated_type(argument: Any, type_of: Any) -> bool | object:
     result = True  # when no callable is assigned to __metadata__ we return True
     for func_obj in type_of.__metadata__:
         if callable(func_obj):
@@ -441,7 +499,9 @@ def check_type(argument: Any, type_of: Any, mro: bool = False, **kwargs: Any) ->
         elif isinstance(type_of, str):
             return argument.__class__.__name__ == type_of
         elif origin_name in ("_typeddictmeta", "matchtypeddict", "typeddict"):
-            return checking_typing_typeddict(argument, get_possible_types(type_of, "typeddict"))
+            return checking_typing_typeddict(
+                argument, get_possible_types(type_of, "typeddict")
+            )
         elif origin_name == "required":
             return checking_typing_typeddict_required(
                 argument, get_possible_types(type_of, origin_name)
@@ -451,14 +511,18 @@ def check_type(argument: Any, type_of: Any, mro: bool = False, **kwargs: Any) ->
                 argument, get_possible_types(type_of, origin_name)
             )
         elif origin_name == "unpack":
-            return checking_typing_unpack(argument, get_possible_types(type_of, origin_name))
+            return checking_typing_unpack(
+                argument, get_possible_types(type_of, origin_name)
+            )
         elif origin_name == "readonly":
             sub_type = get_possible_types(type_of, origin_name)
             return check_type(argument, sub_type)
         elif origin_name == "annotated":
             return check_annotated_type(argument, type_of)
         elif origin_name == "typeguard":
-            return check_type(argument, get_possible_types(type_of, origin_name), mro, **kwargs)
+            return check_type(
+                argument, get_possible_types(type_of, origin_name), mro, **kwargs
+            )
         elif mro:
             if origin_name == "union":
                 possible_types = get_possible_types(type_of)
