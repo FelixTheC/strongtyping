@@ -1,52 +1,26 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-@created: 30.04.20
-@author: felix
-"""
 import json
 import sys
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum, IntEnum
 from types import FunctionType, MethodType
-from typing import (
-    Annotated,
-    Any,
-    Callable,
-    Dict,
-    Generator,
-    Iterable,
-    Iterator,
-    List,
-    NewType,
-    Optional,
-    Set,
-    Tuple,
-    Type,
-    TypeGuard,
-    TypeVar,
-    Union,
-)
+from typing import (Annotated, Any, Callable, Dict, Generator, Iterable,
+                    Iterator, List, NewType, Optional, Set, Tuple, Type,
+                    TypeGuard, TypeVar, Union)
 from unittest import mock
 
 import pytest
 import ujson as ujson
-
 from strongtyping.config import SEVERITY_LEVEL
 from strongtyping.exceptions import TypeMismatch
 from strongtyping.strong_typing import match_class_typing, match_typing
-from strongtyping.strong_typing_utils import (
-    check_type,
-    checking_typing_dict,
-    checking_typing_json,
-    checking_typing_list,
-    checking_typing_set,
-    checking_typing_tuple,
-    checking_typing_type,
-    get_origins,
-    get_possible_types,
-)
+from strongtyping.strong_typing_utils import (check_type, checking_typing_dict,
+                                              checking_typing_json,
+                                              checking_typing_list,
+                                              checking_typing_set,
+                                              checking_typing_tuple,
+                                              checking_typing_type,
+                                              get_origins, get_possible_types)
 
 try:
     from typing import Literal

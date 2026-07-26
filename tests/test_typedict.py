@@ -1,9 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-@created: 03.06.21
-@author: felix
-"""
 import sys
 import uuid
 from typing import Annotated, List, NotRequired, Required, TypedDict, Union, Unpack

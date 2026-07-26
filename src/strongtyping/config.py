@@ -1,10 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-@created: 20.07.20
-@author: felix
-"""
-
 from enum import Enum
 from os import environ
 

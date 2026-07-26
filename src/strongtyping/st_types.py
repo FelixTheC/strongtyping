@@ -1,10 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-@created: 30.05.21
-@author: felix
-"""
-
 import inspect
 import json
 import weakref

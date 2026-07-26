@@ -1,10 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-@created: 20.07.20
-@author: felix
-"""
-
 import logging
 import os
 from types import MethodType
@@ -49,11 +42,7 @@ def get_severity_level(severity_: Union[str, SEVERITY_LEVEL]) -> int:
             level = SEVERITY_CONFIG.get(_level, SEVERITY_LEVEL.ENABLED)
             return level.value
     else:
-        return (
-            int(severity_.value)
-            if isinstance(severity_, SEVERITY_LEVEL)
-            else int(severity_)
-        )
+        return int(severity_.value) if isinstance(severity_, SEVERITY_LEVEL) else int(severity_)
 
 
 exclude_builtins = dir(object)
@@ -73,9 +62,7 @@ def _get_new(
                 and getattr(cls_, attr).__class__.__name__ != "property"
                 and not hasattr(getattr(obj, attr), "__fe_strng_mtch__")
             ):
-                type_annotations: dict[str, Any] = getattr(
-                    getattr(cls_, attr), "__annotations__"
-                )
+                type_annotations: dict[str, Any] = getattr(getattr(cls_, attr), "__annotations__")
                 return len([i for i in type_annotations.keys() if i != "return"]) > 0
             return False
 
@@ -135,9 +122,7 @@ def action(f: Callable[..., Any], frefs: str, type_function: Any) -> Any:
 
     return property(
         *(
-            _action.f[ref]
-            if (ref != "documenter" or _action.f[ref] is None)
-            else _action.f[ref](0)
+            _action.f[ref] if (ref != "documenter" or _action.f[ref] is None) else _action.f[ref](0)
             for ref in _action.f
         )
     )

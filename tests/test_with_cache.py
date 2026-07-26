@@ -1,9 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-@created: 06.06.21
-@author: felix
-"""
 import operator
 import timeit
 from functools import partial
@@ -42,7 +36,16 @@ def test_class_with_cache():
     my_class = MyClass()
 
     for i in range(10):
-        assert my_class.foo([1, 2, 3, 4, 5, 6, 7, 8]) == [10, 20, 30, 40, 50, 60, 70, 80]
+        assert my_class.foo([1, 2, 3, 4, 5, 6, 7, 8]) == [
+            10,
+            20,
+            30,
+            40,
+            50,
+            60,
+            70,
+            80,
+        ]
 
     assert my_class.foo([1, 2, 3, 4, 5, 6, 7, 9]) == [10, 20, 30, 40, 50, 60, 70, 90]
 
@@ -84,13 +87,13 @@ def test_cache_enabled_will_boost():
         "foo_cached(data_1)", globals=globals(), number=1000
     )
 
-    assert timeit.timeit("foo(data_1, 10)", globals=globals(), number=1000) > timeit.timeit(
-        "foo_cached(data_1, 10)", globals=globals(), number=1000
-    )
+    assert timeit.timeit(
+        "foo(data_1, 10)", globals=globals(), number=1000
+    ) > timeit.timeit("foo_cached(data_1, 10)", globals=globals(), number=1000)
 
-    assert timeit.timeit("MyClass().foo(data_1)", globals=globals(), number=1000) > timeit.timeit(
-        "MyClassCached().foo(data_1)", globals=globals(), number=1000
-    )
+    assert timeit.timeit(
+        "MyClass().foo(data_1)", globals=globals(), number=1000
+    ) > timeit.timeit("MyClassCached().foo(data_1)", globals=globals(), number=1000)
 
     assert timeit.timeit(
         "MyClass().foo(data_1, 10)", globals=globals(), number=1000

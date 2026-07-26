@@ -1,10 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-@created: 09.07.20
-@author: felix
-"""
-
 from functools import partial
 from typing import Any, Callable
 

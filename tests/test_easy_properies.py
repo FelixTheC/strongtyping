@@ -1,12 +1,6 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-@created: 09.07.20
-@author: eisenmenger
-"""
 import pytest
-
-from strongtyping.docstring_typing import getter_setter as dt_getter_setter, setter as dt_setter
+from strongtyping.docstring_typing import getter_setter as dt_getter_setter
+from strongtyping.docstring_typing import setter as dt_setter
 from strongtyping.exceptions import TypeMismatch
 from strongtyping.strong_typing import getter_setter, setter
 

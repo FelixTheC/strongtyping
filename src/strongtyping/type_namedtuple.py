@@ -1,10 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-@created: 13.07.20
-@author: felix
-"""
-
 from collections import namedtuple
 from keyword import iskeyword
 from typing import Any, Dict, List, Optional, Tuple, Union

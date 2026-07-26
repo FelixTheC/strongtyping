@@ -1,11 +1,4 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-@created: 26.06.21
-@author: felix
-"""
 import pytest
-
 from strongtyping.exceptions import TypeMismatch
 from strongtyping.strong_typing import match_class_typing, match_typing
 

@@ -1,9 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-@created: 09.07.20
-@author: felix
-"""
 from functools import partial
 
 import strongtyping
@@ -31,7 +25,9 @@ def action(f, frefs):
 
     return property(
         *(
-            action.f[ref] if (ref != "documenter" or action.f[ref] is None) else action.f[ref](0)
+            action.f[ref]
+            if (ref != "documenter" or action.f[ref] is None)
+            else action.f[ref](0)
             for ref in action.f
         )
     )

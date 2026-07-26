@@ -1,10 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-@created: 12.05.21
-@author: eisenmenger
-"""
-
 import inspect
 import pprint
 import re
@@ -101,17 +94,13 @@ def get_type_info(val: Any, type_origins: Any) -> str:
         except TypeError:
             pos_types = get_possible_types(type_origins)
             if pos_types:
-                text = ", ".join(
-                    [get_type_info(val, type_origin) for type_origin in pos_types]
-                )
+                text = ", ".join([get_type_info(val, type_origin) for type_origin in pos_types])
                 return f"{get_origins(val)[1]}({text})"
             return ""
     elif origins[1].lower() in ("list", "tuple", "set"):
         pos_types = get_possible_types(type_origins)
         if pos_types:
-            text = ", ".join(
-                [get_type_info(val, type_origin) for type_origin in pos_types]
-            )
+            text = ", ".join([get_type_info(val, type_origin) for type_origin in pos_types])
             if origins[1] != "None" and get_origins(val)[1] != origins[1]:
                 return f"{origins[1]}({text})"
             return f"{get_origins(val)[1]}({text})"
@@ -122,8 +111,7 @@ def get_type_info(val: Any, type_origins: Any) -> str:
     elif val_origins[1] == "TypedDict" or val_origins[1] == "_TypedDictMeta":
         required = " required" if val_origins[0].__total__ else ""
         fields = {
-            key: get_type_info(key, val)
-            for key, val in val_origins[0].__annotations__.items()
+            key: get_type_info(key, val) for key, val in val_origins[0].__annotations__.items()
         }
         return f"{val.__name__}[TypedDict]{required} fields are \n\t`{pprint.pformat(fields, sort_dicts=False)}`"
     elif "Validator" in origins[1]:
@@ -137,14 +125,10 @@ def get_type_info(val: Any, type_origins: Any) -> str:
     else:
         if type_origins:
             try:
-                origins_str = ", ".join(
-                    (type_origin.__name__ for type_origin in type_origins)
-                )
+                origins_str = ", ".join((type_origin.__name__ for type_origin in type_origins))
             except AttributeError:
                 if len(type_origins) == 1:
-                    return (
-                        f"{get_origins(val)[1]}({get_type_info(val, type_origins[0])})"
-                    )
+                    return f"{get_origins(val)[1]}({get_type_info(val, type_origins[0])})"
                 else:
                     return (
                         f"{get_origins(val)[1]}({get_type_info(val, type_origins[0])},"
@@ -181,9 +165,7 @@ def docs_from_typing_numpy_format(
         if key != "return":
             val = annotations.get(key, func_params[key])
             type_origins = get_possible_types(val)
-            predefined_info = "\n\t".join(
-                additional_infos.get(f"${idx}", "").split("\n")
-            )
+            predefined_info = "\n\t".join(additional_infos.get(f"${idx}", "").split("\n"))
             predefined_info = f"\n\t{predefined_info}" if predefined_info else ""
 
             info_str = f"{key} : {ARGUMENT_TYPE[func_params[key].kind]} of type {get_type_info(val, type_origins)}"
@@ -220,9 +202,7 @@ def docs_from_typing_reST_format(
         if key != "return":
             val = annotations.get(key, func_params[key])
             type_origins = get_possible_types(val)
-            predefined_info = "\n\t".join(
-                additional_infos.get(f"${idx}", "").split("\n")
-            )
+            predefined_info = "\n\t".join(additional_infos.get(f"${idx}", "").split("\n"))
             predefined_info = f"\n\t{predefined_info}" if predefined_info else ""
             info_str = f":param {key}: {ARGUMENT_TYPE[func_params[key].kind]} {predefined_info}"
 
@@ -242,9 +222,7 @@ def docs_from_typing_reST_format(
     return lb + "\n".join(doc_infos + type_infos), func_info
 
 
-def docs_from_typing(
-    func: Callable[..., Any], remove_linebreak: bool, style: str
-) -> Any:
+def docs_from_typing(func: Callable[..., Any], remove_linebreak: bool, style: str) -> Any:
     annotations: Dict[str, Any] = func.__annotations__
     func_params: Dict[str, inspect.Parameter] = dict(inspect.signature(func).parameters)
     if func.__doc__:
@@ -255,9 +233,7 @@ def docs_from_typing(
         additional_infos_list = Pattern.split(textwrap.dedent(func_doc))
         func_info = textwrap.dedent(additional_infos_list[0])
         _additional_infos_gen: Any = [
-            tuple(
-                filter(lambda x: len(x) > 1, map(str.strip, re.split(r"(\$\d)", info)))
-            )
+            tuple(filter(lambda x: len(x) > 1, map(str.strip, re.split(r"(\$\d)", info))))
             for info in additional_infos_list
             if info and info[0] == "$"
         ]
@@ -332,14 +308,10 @@ def numpy_docs_from_typing(
         return wrapper
 
 
-def class_docs_from_typing(
-    _cls: Optional[Type[Any]] = None, *, doc_type: str = "reST"
-) -> Any:
+def class_docs_from_typing(_cls: Optional[Type[Any]] = None, *, doc_type: str = "reST") -> Any:
     def wrapper(cls: Type[Any]) -> Any:
         docs_formatter: Any = (
-            rest_docs_from_typing
-            if doc_type.lower() == "rest"
-            else numpy_docs_from_typing
+            rest_docs_from_typing if doc_type.lower() == "rest" else numpy_docs_from_typing
         )
         cls.__doc__ = f"{cls.__doc__}{docs_formatter(cls.__init__).__doc__}"
         cls.__init__.__doc__ = ""
@@ -350,9 +322,7 @@ def class_docs_from_typing(
         ]
         for func in users_funcs:
             cls_method: Any = getattr(cls, func)
-            if cls_method.__annotations__ and not hasattr(
-                cls_method, "has_auto_generated_docs"
-            ):
+            if cls_method.__annotations__ and not hasattr(cls_method, "has_auto_generated_docs"):
                 cls_method.__doc__ = docs_formatter(getattr(cls, func)).__doc__
         return cls
 

@@ -1,10 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-@created: 07.06.20
-@author: felix
-"""
-
 import sys
 from collections import deque
 from typing import Any, Union

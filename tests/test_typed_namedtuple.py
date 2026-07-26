@@ -1,9 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-@created: 13.07.20
-@author: felix
-"""
 import sys
 from typing import Union
 
@@ -14,7 +8,9 @@ if sys.version_info.minor >= 8:
 
 SKIP_MESSAGE = "Some features in typed_namedtuple are only available from version 3.8"
 
-ContactBlockedHelper = typed_namedtuple("ContactBlockedHelper", [("allow", bool), ("block", bool)])
+ContactBlockedHelper = typed_namedtuple(
+    "ContactBlockedHelper", [("allow", bool), ("block", bool)]
+)
 
 
 @pytest.fixture(scope="module")
@@ -173,10 +169,14 @@ def test_typed_namedtuple_default_values():
 
     # defaults must match fields
     with pytest.raises(TypeError):
-        typed_namedtuple("Dummy", ["spell:str", "mana:int", "effect:list"], defaults=[""])
+        typed_namedtuple(
+            "Dummy", ["spell:str", "mana:int", "effect:list"], defaults=[""]
+        )
 
     with pytest.raises(TypeError):
-        typed_namedtuple("Dummy", ["spell:str", "mana:int", "effect:list"], defaults=["", 0])
+        typed_namedtuple(
+            "Dummy", ["spell:str", "mana:int", "effect:list"], defaults=["", 0]
+        )
 
 
 def test_typed_namedtuple_has_nice_docstring(dummy_obj):
@@ -264,7 +264,9 @@ def test_typed_namedtuple_rename():
     assert d._0 == "1"
 
     with pytest.raises(ValueError):
-        Dummy = typed_namedtuple("Dummy", ["_spell:str", "mana:int", "effect:list or tuple"])
+        Dummy = typed_namedtuple(
+            "Dummy", ["_spell:str", "mana:int", "effect:list or tuple"]
+        )
 
 
 def test_typed_namedtuple_mixing_typ_and_no_type_not_allowed():

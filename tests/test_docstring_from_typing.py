@@ -1,9 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-@created: 16.05.21
-@author: felix
-"""
 import decimal
 import sys
 from typing import List, Tuple, Union
@@ -14,7 +8,6 @@ except ImportError:
     print("python version < 3.8")
 
 import pytest
-
 from strongtyping.docs_from_typing import (
     class_docs_from_typing,
     numpy_docs_from_typing,
@@ -27,7 +20,9 @@ from strongtyping.docs_from_typing import (
 )
 def test_rest_docstring_from_typing():
     @rest_docs_from_typing
-    def foo(val_a: int, val_b: list[str], val_c: Tuple[str, ...], *args, **kwargs) -> None:
+    def foo(
+        val_a: int, val_b: list[str], val_c: Tuple[str, ...], *args, **kwargs
+    ) -> None:
         pass
 
     class Foo:
@@ -98,7 +93,9 @@ def test_numpy_docstring_from_typing_2():
     assert Foo.foo.__doc__
 
 
-@pytest.mark.skipif(sys.version_info.minor < 8, reason="Literal first available in py3.8")
+@pytest.mark.skipif(
+    sys.version_info.minor < 8, reason="Literal first available in py3.8"
+)
 def test_rest_docstring_from_typing_literal():
     @rest_docs_from_typing
     def foo(val_a: Literal["jon", "doe"]):
@@ -107,7 +104,9 @@ def test_rest_docstring_from_typing_literal():
     assert foo.__doc__
 
 
-@pytest.mark.skipif(sys.version_info.minor < 8, reason="Literal first available in py3.8")
+@pytest.mark.skipif(
+    sys.version_info.minor < 8, reason="Literal first available in py3.8"
+)
 def test_numpy_docstring_from_typing_literal():
     @numpy_docs_from_typing
     def foo(val_a: Literal["jon", "doe"]):

@@ -1,11 +1,4 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-@created: 12.07.20
-@author: felix
-"""
 import pytest
-
 from strongtyping.cached_dict import CachedDict
 from strongtyping.cached_set import CachedSet
 

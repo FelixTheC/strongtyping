@@ -1,9 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-@created: 24.05.21
-@author: felix
-"""
 import decimal
 import fractions
 import sys
@@ -67,10 +61,10 @@ def test_valid_type():
 
     @match_typing
     def foo(
-            val_a: Validator[
-                Dict[Union[str, int], Union[List[int], Tuple[int, ...]]],
-                partial(min_length, size=2),
-            ]
+        val_a: Validator[
+            Dict[Union[str, int], Union[List[int], Tuple[int, ...]]],
+            partial(min_length, size=2),
+        ]
     ):
         return True
 
@@ -81,7 +75,9 @@ def test_valid_type():
 
 
 @pytest.mark.skip(reason="module does not support Validator at the moment")
-@pytest.mark.skipif(sys.version_info.minor < 9, reason="Generics only available since 3.9")
+@pytest.mark.skipif(
+    sys.version_info.minor < 9, reason="Generics only available since 3.9"
+)
 def test_with_type_generics():
     def min_length(val):
         return len(val) > 2
@@ -113,10 +109,10 @@ def test_with_type_generics():
 
     @match_typing
     def foo(
-            val_a: Validator[
-                dict[Union[str, int], Union[list[int], tuple[int, ...]]],
-                partial(min_length, size=2),
-            ]
+        val_a: Validator[
+            dict[Union[str, int], Union[list[int], tuple[int, ...]]],
+            partial(min_length, size=2),
+        ]
     ):
         return True
 
@@ -163,12 +159,12 @@ def test_validator_type_with_default():
     assert foo([1, 2]) == []
 
     assert (
-            foo(
-                [
-                    1,
-                ]
-            )
-            == []
+        foo(
+            [
+                1,
+            ]
+        )
+        == []
     )
 
     with pytest.raises(TypeMismatch):
@@ -184,12 +180,12 @@ def test_validator_type_with_default():
     assert foo([1, 2, 3])
     assert foo([1, 2]) is None
     assert (
-            foo(
-                [
-                    1,
-                ]
-            )
-            is None
+        foo(
+            [
+                1,
+            ]
+        )
+        is None
     )
 
     with pytest.raises(TypeMismatch):
@@ -203,10 +199,10 @@ def test_validator_type_with_default():
 
     @match_typing
     def foo(
-            val_a: Validator[
-                Dict[Union[str, int], Union[List[int], Tuple[int, ...]]],
-                partial(min_length, size=2),
-            ]
+        val_a: Validator[
+            Dict[Union[str, int], Union[List[int], Tuple[int, ...]]],
+            partial(min_length, size=2),
+        ]
     ):
         return True
 
@@ -216,7 +212,9 @@ def test_validator_type_with_default():
         foo({2: [2, 4]})
 
     with pytest.raises(TypeError):
-        AllowedCluster = Validator[Iterable[Union[int, fractions.Fraction, decimal.Decimal]]]
+        AllowedCluster = Validator[
+            Iterable[Union[int, fractions.Fraction, decimal.Decimal]]
+        ]
 
 
 @pytest.mark.skipif(sys.version_info.minor < 9, reason="Available since 3.9")
