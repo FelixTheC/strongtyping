@@ -8,6 +8,7 @@ nav:
       - 'AI Agent Ready' : 'ai_agent_ready.md'
   - Runtime Typechecking:
       - 'match_typing': 'match_typing.md'
+      - 'async type checking': 'async_match_typing.md'
       - 'match_class_typing': 'match_class_typing.md'
       - 'work_with_annotated': 'annotated.md'
       - 'severity_level': 'severity_level.md'

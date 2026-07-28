@@ -4,11 +4,18 @@ import pprint
 import traceback
 import typing
 import warnings
+from _ctypes import sizeof
 from functools import wraps
-from string import Template
 from typing import Any, Callable, NotRequired, Required, Type, get_args, get_origin
 
-from strongtyping._utils import _severity_level, action, remove_subclass
+from strongtyping._utils import (
+    CACHE_IGNORE_CLASS_FUNCTIONS,
+    _error_info_msg,
+    _severity_level,
+    action,
+    get_safe_cache_key,
+    remove_subclass,
+)
 from strongtyping.cached_set import CachedSet
 from strongtyping.config import SEVERITY_LEVEL
 from strongtyping.exceptions import TypeMismatch, UndefinedKey
@@ -17,13 +24,6 @@ from strongtyping.strong_typing_utils import (
     checking_typing_typedict_values,
     default_return_queue,
     get_origins,
-)
-
-# CACHE_IGNORE_CLASS_FUNCTIONS = ("__init__", "__str__", "__repr__")
-CACHE_IGNORE_CLASS_FUNCTIONS = ("__init__",)
-
-_error_info_msg = Template(
-    "TypeMismatch: failed at $source\nExpected type: $expected_type\nActual value: $actual_value (type: $actual_type)"
 )
 
 
@@ -66,12 +66,11 @@ def match_typing(
         def inner(*args: Any, **kwargs: Any) -> Any:
             if arg_names and severity_level > SEVERITY_LEVEL.DISABLED.value:
                 args = remove_subclass(args, subclass)
+                arg_vals, kwarg_vals = get_safe_cache_key(args, kwargs)
+                cached_key = (func, arg_vals, kwarg_vals)
+
                 if cached_set is not None and func.__name__ not in CACHE_IGNORE_CLASS_FUNCTIONS:
                     # check if func with args and kwargs was checked once before with positive result
-                    arg_vals = args.__str__() if args else None
-                    kwarg_vals = kwargs.__str__() if args else None
-                    cached_key = (func, arg_vals, kwarg_vals)
-
                     if cached_key in cached_set:
                         return func(*args, **kwargs)
 

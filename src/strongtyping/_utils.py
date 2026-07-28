@@ -7,6 +7,8 @@
 
 import logging
 import os
+from _ctypes import sizeof
+from string import Template
 from types import MethodType
 from typing import Any, Callable, ParamSpec, Type, TypeVar, Union
 
@@ -22,6 +24,27 @@ ORIGINAL_DUCK_TYPES: Any = {
     float: [float, complex],
     bytearray: [bytearray, bytes],
 }
+
+
+CACHE_IGNORE_CLASS_FUNCTIONS = ("__init__",)
+
+_error_info_msg = Template(
+    "TypeMismatch: failed at $source\nExpected type: $expected_type\nActual value: $actual_value (type: $actual_type)"
+)
+
+
+def get_safe_cache_key(args, kwargs):
+    try:
+        # Only use string representation if objects are small/primitive
+        # to avoid massive string allocation overhead
+        arg_vals = tuple(repr(arg) if sizeof(arg) < 1024 else id(arg) for arg in args)
+        kwarg_vals = tuple(repr(kwarg) if sizeof(kwarg) < 1024 else id(kwarg) for kwarg in kwargs)
+        return arg_vals, kwarg_vals
+    except TypeError:
+        # mostly when args or kwargs contain objects that are not supporting sizeof
+        arg_vals = tuple(repr(arg) for arg in args)
+        kwarg_vals = tuple(repr(kwarg) for kwarg in kwargs)
+        return arg_vals, kwarg_vals
 
 
 def remove_subclass(args: Any, subclass: bool) -> Any:

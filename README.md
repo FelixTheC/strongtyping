@@ -26,6 +26,32 @@ And <b><em>raises</em> TypeMisMatch</b> if the used parameters in a function cal
 - Since __3.13.6__ `mypyc` is used to compile the core logic code.
 - This results in a significant performance boost from around __5x faster__, especially for large containers.
 
+## Async functions
+
+Use the dedicated `a_match_typing` decorator for `async def` functions. It preserves the coroutine interface while
+validating annotated arguments before the function runs.
+
+```python
+from strongtyping.astrong_typing import a_match_typing
+import asyncio
+
+
+@a_match_typing
+async def add(left: int, right: int) -> int:
+    return left + right
+
+
+async def main() -> None:
+    result = await add(1, 2)  # 3
+    await add(1, "2")  # raises TypeMismatch
+
+
+asyncio.run(main())
+```
+
+See the [async type checking documentation](https://strongtyping.readthedocs.io/en/latest/async_match_typing/)
+for configuration options and further examples.
+
 ### 🤖 AI Agent Ready
 
 This library includes [Agent Skills](https://agentskills.io/) for AI coding assistants (like Claude Code, Cursor, and
