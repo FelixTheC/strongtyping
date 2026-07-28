@@ -1,8 +1,11 @@
-from strongtyping.exceptions import TypeMismatch as TypeMismatch, ValidationError as ValidationError
-from strongtyping.strong_typing import match_typing as match_typing
-from typing import Any, Callable, Sized, TypeVar
+from collections.abc import Callable, Sized
+from typing import Any, TypeVar
 
-T = TypeVar('T')
+from strongtyping.exceptions import TypeMismatch as TypeMismatch
+from strongtyping.exceptions import ValidationError as ValidationError
+from strongtyping.strong_typing import match_typing as match_typing
+
+T = TypeVar("T")
 
 def validate_typed_dict(base: type[Any], /, data: dict[Any, Any]) -> bool: ...
 def Gt(limit: int, /) -> Callable[[int], bool]: ...

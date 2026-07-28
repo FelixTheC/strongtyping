@@ -1,9 +1,12 @@
-from _typeshed import Incomplete
-from strongtyping.config import SEVERITY_LEVEL as SEVERITY_LEVEL
-from typing import Any, Callable, ParamSpec, TypeVar
+from collections.abc import Callable
+from typing import Any, ParamSpec, TypeVar
 
-T = TypeVar('T')
-P = ParamSpec('P')
+from _typeshed import Incomplete
+
+from strongtyping.config import SEVERITY_LEVEL as SEVERITY_LEVEL
+
+T = TypeVar("T")
+P = ParamSpec("P")
 logger: Incomplete
 ORIGINAL_DUCK_TYPES: Any
 CACHE_IGNORE_CLASS_FUNCTIONS: Incomplete

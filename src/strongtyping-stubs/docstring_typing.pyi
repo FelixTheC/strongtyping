@@ -1,9 +1,12 @@
 import typing
+from typing import Any
+
 from _typeshed import Incomplete
-from strongtyping._utils import action as action, remove_subclass as remove_subclass
+
+from strongtyping._utils import action as action
+from strongtyping._utils import remove_subclass as remove_subclass
 from strongtyping.cached_set import CachedSet as CachedSet
 from strongtyping.exceptions import TypeMismatch as TypeMismatch
-from typing import Any
 
 TYPE_EXTRACTION_PATTERN: str
 PATTERN_1: str
@@ -34,8 +37,23 @@ def check_doc_str_type(arg: Any, type_of: str | None) -> Any: ...
 def is_type_info(docstring_line: str) -> bool: ...
 def is_param_info(docstring_line: str) -> bool: ...
 def extract_docstring_param_types(func: typing.Callable[..., Any]) -> dict[str, Any]: ...
-def match_docstring(_func: typing.Callable[..., Any] | None = None, *, excep_raise: type[Exception] | None = ..., cache_size: int = 0, subclass: bool = False, severity: str = 'env', **kwargs: Any) -> Any: ...
-def match_class_docstring(_cls: type[Any] | None = None, *, excep_raise: type[Exception] = ..., cache_size: int = 0, severity: str = 'env', **kwargs: Any) -> Any: ...
+def match_docstring(
+    _func: typing.Callable[..., Any] | None = None,
+    *,
+    excep_raise: type[Exception] | None = ...,
+    cache_size: int = 0,
+    subclass: bool = False,
+    severity: str = "env",
+    **kwargs: Any,
+) -> Any: ...
+def match_class_docstring(
+    _cls: type[Any] | None = None,
+    *,
+    excep_raise: type[Exception] = ...,
+    cache_size: int = 0,
+    severity: str = "env",
+    **kwargs: Any,
+) -> Any: ...
 def getter(func: Any) -> Any: ...
 def setter(func: Any) -> Any: ...
 def getter_setter(func: Any) -> Any: ...

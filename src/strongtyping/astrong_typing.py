@@ -3,15 +3,14 @@ import inspect
 import pprint
 import traceback
 import warnings
+from collections.abc import Callable
 from functools import wraps
-from string import Template
-from typing import Any, Callable, Type
+from typing import Any
 
 from strongtyping._utils import (
     CACHE_IGNORE_CLASS_FUNCTIONS,
     _error_info_msg,
     _severity_level,
-    action,
     get_safe_cache_key,
     remove_subclass,
 )
@@ -30,7 +29,7 @@ async def _raise_error_or_warning(
     failed_params: tuple[str, ...],
     annotated_values: Any,
     annotations: Any,
-    excep_raise: Type[Exception] = TypeMismatch,
+    excep_raise: type[Exception] = TypeMismatch,
     severity_level: int = SEVERITY_LEVEL.ENABLED.value,
 ) -> None:
     if excep_raise is not None and severity_level == SEVERITY_LEVEL.ENABLED.value:
@@ -42,7 +41,7 @@ async def _raise_error_or_warning(
 def a_match_typing(
     _func: Callable[..., Any] | None = None,
     *,
-    excep_raise: Type[Exception] = TypeMismatch,
+    excep_raise: type[Exception] = TypeMismatch,
     subclass: bool = False,
     severity: str = "env",
     **kwargs: Any,
@@ -64,7 +63,11 @@ def a_match_typing(
                 arg_vals, kwarg_vals = get_safe_cache_key(args, kwargs)
                 cached_key = (func, arg_vals, kwarg_vals)
 
-                if cached_set is not None and func.__name__ not in CACHE_IGNORE_CLASS_FUNCTIONS and cached_key in cached_set:
+                if (
+                    cached_set is not None
+                    and func.__name__ not in CACHE_IGNORE_CLASS_FUNCTIONS
+                    and cached_key in cached_set
+                ):
                     print(cached_set)
                     # check if func with args and kwargs was checked once before with positive result
                     return await func(*args, **kwargs)
@@ -72,7 +75,8 @@ def a_match_typing(
                 # Thanks to Ruud van der Ham who find a better and more stable solution for check_args
                 failed_params = []
                 for arg, arg_name in zip(args, arg_names):
-                    if not await asyncio.to_thread(check_type,
+                    if not await asyncio.to_thread(
+                        check_type,
                         arg,
                         annotations.get(arg_name),
                         mro=False,
@@ -83,7 +87,8 @@ def a_match_typing(
                 failed_unpacking = False
 
                 if anno_kwargs := annotations.get("kwargs"):
-                    if not await asyncio.to_thread(check_type,
+                    if not await asyncio.to_thread(
+                        check_type,
                         kwargs,
                         anno_kwargs,
                         mro=False,
@@ -92,7 +97,8 @@ def a_match_typing(
                         failed_unpacking = True
                 else:
                     for kwarg_name, kwarg in kwargs.items():
-                        if not await asyncio.to_thread(check_type,
+                        if not await asyncio.to_thread(
+                            check_type,
                             kwarg,
                             annotations.get(kwarg_name, annotations.get("kwargs")),
                             mro=False,
@@ -108,7 +114,7 @@ def a_match_typing(
 
                     for kwarg_name, kwarg in kwargs.items():
                         annotated_values[kwarg_name] = kwarg
-                    root = list(traceback.extract_stack(None, 2))[0]
+                    root = next(iter(traceback.extract_stack(None, 2)))
 
                     source = f"{root.filename}:{root.lineno} in {root.name}"
                     msg_list = "\n".join(
