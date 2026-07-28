@@ -1,7 +1,10 @@
 import logging
 import os
+from _ctypes import sizeof
+from collections.abc import Callable, Mapping, Sequence
+from string import Template
 from types import MethodType
-from typing import Any, Callable, ParamSpec, Type, TypeVar, Union
+from typing import Any, ParamSpec, TypeVar
 
 from strongtyping.config import SEVERITY_LEVEL
 
@@ -15,6 +18,32 @@ ORIGINAL_DUCK_TYPES: Any = {
     float: [float, complex],
     bytearray: [bytearray, bytes],
 }
+
+
+CACHE_IGNORE_CLASS_FUNCTIONS = ("__init__",)
+
+_error_info_msg = Template(
+    "TypeMismatch: failed at $source\nExpected type: $expected_type\nActual value: $actual_value (type: $actual_type)"
+)
+
+
+def get_safe_cache_key(
+    args: Sequence[Any], kwargs: Mapping[Any, Any]
+) -> tuple[tuple[int | str, ...], tuple[int | str, ...]]:
+    try:
+        # Only use string representation if objects are small/primitive
+        # to avoid massive string allocation overhead
+        arg_vals = tuple(repr(arg) if sizeof(arg) < 1024 else id(arg) for arg in args)
+        kwarg_vals = tuple(repr(kwarg) if sizeof(kwarg) < 1024 else id(kwarg) for kwarg in kwargs)
+        return arg_vals, kwarg_vals
+    except TypeError:
+        try:
+            # mostly when args or kwargs contain objects that are not supporting sizeof
+            arg_vals = tuple(repr(arg) for arg in args)
+            kwarg_vals = tuple(repr(kwarg) for kwarg in kwargs)
+            return arg_vals, kwarg_vals
+        except Exception:  # noqa: BLE001
+            return tuple(id(arg) for arg in args), tuple(id(kwarg) for kwarg in kwargs)
 
 
 def remove_subclass(args: Any, subclass: bool) -> Any:
@@ -33,7 +62,7 @@ SEVERITY_CONFIG = {
 }
 
 
-def get_severity_level(severity_: Union[str, SEVERITY_LEVEL]) -> int:
+def get_severity_level(severity_: str | SEVERITY_LEVEL) -> int:
     if severity_ == "env":
         _level = os.environ.get("ST_SEVERITY", "1")
         try:
@@ -50,20 +79,20 @@ exclude_builtins = dir(object)
 
 def _get_new(
     typing_func: Callable[..., Any],
-    excep_raise: Type[Exception] = TypeError,
+    excep_raise: type[Exception] = TypeError,
     cache_size: int = 0,
     severity: str = "env",
     **kwargs: Any,
 ) -> Any:
-    def new_with_match_typing(cls_: Type[T], *args: Any, **kwargs: Any) -> T:
+    def new_with_match_typing(cls_: type[T], *args: Any, **kwargs: Any) -> T:
         def add_match_typing(obj: T, attr: str) -> bool:
             if (
                 hasattr(getattr(cls_, attr), "__annotations__")
                 and getattr(cls_, attr).__class__.__name__ != "property"
                 and not hasattr(getattr(obj, attr), "__fe_strng_mtch__")
             ):
-                type_annotations: dict[str, Any] = getattr(getattr(cls_, attr), "__annotations__")
-                return len([i for i in type_annotations.keys() if i != "return"]) > 0
+                type_annotations: dict[str, Any] = getattr(cls_, attr).__annotations__
+                return len([i for i in type_annotations if i != "return"]) > 0
             return False
 
         x: T = object.__new__(cls_)

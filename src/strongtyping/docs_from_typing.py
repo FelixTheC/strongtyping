@@ -2,8 +2,9 @@ import inspect
 import pprint
 import re
 import textwrap
+from collections.abc import Callable
 from functools import wraps
-from typing import Any, Callable, Dict, Optional, Type
+from typing import Any
 
 from strongtyping.strong_typing_utils import get_origins, get_possible_types
 
@@ -16,7 +17,7 @@ def getsource(object: Any) -> str:
     The argument may be a module, class, method, function, traceback, frame,
     or code object.  The source code is returned as a single string.  An
     OSError is raised if the source code cannot be retrieved."""
-    lines, lnum = inspect.getsourcelines(object)
+    lines, _ = inspect.getsourcelines(object)
     return "".join(lines[1:])
 
 
@@ -115,7 +116,7 @@ def get_type_info(val: Any, type_origins: Any) -> str:
         }
         return f"{val.__name__}[TypedDict]{required} fields are \n\t`{pprint.pformat(fields, sort_dicts=False)}`"
     elif "Validator" in origins[1]:
-        required_type, *not_needed = type_origins.__args__
+        required_type, *_ = type_origins.__args__
         text = f"{get_type_info(val, required_type)}[{origins[1]}]"
         return text
     elif val_origins[1] == "args":
@@ -125,7 +126,7 @@ def get_type_info(val: Any, type_origins: Any) -> str:
     else:
         if type_origins:
             try:
-                origins_str = ", ".join((type_origin.__name__ for type_origin in type_origins))
+                origins_str = ", ".join(type_origin.__name__ for type_origin in type_origins)
             except AttributeError:
                 if len(type_origins) == 1:
                     return f"{get_origins(val)[1]}({get_type_info(val, type_origins[0])})"
@@ -148,17 +149,15 @@ def get_type_info(val: Any, type_origins: Any) -> str:
 
 
 def docs_from_typing_numpy_format(
-    annotations: Dict[str, Any],
-    additional_infos: Dict[str, str],
-    func_params: Dict[str, inspect.Parameter],
+    annotations: dict[str, Any],
+    additional_infos: dict[str, str],
+    func_params: dict[str, inspect.Parameter],
     remove_linebreak: bool,
     func_info: str,
 ) -> tuple[str, str]:
     doc_infos = ["Parameters", "----------"]
     type_infos = ["Returns", "-------"]
-    func_param_keys = [
-        key for key in func_params.keys() if key != "self" and key not in annotations
-    ]
+    func_param_keys = [key for key in func_params if key != "self" and key not in annotations]
     annotation_keys = list(annotations.keys())
 
     for idx, key in enumerate((annotation_keys + func_param_keys), 1):
@@ -186,17 +185,15 @@ def docs_from_typing_numpy_format(
 
 
 def docs_from_typing_reST_format(
-    annotations: Dict[str, Any],
-    additional_infos: Dict[str, str],
-    func_params: Dict[str, inspect.Parameter],
+    annotations: dict[str, Any],
+    additional_infos: dict[str, str],
+    func_params: dict[str, inspect.Parameter],
     remove_linebreak: bool,
     func_info: str,
 ) -> tuple[str, str]:
     doc_infos = []
     type_infos = []
-    func_param_keys = [
-        key for key in func_params.keys() if key != "self" and key not in annotations
-    ]
+    func_param_keys = [key for key in func_params if key != "self" and key not in annotations]
     annotation_keys = list(annotations.keys())
     for idx, key in enumerate((annotation_keys + func_param_keys), 1):
         if key != "return":
@@ -223,8 +220,8 @@ def docs_from_typing_reST_format(
 
 
 def docs_from_typing(func: Callable[..., Any], remove_linebreak: bool, style: str) -> Any:
-    annotations: Dict[str, Any] = func.__annotations__
-    func_params: Dict[str, inspect.Parameter] = dict(inspect.signature(func).parameters)
+    annotations: dict[str, Any] = func.__annotations__
+    func_params: dict[str, inspect.Parameter] = dict(inspect.signature(func).parameters)
     if func.__doc__:
         if not func.__doc__.endswith("\n") and func.__doc__ != "":
             func_doc = f"{func.__doc__}\n"
@@ -237,7 +234,7 @@ def docs_from_typing(func: Callable[..., Any], remove_linebreak: bool, style: st
             for info in additional_infos_list
             if info and info[0] == "$"
         ]
-        additional_infos: Dict[str, str] = dict(_additional_infos_gen)
+        additional_infos: dict[str, str] = dict(_additional_infos_gen)
     else:
         if func.__name__ != "__init__":
             func_info = f"Function {func.__name__}\n\n"
@@ -255,9 +252,9 @@ def docs_from_typing(func: Callable[..., Any], remove_linebreak: bool, style: st
 
 
 def rest_docs_from_typing(
-    _func: Optional[Callable[..., Any]] = None,
+    _func: Callable[..., Any] | None = None,
     *,
-    insert_at: Optional[str] = None,
+    insert_at: str | None = None,
     remove_linebreak: bool = False,
 ) -> Any:
     def wrapper(func: Callable[..., Any]) -> Any:
@@ -282,9 +279,9 @@ def rest_docs_from_typing(
 
 
 def numpy_docs_from_typing(
-    _func: Optional[Callable[..., Any]] = None,
+    _func: Callable[..., Any] | None = None,
     *,
-    insert_at: Optional[str] = None,
+    insert_at: str | None = None,
     remove_linebreak: bool = False,
 ) -> Any:
     def wrapper(func: Callable[..., Any]) -> Any:
@@ -308,8 +305,8 @@ def numpy_docs_from_typing(
         return wrapper
 
 
-def class_docs_from_typing(_cls: Optional[Type[Any]] = None, *, doc_type: str = "reST") -> Any:
-    def wrapper(cls: Type[Any]) -> Any:
+def class_docs_from_typing(_cls: type[Any] | None = None, *, doc_type: str = "reST") -> Any:
+    def wrapper(cls: type[Any]) -> Any:
         docs_formatter: Any = (
             rest_docs_from_typing if doc_type.lower() == "rest" else numpy_docs_from_typing
         )

@@ -1,6 +1,6 @@
 import sys
 from collections import deque
-from typing import Any, Union
+from typing import Any
 
 
 class CachedSet(set[Any]):
@@ -10,7 +10,7 @@ class CachedSet(set[Any]):
 
     order: deque[Any]
 
-    def __init__(self, memory_limit: Union[int, float] = 1, *args: Any, **kwargs: Any) -> None:
+    def __init__(self, memory_limit: float = 1, *args: Any, **kwargs: Any) -> None:
         """
         :param memory_limit: in MB
         """

@@ -1,5 +1,5 @@
 from collections import deque
-from typing import Any, Union
+from typing import Any
 
 
 class CachedDict(dict[Any, Any]):
@@ -9,9 +9,7 @@ class CachedDict(dict[Any, Any]):
 
     order: deque[Any]
 
-    def __init__(
-        self: "CachedDict", memory_limit: Union[int, float] = 1, *args: Any, **kwargs: Any
-    ) -> None:
+    def __init__(self: "CachedDict", memory_limit: float = 1, *args: Any, **kwargs: Any) -> None:
         """
         :param memory_limit: in MB
         """

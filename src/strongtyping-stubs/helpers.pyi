@@ -1,6 +1,9 @@
-from strongtyping.exceptions import TypeMismatch as TypeMismatch, ValidationError as ValidationError
+from collections.abc import Callable, Sized
+from typing import Any, TypeVar
+
+from strongtyping.exceptions import TypeMismatch as TypeMismatch
+from strongtyping.exceptions import ValidationError as ValidationError
 from strongtyping.strong_typing import match_typing as match_typing
-from typing import Any, Callable, Sized, TypeVar
 
 T = TypeVar("T")
 

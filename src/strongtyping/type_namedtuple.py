@@ -1,22 +1,22 @@
 from collections import namedtuple
 from keyword import iskeyword
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any
 
 from strongtyping.docstring_typing import check_doc_str_type
 from strongtyping.strong_typing import match_typing
 from strongtyping.strong_typing_utils import check_type
 
-use_match_typing: Dict[bool, Any] = {True: check_type, False: check_doc_str_type}
+use_match_typing: dict[bool, Any] = {True: check_type, False: check_doc_str_type}
 
 
 @match_typing
 def typed_namedtuple(
     typename: str,
-    field_names: Union[List[str], str, List[Tuple[str, object]]],
+    field_names: list[str] | str | list[tuple[str, object]],
     *,
     rename: bool = False,
-    defaults: Optional[Union[list[Any], tuple[Any, ...]]] = None,
-    module: Optional[str] = None,
+    defaults: list[Any] | tuple[Any, ...] | None = None,
+    module: str | None = None,
 ) -> type:
     # I could have just copied everything from namedtuple, but then I would have no learning effect
     """
@@ -33,11 +33,11 @@ def typed_namedtuple(
     :return:
     """
 
-    _field_types: Dict[str, Any] = {}
+    _field_types: dict[str, Any] = {}
 
-    def rename_fields() -> Dict[str, Any]:
+    def rename_fields() -> dict[str, Any]:
         knowing: set[str] = set()
-        updated_dict: Dict[str, Any] = {}
+        updated_dict: dict[str, Any] = {}
         for index, name in enumerate(_field_types.keys()):
             if not name.isidentifier() or iskeyword(name) or name.startswith("_"):
                 updated_dict[f"_{index}"] = _field_types[name]
@@ -48,7 +48,7 @@ def typed_namedtuple(
 
     def validate_field_names() -> None:
         seen = set()
-        for name in _field_types.keys():
+        for name in _field_types:
             if name.startswith("_"):
                 raise ValueError(f"Field names cannot start with an underscore: {name!r}")
 
@@ -61,7 +61,7 @@ def typed_namedtuple(
                 raise ValueError(f"Encountered duplicate field name: {name!r}")
             seen.add(name)
 
-    def contains_typing(f_name: Union[str, tuple[Any, ...]]) -> bool:
+    def contains_typing(f_name: str | tuple[Any, ...]) -> bool:
         return ":" in f_name or isinstance(f_name, tuple)
 
     def check_type_namedtuple(_value_dict: dict[str, Any], use_mt: bool = False) -> None:
@@ -93,7 +93,7 @@ def typed_namedtuple(
         return namedtuple(typename, _field_names, rename=rename, defaults=defaults, module=module)
     else:
         try:
-            _field_types = {k: v for k, v in map(lambda x: x.split(":"), _fields)}
+            _field_types = {k: v for k, v in (x.split(":") for x in _fields)}
             _use_match = False
         except (AttributeError, ValueError):
             _field_types = {k: v for k, v in _fields}  # type: ignore
@@ -104,12 +104,12 @@ def typed_namedtuple(
         else:
             validate_field_names()
 
-        def _values_to_add(*args: Any, **kwargs: Any) -> Dict[str, Any]:
+        def _values_to_add(*args: Any, **kwargs: Any) -> dict[str, Any]:
             _a = {k: v for k, v in zip(_field_types.keys(), args)}
             _b = {k: v for k, v in kwargs.items() if k in _field_types}
             return {**_a, **_b}
 
-        def _values_with_defaults() -> Dict[str, Any]:
+        def _values_with_defaults() -> dict[str, Any]:
             if defaults is not None:
                 if len(_field_types) != len(defaults):
                     raise TypeError("Default values must match with field names")
@@ -140,12 +140,12 @@ def typed_namedtuple(
         else:
             _field_defaults = None
 
-        def _asdict(self: Any) -> Dict[str, Any]:
+        def _asdict(self: Any) -> dict[str, Any]:
             return {k: v for k, v in zip(_field_types.keys(), self)}
 
         def _replace(self: Any, **kwargs: Any) -> Any:
             new_val = self._asdict()
-            not_allowed = [k for k in kwargs.keys() if k not in _field_types]
+            not_allowed = [k for k in kwargs if k not in _field_types]
             if not_allowed:
                 raise ValueError(f"Got unexpected field names: {not_allowed!r}")
             new_val.update(**kwargs)
@@ -155,14 +155,14 @@ def typed_namedtuple(
             f"Return a new {typename} object replacing specified fields with new values"
         )
 
-        repr_fmt = "(" + ", ".join(f"{name}=%r" for name in _field_types.keys()) + ")"
+        repr_fmt = "(" + ", ".join(f"{name}=%r" for name in _field_types) + ")"
 
         def __repr__(self: Any) -> str:
             """Return a nicely formatted representation string"""
             _repr: str = self.__class__.__name__ + repr_fmt % self
             return _repr
 
-        def __getnewargs__(self: Any) -> Tuple[Any, ...]:
+        def __getnewargs__(self: Any) -> tuple[Any, ...]:
             """Return self as a plain tuple.  Used by copy and pickle."""
             return tuple(self)
 

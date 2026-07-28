@@ -1,5 +1,6 @@
 import re
-from typing import Any, Callable, Optional, Sized, Type, TypeVar
+from collections.abc import Callable, Sized
+from typing import Any, TypeVar
 
 from strongtyping.exceptions import TypeMismatch, ValidationError
 from strongtyping.strong_typing import match_typing
@@ -7,11 +8,11 @@ from strongtyping.strong_typing import match_typing
 T = TypeVar("T")
 
 
-def validate_typed_dict(base: Type[Any], /, data: dict[Any, Any]) -> bool:
+def validate_typed_dict(base: type[Any], /, data: dict[Any, Any]) -> bool:
     # noinspection PyTypeHints
     @match_typing
     def inner(obj: Any) -> None:
-        None
+        return None
 
     try:
         if callable(base):
@@ -149,7 +150,7 @@ def IsUUid() -> Callable[[str], bool]:
     return is_uuid
 
 
-def Len(*, lower: int, upper: Optional[int] = None) -> Callable[[Sized], bool]:
+def Len(*, lower: int, upper: int | None = None) -> Callable[[Sized], bool]:
     """
     Validates if a value's length is within a specified range.
 

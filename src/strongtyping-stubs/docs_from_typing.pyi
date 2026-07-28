@@ -1,10 +1,11 @@
 import inspect
+from collections.abc import Callable
+from typing import Any
+
 from _typeshed import Incomplete
-from strongtyping.strong_typing_utils import (
-    get_origins as get_origins,
-    get_possible_types as get_possible_types,
-)
-from typing import Any, Callable
+
+from strongtyping.strong_typing_utils import get_origins as get_origins
+from strongtyping.strong_typing_utils import get_possible_types as get_possible_types
 
 Pattern: Incomplete
 

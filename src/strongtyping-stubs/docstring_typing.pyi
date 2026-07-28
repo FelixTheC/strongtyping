@@ -1,10 +1,12 @@
 import typing
-from _typeshed import Incomplete
-from strongtyping._utils import action as action, remove_subclass as remove_subclass
-from strongtyping.cached_set import CachedSet as CachedSet
-from strongtyping.config import SEVERITY_LEVEL as SEVERITY_LEVEL
-from strongtyping.exceptions import TypeMismatch as TypeMismatch
 from typing import Any
+
+from _typeshed import Incomplete
+
+from strongtyping._utils import action as action
+from strongtyping._utils import remove_subclass as remove_subclass
+from strongtyping.cached_set import CachedSet as CachedSet
+from strongtyping.exceptions import TypeMismatch as TypeMismatch
 
 TYPE_EXTRACTION_PATTERN: str
 PATTERN_1: str
@@ -42,7 +44,7 @@ def match_docstring(
     cache_size: int = 0,
     subclass: bool = False,
     severity: str = "env",
-    **kwargs_: Any,
+    **kwargs: Any,
 ) -> Any: ...
 def match_class_docstring(
     _cls: type[Any] | None = None,

@@ -1,7 +1,7 @@
 import inspect
 import types
 import typing
-from collections import deque
+from collections import defaultdict, deque
 from collections.abc import Callable, Iterable
 from functools import lru_cache, partial
 from queue import Queue
@@ -97,9 +97,9 @@ def checking_typing_dict(arg: Any, possible_types: Any, *args: Any, **kwargs: An
         return isinstance(arg, dict)
     else:
         try:
-            result_key = all(check_type(a, key) for a in arg.keys())
+            result_key = all(check_type(a, key) for a in arg)
         except AttributeError:
-            result_key = all(isinstance(k, key) for k in arg.keys())
+            result_key = all(isinstance(k, key) for k in arg)
         try:
             result_val = all(check_type(a, val) for a in arg.values())
         except AttributeError:
@@ -166,7 +166,7 @@ def checking_typing_tuple(arg: Any, possible_types: Any, *args: Any, **kwargs: A
         if not arg:
             return True
         return checking_ellipsis(arg, possible_types, **kwargs)
-    if not isinstance(arg, tuple) or not (len(arg) == len(possible_types)):
+    if not isinstance(arg, tuple) or len(arg) != len(possible_types):
         return False
     return all(check_type(argument, typ, **kwargs) for argument, typ in zip(arg, possible_types))
 
@@ -216,7 +216,7 @@ def checking_typing_validator(
         if isinstance(validation, partial):
             validation = validation.func
         validation_function_file = inspect.getfile(validation)
-        validation_body, validation_line = inspect.getsourcelines(validation)
+        _, validation_line = inspect.getsourcelines(validation)
         raise ValidationError(
             f"Argument: `{arg}` did not pass the validation defined here "
             f'\n\tFile: "{validation_function_file}", line {validation_line}'
@@ -383,7 +383,7 @@ def check_type(argument: Any, type_of: Any, mro: bool = False, **kwargs: Any) ->
             return checking_typing_union(
                 argument, get_possible_types(type_of, origin_name), mro, **kwargs
             )
-        elif origin in (list, typing.MutableSequence, typing.Deque, deque):
+        elif origin in (list, typing.MutableSequence, deque, deque):
             return checking_typing_list(
                 argument, get_possible_types(type_of, origin_name), mro, **kwargs
             )
@@ -402,8 +402,8 @@ def check_type(argument: Any, type_of: Any, mro: bool = False, **kwargs: Any) ->
         elif origin in (
             dict,
             typing.MutableMapping,
-            typing.Dict,
-            typing.DefaultDict,
+            dict,
+            defaultdict,
             typing.OrderedDict,
             typing.Counter,
             typing.ChainMap,

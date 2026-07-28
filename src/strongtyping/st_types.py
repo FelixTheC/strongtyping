@@ -2,7 +2,7 @@ import inspect
 import json
 import weakref
 from functools import partial
-from typing import Any, Type, _GenericAlias, _SpecialForm, _type_repr  # type: ignore
+from typing import Any, _GenericAlias, _SpecialForm, _type_repr  # type: ignore
 
 
 class _Validator(_GenericAlias, _root=True):  # type: ignore
@@ -87,7 +87,7 @@ class FrozenType:
         self.required_type = required_type
         self.stored_value = stored_value
 
-    def __get__(self, instance: object = None, owner: Type[Any] | None = None) -> Any:
+    def __get__(self, instance: object = None, owner: type[Any] | None = None) -> Any:
         return self.weakref.get(instance, (None, self.stored_value))[1]
 
     def __set__(self, instance: object = None, value: Any = None) -> None:

@@ -1,9 +1,11 @@
-from _typeshed import Incomplete
 from collections.abc import Callable
 from queue import Queue
+from typing import Any, TypeVar
+
+from _typeshed import Incomplete
+
 from strongtyping._utils import ORIGINAL_DUCK_TYPES as ORIGINAL_DUCK_TYPES
 from strongtyping.exceptions import ValidationError as ValidationError
-from typing import Any, TypeVar
 
 empty: Incomplete
 default_return_queue: Queue[Any]
@@ -50,5 +52,5 @@ def check_typevar(arg: Any, possible_types: Any, *args: Any, **kwargs: Any) -> b
 
 supported_typings: Incomplete
 
-def check_annotated_type(argument: Any, type_of: Any) -> bool | object: ...
+def check_annotated_type(argument: Any, type_of: Any) -> bool: ...
 def check_type(argument: Any, type_of: Any, mro: bool = False, **kwargs: Any) -> Any: ...

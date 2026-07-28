@@ -97,6 +97,9 @@ func_e([5, ('a', 'b'), '10'], [1, '2', 3, datetime.date])
 # >>> will raise a TypeMismatch Exception
 ```
 
+For coroutine functions, use the dedicated [`@a_match_typing`](async_match_typing.md) decorator. It keeps the
+function awaitable and performs the same runtime argument validation.
+
 ## Requirements
 
 <b>Python 3.13</b>
@@ -116,6 +119,10 @@ func_e([5, ('a', 'b'), '10'], [1, '2', 3, datetime.date])
 * `@setter`
 * `@getter_setter`
 
+#### from strongtyping.astrong_typing import
+
+* `@a_match_typing` (for `async def` functions)
+
 #### from strongtyping.type_namedtuple import
 
 * `@typed_namedtuple`
@@ -131,4 +138,3 @@ func_e([5, ('a', 'b'), '10'], [1, '2', 3, datetime.date])
 * `@class_docs_from_typing`
 * `@rest_docs_from_typing`
 * `@numpy_docs_from_typing`
-
