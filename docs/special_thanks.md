@@ -7,3 +7,10 @@
 
 ## PythonBytes Episode #242
 - Thanks to Michael Kennedy and Brian Okken for mention my package on there show [PythonBytes Episode #242](https://pythonbytes.fm/episodes/show/242/from-lib-import-but-less)
+
+## Contributors
+- [amitshahar](https://github.com/amitshahar)
+- [Fernando González](https://github.com/fergo2910)
+- [Idrees Mustafa Aziz](https://github.com/idreesaziz)
+- [JakobDev](https://github.com/JakobDev)
+- [Peter F](https://github.com/awsom-solutions)

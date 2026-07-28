@@ -6,8 +6,8 @@
 [![PyPI version](https://badge.fury.io/py/strongtyping.svg)](https://badge.fury.io/py/strongtyping)
 ![Python application](https://github.com/FelixTheC/strongtyping/actions/workflows/python-app.yml/badge.svg)
 ![image](https://codecov.io/gh/FelixTheC/strongtyping/graph/badge.svg)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336)](https://pycqa.github.io/isort/)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
 [![Documentation Status](https://readthedocs.org/projects/strongtyping/badge/?version=latest)](https://strongtyping.readthedocs.io/en/latest/?badge=latest)
 [![](https://img.shields.io/pypi/dm/strongtyping.svg)](https://pypi.org/project/strongtyping/)
 [![AI Agents](https://img.shields.io/badge/AI_Agents-SKILL.md-blue?logo=robotframework&logoColor=white)](SKILL.md)
@@ -25,6 +25,32 @@ And <b><em>raises</em> TypeMisMatch</b> if the used parameters in a function cal
 
 - Since __3.13.6__ `mypyc` is used to compile the core logic code.
 - This results in a significant performance boost from around __5x faster__, especially for large containers.
+
+## Async functions
+
+Use the dedicated `a_match_typing` decorator for `async def` functions. It preserves the coroutine interface while
+validating annotated arguments before the function runs.
+
+```python
+from strongtyping.astrong_typing import a_match_typing
+import asyncio
+
+
+@a_match_typing
+async def add(left: int, right: int) -> int:
+    return left + right
+
+
+async def main() -> None:
+    result = await add(1, 2)  # 3
+    await add(1, "2")  # raises TypeMismatch
+
+
+asyncio.run(main())
+```
+
+See the [async type checking documentation](https://strongtyping.readthedocs.io/en/latest/async_match_typing/)
+for configuration options and further examples.
 
 ### 🤖 AI Agent Ready
 

@@ -4,11 +4,18 @@ import pprint
 import traceback
 import typing
 import warnings
+from collections.abc import Callable
 from functools import wraps
-from string import Template
-from typing import Any, Callable, NotRequired, Required, Type, get_args, get_origin
+from typing import Any, NotRequired, Required, get_args, get_origin
 
-from strongtyping._utils import _severity_level, action, remove_subclass
+from strongtyping._utils import (
+    CACHE_IGNORE_CLASS_FUNCTIONS,
+    _error_info_msg,
+    _severity_level,
+    action,
+    get_safe_cache_key,
+    remove_subclass,
+)
 from strongtyping.cached_set import CachedSet
 from strongtyping.config import SEVERITY_LEVEL
 from strongtyping.exceptions import TypeMismatch, UndefinedKey
@@ -19,20 +26,13 @@ from strongtyping.strong_typing_utils import (
     get_origins,
 )
 
-# CACHE_IGNORE_CLASS_FUNCTIONS = ("__init__", "__str__", "__repr__")
-CACHE_IGNORE_CLASS_FUNCTIONS = ("__init__",)
-
-_error_info_msg = Template(
-    "TypeMismatch: failed at $source\nExpected type: $expected_type\nActual value: $actual_value (type: $actual_type)"
-)
-
 
 def _raise_error_or_warning(
     msg: str,
     failed_params: tuple[str, ...],
     annotated_values: Any,
     annotations: Any,
-    excep_raise: Type[Exception] = TypeMismatch,
+    excep_raise: type[Exception] = TypeMismatch,
     severity_level: int = SEVERITY_LEVEL.ENABLED.value,
 ) -> None:
     if excep_raise is not None and severity_level == SEVERITY_LEVEL.ENABLED.value:
@@ -44,7 +44,7 @@ def _raise_error_or_warning(
 def match_typing(
     _func: Callable[..., Any] | None = None,
     *,
-    excep_raise: Type[Exception] = TypeMismatch,
+    excep_raise: type[Exception] = TypeMismatch,
     subclass: bool = False,
     severity: str = "env",
     **kwargs: Any,
@@ -66,14 +66,16 @@ def match_typing(
         def inner(*args: Any, **kwargs: Any) -> Any:
             if arg_names and severity_level > SEVERITY_LEVEL.DISABLED.value:
                 args = remove_subclass(args, subclass)
-                if cached_set is not None and func.__name__ not in CACHE_IGNORE_CLASS_FUNCTIONS:
-                    # check if func with args and kwargs was checked once before with positive result
-                    arg_vals = args.__str__() if args else None
-                    kwarg_vals = kwargs.__str__() if args else None
-                    cached_key = (func, arg_vals, kwarg_vals)
+                arg_vals, kwarg_vals = get_safe_cache_key(args, kwargs)
+                cached_key = (func, arg_vals, kwarg_vals)
 
-                    if cached_key in cached_set:
-                        return func(*args, **kwargs)
+                if (
+                    cached_set is not None
+                    and func.__name__ not in CACHE_IGNORE_CLASS_FUNCTIONS
+                    and cached_key in cached_set
+                ):
+                    # check if func with args and kwargs was checked once before with positive result
+                    return func(*args, **kwargs)
 
                 # Thanks to Ruud van der Ham who find a better and more stable solution for check_args
                 failed_params = tuple(
@@ -117,7 +119,7 @@ def match_typing(
 
                     for kwarg_name, kwarg in kwargs.items():
                         annotated_values[kwarg_name] = kwarg
-                    root = list(traceback.extract_stack(None, 2))[0]
+                    root = next(iter(traceback.extract_stack(None, 2)))
 
                     source = f"{root.filename}:{root.lineno} in {root.name}"
                     msg_list = "\n".join(
@@ -188,7 +190,7 @@ def add_required_methods_to_class(cls: Any, inst: Any) -> None:
 
 class MatchTypedDict:
     def __new__(
-        cls: Type[Any], instance: Type[Any] | None = None, *args: Any, **kwargs: Any
+        cls: type[Any], instance: type[Any] | None = None, *args: Any, **kwargs: Any
     ) -> Any:
         _cls: Any = cls
         _cls.cls = instance
@@ -197,8 +199,8 @@ class MatchTypedDict:
         add_required_methods_to_class(_cls, instance)
         return super().__new__(_cls)
 
-    def __init__(self, cls: Type[Any] | None = None, *args: Any, **kwargs: Any) -> None:
-        self.excep_raise: Type[Exception] = kwargs.pop("excep_raise", TypeMismatch)
+    def __init__(self, cls: type[Any] | None = None, *args: Any, **kwargs: Any) -> None:
+        self.excep_raise: type[Exception] = kwargs.pop("excep_raise", TypeMismatch)
         self.cache_size: int = kwargs.pop("cache_size", 1)
         self.severity: str = kwargs.pop("severity", "env")
         self.cls: Any = cls
@@ -273,7 +275,7 @@ class MatchTypedDict:
         return cls
 
 
-def match_class_typing(cls: Type[Any] | None = None, **kwargs: Any) -> Any:
+def match_class_typing(cls: type[Any] | None = None, **kwargs: Any) -> Any:
     excep_raise = kwargs.pop("excep_raise", TypeMismatch)
     cache_size = kwargs.pop("cache_size", 1)
     severity = kwargs.pop("severity", "env")
@@ -282,7 +284,7 @@ def match_class_typing(cls: Type[Any] | None = None, **kwargs: Any) -> Any:
     def __has_annotations__(obj: Any) -> bool:
         return hasattr(obj, "__annotations__")
 
-    def __find_methods(_cls: Type[Any]) -> list[str]:
+    def __find_methods(_cls: type[Any]) -> list[str]:
         return [
             func
             for func in dir(_cls)
@@ -294,7 +296,7 @@ def match_class_typing(cls: Type[Any] | None = None, **kwargs: Any) -> Any:
             > 1  # if it is a function without parameter there is no need to wrap it
         ]
 
-    def __add_decorator(_cls: Type[Any]) -> None:
+    def __add_decorator(_cls: type[Any]) -> None:
         severity_level = _severity_level(severity)
         if severity_level > SEVERITY_LEVEL.DISABLED.value:
             for method in __find_methods(_cls):
@@ -316,7 +318,7 @@ def match_class_typing(cls: Type[Any] | None = None, **kwargs: Any) -> Any:
                 except TypeError:
                     pass
 
-    def wrapper(some_cls: Type[Any]) -> Any:
+    def wrapper(some_cls: type[Any]) -> Any:
         def inner(*args: Any, **cls_kwargs: Any) -> Any:
             __add_decorator(some_cls)
             if throw_on_undefined:
@@ -364,7 +366,7 @@ class FinalClass:
     cls: Any = None
 
     def __new__(
-        cls: Type[Any], instance: Type[Any] | None = None, *args: Any, **kwargs: Any
+        cls: type[Any], instance: type[Any] | None = None, *args: Any, **kwargs: Any
     ) -> Any:
         if args:
             raise RuntimeError(
@@ -375,7 +377,7 @@ class FinalClass:
         _cls.__doc__ = getattr(instance, "__doc__", None)
         return super().__new__(_cls)
 
-    def __init__(self, cls: Type[Any] | None = None, *args: Any, **kwargs: Any) -> None:
+    def __init__(self, cls: type[Any] | None = None, *args: Any, **kwargs: Any) -> None:
         self.cls: Any = cls
         self.__doc__ = getattr(cls, "__doc__", None)
 

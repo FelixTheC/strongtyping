@@ -2,8 +2,13 @@ from _typeshed import Incomplete
 
 
 class TypeMismatch(AttributeError):
-    def __init__(self, message, failed_params: Incomplete | None = ..., param_values: Incomplete | None = ...,
-                 annotations: Incomplete | None = ...) -> None: ...
+    def __init__(
+        self,
+        message,
+        failed_params: Incomplete | None = ...,
+        param_values: Incomplete | None = ...,
+        annotations: Incomplete | None = ...,
+    ) -> None: ...
 
 
 class ValidationError(Exception):

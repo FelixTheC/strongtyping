@@ -97,8 +97,8 @@ A type-safe version of `collections.namedtuple`.
 ```python
 from strongtyping.type_namedtuple import typed_namedtuple
 
-User = typed_namedtuple('User', 'name:str, age:int')
-u = User(name='Alice', age='30')  # Raises TypeError
+User = typed_namedtuple("User", "name:str, age:int")
+u = User(name="Alice", age="30")  # Raises TypeError
 ```
 
 ### 6. Property Decorators

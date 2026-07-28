@@ -1,10 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-@created: 11.06.20
-@author: felix
-"""
-
 import builtins
 import functools
 import inspect
@@ -48,7 +41,7 @@ def param_attr(attr: str) -> Any:
         return getattr(builtins, attr)
 
 
-def get_container_types(ttype_of: str) -> typing.Optional[tuple[Any, ...]]:
+def get_container_types(ttype_of: str) -> tuple[Any, ...] | None:
     pattern = r"([\(\[]\w+)" if "or" not in ttype_of else OR_PATTERN
     pattern = pattern if ", " not in ttype_of else COMMA_PATTERN
     sub_pattern = re.findall(pattern, ttype_of)
@@ -89,7 +82,7 @@ def is_list(arg: Any, type_of: str) -> bool:
 def is_dict(arg: Any, type_of: str) -> bool:
     container_types = get_container_types(type_of)
     sub_types = (
-        all(isinstance(k, container_types[0]) for k in arg.keys())
+        all(isinstance(k, container_types[0]) for k in arg)
         and all(isinstance(v, container_types[1]) for v in arg.values())
         if container_types
         else True
@@ -109,7 +102,7 @@ def is_function_or_method_type(arg: Any, type_of: str) -> bool:
 options = {"tuple": is_tuple, "list": is_list, "set": is_set, "dict": is_dict}
 
 
-def check_doc_str_type(arg: Any, type_of: typing.Optional[str]) -> Any:
+def check_doc_str_type(arg: Any, type_of: str | None) -> Any:
     check_result = True
     if type_of is not None:
         try:
@@ -140,7 +133,7 @@ def extract_docstring_param_types(func: typing.Callable[..., Any]) -> dict[str, 
     """
     doc = inspect.getdoc(func)
     if doc is None:
-        return {k: k for k in inspect.signature(func).parameters.keys()}
+        return {k: k for k in inspect.signature(func).parameters}
 
     param: list[list[str]] = [
         separate_param_type(string)[0].split()
@@ -154,13 +147,13 @@ def extract_docstring_param_types(func: typing.Callable[..., Any]) -> dict[str, 
     _docstring_types = {ds[0]: ds[1] for ds in docstring}
     # there is mismatch when user will mix type and param to bring them in the right order
     # we will look at the signature and recreate the previous dict to the final one
-    return {k: _docstring_types.get(k, k) for k in inspect.signature(func).parameters.keys()}
+    return {k: _docstring_types.get(k, k) for k in inspect.signature(func).parameters}
 
 
 def match_docstring(
-    _func: typing.Optional[typing.Callable[..., Any]] = None,
+    _func: typing.Callable[..., Any] | None = None,
     *,
-    excep_raise: typing.Optional[typing.Type[Exception]] = TypeMismatch,
+    excep_raise: type[Exception] | None = TypeMismatch,
     cache_size: int = 0,
     subclass: bool = False,
     severity: str = "env",
@@ -222,14 +215,14 @@ def match_docstring(
 
 
 def match_class_docstring(
-    _cls: typing.Optional[typing.Type[Any]] = None,
+    _cls: type[Any] | None = None,
     *,
-    excep_raise: typing.Type[Exception] = TypeError,
+    excep_raise: type[Exception] = TypeError,
     cache_size: int = 0,
     severity: str = "env",
     **kwargs: Any,
 ) -> Any:
-    def wrapper(cls: typing.Type[Any]) -> Any:
+    def wrapper(cls: type[Any]) -> Any:
         severity_level = _severity_level(severity)
 
         def inner(*args: Any, **kwargs: Any) -> Any:
