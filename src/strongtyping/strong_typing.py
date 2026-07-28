@@ -11,9 +11,9 @@ from typing import Any, NotRequired, Required, get_args, get_origin
 from strongtyping._utils import (
     CACHE_IGNORE_CLASS_FUNCTIONS,
     _error_info_msg,
-    _severity_level,
     action,
     get_safe_cache_key,
+    get_severity_level,
     remove_subclass,
 )
 from strongtyping.cached_set import CachedSet

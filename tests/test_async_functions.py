@@ -3,7 +3,6 @@ from time import perf_counter
 
 import pytest
 
-from strongtyping._utils import get_safe_cache_key
 from strongtyping.astrong_typing import a_match_typing
 from strongtyping.config import SEVERITY_LEVEL
 from strongtyping.exceptions import TypeMismatch

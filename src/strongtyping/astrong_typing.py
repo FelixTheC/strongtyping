@@ -10,8 +10,8 @@ from typing import Any
 from strongtyping._utils import (
     CACHE_IGNORE_CLASS_FUNCTIONS,
     _error_info_msg,
-    _severity_level,
     get_safe_cache_key,
+    get_severity_level,
     remove_subclass,
 )
 from strongtyping.cached_set import CachedSet
@@ -54,7 +54,7 @@ def a_match_typing(
     def wrapper(func: Callable[..., Any]) -> Any:
         arg_names = [name for name in inspect.signature(func).parameters]
         annotations = func.__annotations__
-        severity_level = _severity_level(severity)
+        severity_level = get_severity_level(severity)
 
         @wraps(func)
         async def inner(*args: Any, **kwargs: Any) -> Any:
