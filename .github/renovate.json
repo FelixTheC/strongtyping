@@ -1,0 +1,66 @@
+{
+  "extends": ["config:base"],
+  "timezone": "UTC",
+  "schedule": ["at 16:00 on sunday"],
+  "prConcurrentLimit": 5,
+  "dependencyDashboard": true,
+  "packageRules": [
+    {
+      "matchDirectories": ["/python/helpers"],
+      "groupName": "python/helpers",
+      "prConcurrentLimit": 5,
+      "stabilityDays": 7
+    },
+    {
+      "matchDirectories": ["/python/helpers"],
+      "matchUpdateTypes": ["major"],
+      "stabilityDays": 30
+    },
+    {
+      "matchDirectories": ["/python/helpers"],
+      "matchUpdateTypes": ["minor"],
+      "stabilityDays": 14
+    },
+    {
+      "matchDirectories": ["/python/helpers"],
+      "matchUpdateTypes": ["patch"],
+      "stabilityDays": 3
+    },
+    {
+      "matchPackageNames": ["hashin", "cython", "flake8"],
+      "groupName": "common",
+      "matchDirectories": ["/python/helpers", "/uv/helpers"]
+    },
+    {
+      "matchPackageNames": ["pip"],
+      "groupName": "pip",
+      "matchDirectories": ["/python/helpers", "/uv/helpers"]
+    },
+    {
+      "matchPackageNames": ["pip-tools"],
+      "groupName": "pip-tools",
+      "matchDirectories": ["/python/helpers", "/uv/helpers"]
+    },
+    {
+      "matchPackagePatterns": ["pipfile", "pipenv"],
+      "groupName": "pipenv",
+      "matchDirectories": ["/python/helpers", "/uv/helpers"]
+    },
+    {
+      "matchPackageNames": ["poetry"],
+      "groupName": "poetry",
+      "matchDirectories": ["/python/helpers", "/uv/helpers"]
+    },
+    {
+      "matchDirectories": ["/uv/helpers"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
+    },
+    {
+      "matchDirectories": ["/uv/helpers"],
+      "groupName": "uv-ecosystem",
+      "prConcurrentLimit": 5,
+      "stabilityDays": 7
+    }
+  ]
+}
