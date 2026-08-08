@@ -3,7 +3,7 @@ name: Python tox
 on:
   push:
     branches:
-      - 'py_3_13'
+      - 'py_3_14'
 
 jobs:
   build:
