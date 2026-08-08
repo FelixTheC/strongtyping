@@ -97,8 +97,8 @@ func_e([5, ('a', 'b'), '10'], [1, '2', 3, datetime.date])
 # >>> will raise a TypeMismatch Exception
 ```
 
-For coroutine functions, use the dedicated [`@a_match_typing`](async_match_typing.md) decorator. It keeps the
-function awaitable and performs the same runtime argument validation.
+For coroutine functions, use the dedicated [`@a_match_typing`](async_match_typing.md) decorator. It keeps the function
+awaitable and performs the same runtime argument validation.
 
 ## Requirements
 
@@ -138,3 +138,7 @@ function awaitable and performs the same runtime argument validation.
 * `@class_docs_from_typing`
 * `@rest_docs_from_typing`
 * `@numpy_docs_from_typing`
+
+## Support me
+
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-Donate-ffdd00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://www.buymeacoffee.com/FEisenmenger)
