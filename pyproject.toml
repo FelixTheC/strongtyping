@@ -9,9 +9,9 @@ readme = "README.md"
 requires-python = ">=3.13"
 
 dependencies = [
-    "ujson>=5.12.0",
-    "librt>=0.10.0",
-    "typing-extensions>=4.4.0",
+    "ujson==6.0.0",
+    "librt==0.16.0",
+    "typing-extensions==4.16.0",
 ]
 classifiers = [
     "License :: OSI Approved :: MIT License",
