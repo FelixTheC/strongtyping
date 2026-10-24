@@ -6,12 +6,12 @@ from enum import Enum, IntEnum
 from types import FunctionType, MethodType
 from typing import (Annotated, Any, Callable, Dict, Generator, Iterable,
                     Iterator, List, NewType, Optional, Set, Tuple, Type,
-                    TypeGuard, TypeVar, Union)
+                    TypeGuard, TypeIs, TypeVar, Union)
 from unittest import mock
 
 import pytest
 import ujson as ujson
-from strongtyping.config import SEVERITY_LEVEL
+from strongtyping.config import SeverityLevel
 from strongtyping.exceptions import TypeMismatch
 from strongtyping.strong_typing import match_class_typing, match_typing
 from strongtyping.strong_typing_utils import (check_type, checking_typing_dict,
@@ -889,7 +889,7 @@ def test_with_severity_param():
     with pytest.raises(TypeMismatch):
         a("2")
 
-    @match_typing(severity=SEVERITY_LEVEL.WARNING)
+    @match_typing(severity=SeverityLevel.WARNING)
     def a(value: int):
         return value * 2
 
@@ -898,14 +898,14 @@ def test_with_severity_param():
         a("2")
         assert str(record[0].message)
 
-    @match_typing(severity=SEVERITY_LEVEL.DISABLED)
+    @match_typing(severity=SeverityLevel.DISABLED)
     def a(value: int):
         return value * 2
 
     assert a(2) == 4
     assert a("2") == "22"
 
-    @match_class_typing(severity=SEVERITY_LEVEL.WARNING)
+    @match_class_typing(severity=SeverityLevel.WARNING)
     class Dummy:
         attr = 100
 
@@ -922,7 +922,7 @@ def test_with_severity_param():
         d.a("2")
         assert str(record[0].message)
 
-    @match_class_typing(severity=SEVERITY_LEVEL.DISABLED)
+    @match_class_typing(severity=SeverityLevel.DISABLED)
     class Other:
         attr = 100
 
@@ -936,7 +936,7 @@ def test_with_severity_param():
     assert dd.a(2) == 6
     assert dd.a("2") == "222"
 
-    @match_class_typing(severity=SEVERITY_LEVEL.DISABLED)
+    @match_class_typing(severity=SeverityLevel.DISABLED)
     class OtherDummy:
         attr = 100
 
@@ -1381,6 +1381,74 @@ def test_type_guard_fails():
 
     with pytest.raises(TypeMismatch):
         assert func_e([1, "2", 3, "4"], [5, ("a", "b"), "10"]) == "4-3"
+
+
+def test_type_guard_with_container_type():
+    """`TypeGuard[List[str]]` must recurse into the container instead of crashing."""
+
+    @match_typing
+    def stringify(values: List[object]) -> TypeGuard[List[str]]:
+        return [str(value) for value in values]
+
+    assert stringify([1, 2, 3]) == ["1", "2", "3"]
+
+
+def test_type_guard_with_container_type_fails():
+    @match_typing
+    def bad_stringify(values: List[object]) -> TypeGuard[List[str]]:
+        # intentionally returns a non matching structure
+        return [1, 2, 3]
+
+    with pytest.raises(TypeMismatch):
+        bad_stringify([1, 2, 3])
+
+
+def test_type_is_success():
+    """`TypeIs` (PEP 742) is validated the same way as `TypeGuard` (PEP 647)."""
+
+    @match_typing
+    def func_e(a, b) -> TypeIs[str]:
+        return f"{len(a)}-{len(b)}"
+
+    assert func_e([1, "2", 3, "4"], [5, ("a", "b"), "10"]) == "4-3"
+
+
+def test_type_is_fails():
+    @match_typing
+    def func_e(a, b) -> TypeIs[int]:
+        return f"{len(a)}-{len(b)}"
+
+    with pytest.raises(TypeMismatch):
+        func_e([1, "2", 3, "4"], [5, ("a", "b"), "10"])
+
+
+def test_type_is_with_container_type():
+    @match_typing
+    def stringify(values: List[object]) -> TypeIs[List[str]]:
+        return [str(value) for value in values]
+
+    assert stringify([1, 2, 3]) == ["1", "2", "3"]
+
+
+def test_type_is_with_container_type_fails():
+    @match_typing
+    def bad_stringify(values: List[object]) -> TypeIs[List[str]]:
+        return [1, 2, 3]
+
+    with pytest.raises(TypeMismatch):
+        bad_stringify([1, 2, 3])
+
+
+def test_type_guard_and_type_is_are_recognized_by_get_origins():
+    assert get_origins(TypeGuard[str])[1] == "TypeGuard"
+    assert get_origins(TypeIs[str])[1] == "TypeIs"
+
+
+def test_check_type_directly_with_type_guard_and_type_is():
+    assert check_type("value", TypeGuard[str]) is True
+    assert check_type(1, TypeGuard[str]) is False
+    assert check_type("value", TypeIs[str]) is True
+    assert check_type(1, TypeIs[str]) is False
 
 
 if __name__ == "__main__":

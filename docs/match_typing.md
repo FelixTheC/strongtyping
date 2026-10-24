@@ -183,6 +183,66 @@ Incorrect return value: `'16'`
 """
 ```
 
+### TypeGuard / TypeIs (PEP 647 / PEP 742)
+
+`strongtyping` recognizes functions whose return annotation is `TypeGuard[...]` (PEP 647) or
+`TypeIs[...]` (PEP 742). For those functions, `match_typing` automatically validates the return
+value, exactly as if `validate_return=True` had been passed - you don't need to set it yourself.
+
+Note that this is **not** the static-typing behaviour described by the PEPs (where the function is
+expected to return a plain `bool` used by a type checker to narrow the argument's type). Instead,
+`strongtyping` reuses the `TypeGuard`/`TypeIs` annotation as a convenient shorthand to say:
+"the value this function returns must match the type between the brackets".
+
+```python
+from typing import List, TypeGuard
+
+from strongtyping.strong_typing import match_typing
+
+
+@match_typing
+def stringify(values: List[object]) -> TypeGuard[List[str]]:
+    return [str(value) for value in values]
+
+
+stringify([1, 2, 3])  # -> ["1", "2", "3"], the return value is checked against List[str]
+```
+
+`TypeIs` behaves identically:
+
+```python
+from typing import List, TypeIs
+
+from strongtyping.strong_typing import match_typing
+
+
+@match_typing
+def stringify(values: List[object]) -> TypeIs[List[str]]:
+    return [str(value) for value in values]
+
+
+stringify([1, 2, 3])  # -> ["1", "2", "3"]
+```
+
+If the actual return value does not match the inner type, a `TypeMismatch` is raised, just like any
+other return-value validation:
+
+```python
+@match_typing
+def broken_guard(values: List[object]) -> TypeGuard[List[str]]:
+    return values  # not converted to str, so this fails
+
+
+broken_guard([1, 2, 3])
+"""
+strongtyping.exceptions.TypeMismatch: Incorrect return value: `[1, 2, 3]`
+"""
+```
+
+Both `TypeGuard` and `TypeIs` work with `match_typing` (sync) and `a_match_typing` (async), and
+support nested/container types (e.g. `TypeGuard[Dict[str, int]]`) the same way any other type hint
+does.
+
 ### Supported types
 
 The current version of `strongtyping` supports:
@@ -209,7 +269,8 @@ The current version of `strongtyping` supports:
     - NewType
     - Annotated
     - Python 3.12+ Generics syntax (`def func[T](...)`)
-    - TypeGuard
+    - TypeGuard (PEP 647)
+    - TypeIs (PEP 742)
 - from types:
     - FunctionType
     - MethodType

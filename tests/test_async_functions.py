@@ -1,10 +1,10 @@
 import inspect
 from time import perf_counter
+from typing import List, TypeGuard, TypeIs
 
 import pytest
-
 from strongtyping.astrong_typing import a_match_typing
-from strongtyping.config import SEVERITY_LEVEL
+from strongtyping.config import SeverityLevel
 from strongtyping.exceptions import TypeMismatch
 from strongtyping.strong_typing import match_typing
 
@@ -137,7 +137,7 @@ async def test_async_function_can_warn_instead_of_raise() -> None:
 
 @pytest.mark.asyncio
 async def test_async_function_can_disable_validation() -> None:
-    @a_match_typing(severity=SEVERITY_LEVEL.DISABLED, cache_size=0)
+    @a_match_typing(severity=SeverityLevel.DISABLED, cache_size=0)
     async def function(value: int) -> str:
         return str(value)
 
@@ -188,3 +188,41 @@ async def test_async_function_cache_does_not_accept_different_argument_types() -
 
     with pytest.raises(TypeMismatch):
         await function("2")  # type: ignore[arg-type]
+
+
+@pytest.mark.asyncio
+async def test_async_function_with_type_guard_return() -> None:
+    @a_match_typing(cache_size=0)
+    async def stringify(values: List[object]) -> TypeGuard[List[str]]:
+        return [str(value) for value in values]
+
+    assert await stringify([1, 2, 3]) == ["1", "2", "3"]
+
+
+@pytest.mark.asyncio
+async def test_async_function_with_type_guard_return_fails() -> None:
+    @a_match_typing(cache_size=0)
+    async def bad_stringify(values: List[object]) -> TypeGuard[List[str]]:
+        return [1, 2, 3]
+
+    with pytest.raises(TypeMismatch):
+        await bad_stringify([1, 2, 3])
+
+
+@pytest.mark.asyncio
+async def test_async_function_with_type_is_return() -> None:
+    @a_match_typing(cache_size=0)
+    async def stringify(values: List[object]) -> TypeIs[List[str]]:
+        return [str(value) for value in values]
+
+    assert await stringify([1, 2, 3]) == ["1", "2", "3"]
+
+
+@pytest.mark.asyncio
+async def test_async_function_with_type_is_return_fails() -> None:
+    @a_match_typing(cache_size=0)
+    async def bad_stringify(values: List[object]) -> TypeIs[List[str]]:
+        return [1, 2, 3]
+
+    with pytest.raises(TypeMismatch):
+        await bad_stringify([1, 2, 3])

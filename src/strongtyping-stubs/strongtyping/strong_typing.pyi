@@ -1,32 +1,14 @@
-from _ctypes import sizeof as sizeof
-from collections.abc import Callable
+from _typeshed import Incomplete
+from collections.abc import Callable as Callable
+from strongtyping import proj_config as proj_config
+from strongtyping.cached_set import CachedSet as CachedSet
+from strongtyping.config import SeverityLevel as SeverityLevel
+from strongtyping.exceptions import TypeMismatch as TypeMismatch, UndefinedKey as UndefinedKey
+from strongtyping.strong_typing_utils import check_type as check_type, checking_typing_typedict_values as checking_typing_typedict_values, default_return_queue as default_return_queue, get_origins as get_origins
+from strongtyping.utils import CACHE_IGNORE_CLASS_FUNCTIONS as CACHE_IGNORE_CLASS_FUNCTIONS, action as action, get_safe_cache_key as get_safe_cache_key, get_severity_level as get_severity_level, remove_subclass as remove_subclass
 from typing import Any
 
-from _typeshed import Incomplete
-
-from strongtyping._utils import CACHE_IGNORE_CLASS_FUNCTIONS as CACHE_IGNORE_CLASS_FUNCTIONS
-from strongtyping._utils import action as action
-from strongtyping._utils import get_safe_cache_key as get_safe_cache_key
-from strongtyping._utils import remove_subclass as remove_subclass
-from strongtyping.cached_set import CachedSet as CachedSet
-from strongtyping.config import SEVERITY_LEVEL as SEVERITY_LEVEL
-from strongtyping.exceptions import TypeMismatch as TypeMismatch
-from strongtyping.exceptions import UndefinedKey as UndefinedKey
-from strongtyping.strong_typing_utils import check_type as check_type
-from strongtyping.strong_typing_utils import (
-    checking_typing_typedict_values as checking_typing_typedict_values,
-)
-from strongtyping.strong_typing_utils import default_return_queue as default_return_queue
-from strongtyping.strong_typing_utils import get_origins as get_origins
-
-def match_typing(
-    _func: Callable[..., Any] | None = None,
-    *,
-    excep_raise: type[Exception] = ...,
-    subclass: bool = False,
-    severity: str = "env",
-    **kwargs: Any,
-) -> Any: ...
+def match_typing(_func: Callable[..., Any] | None = None, *, excep_raise: type[Exception] = ..., subclass: bool = False, severity: str = 'env', **kwargs: Any) -> Any: ...
 def add_required_methods_to_class(cls, inst: Any) -> None: ...
 
 class MatchTypedDict:

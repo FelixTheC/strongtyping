@@ -90,3 +90,8 @@ archs = ["x86_64", "arm64"]
 
 [tool.cibuildwheel.windows]
 archs = ["AMD64"]
+
+[tool.strongtyping]
+severity = "warning"
+ignore_modules = ["tests", "migrations"]
+custom_exception = "myapp.exceptions.ValidationError"

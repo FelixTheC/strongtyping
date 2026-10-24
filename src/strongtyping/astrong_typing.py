@@ -7,20 +7,20 @@ from collections.abc import Callable
 from functools import wraps
 from typing import Any
 
-from strongtyping._utils import (
-    CACHE_IGNORE_CLASS_FUNCTIONS,
-    _error_info_msg,
-    get_safe_cache_key,
-    get_severity_level,
-    remove_subclass,
-)
 from strongtyping.cached_set import CachedSet
-from strongtyping.config import SEVERITY_LEVEL
+from strongtyping.config import SeverityLevel
 from strongtyping.exceptions import TypeMismatch
 from strongtyping.strong_typing_utils import (
     check_type,
     default_return_queue,
     get_origins,
+)
+from strongtyping.utils import (
+    CACHE_IGNORE_CLASS_FUNCTIONS,
+    _error_info_msg,
+    get_safe_cache_key,
+    get_severity_level,
+    remove_subclass,
 )
 
 
@@ -30,9 +30,9 @@ async def _raise_error_or_warning(
     annotated_values: Any,
     annotations: Any,
     excep_raise: type[Exception] = TypeMismatch,
-    severity_level: int = SEVERITY_LEVEL.ENABLED.value,
+    severity_level: int = SeverityLevel.ENABLED.value,
 ) -> None:
-    if excep_raise is not None and severity_level == SEVERITY_LEVEL.ENABLED.value:
+    if excep_raise is not None and severity_level == SeverityLevel.ENABLED.value:
         raise excep_raise(msg, failed_params, annotated_values, annotations) from None
     else:
         warnings.warn(msg, RuntimeWarning)
@@ -58,7 +58,7 @@ def a_match_typing(
 
         @wraps(func)
         async def inner(*args: Any, **kwargs: Any) -> Any:
-            if arg_names and severity_level > SEVERITY_LEVEL.DISABLED.value:
+            if arg_names and severity_level > SeverityLevel.DISABLED.value:
                 args = remove_subclass(args, subclass)
                 arg_vals, kwarg_vals = get_safe_cache_key(args, kwargs)
                 cached_key = (func, arg_vals, kwarg_vals)
@@ -110,7 +110,9 @@ def a_match_typing(
                     return default_return_queue.queue.pop()
 
                 if failed_params or failed_unpacking:
-                    annotated_values = {arg_name: arg for arg, arg_name in zip(args, arg_names)}
+                    annotated_values = {
+                        arg_name: arg for arg, arg_name in zip(args, arg_names)
+                    }
 
                     for kwarg_name, kwarg in kwargs.items():
                         annotated_values[kwarg_name] = kwarg
@@ -142,14 +144,22 @@ def a_match_typing(
                         severity_level,
                     )
 
-                if cached_set is not None and func.__name__ not in CACHE_IGNORE_CLASS_FUNCTIONS:
+                if (
+                    cached_set is not None
+                    and func.__name__ not in CACHE_IGNORE_CLASS_FUNCTIONS
+                ):
                     cached_set.add(cached_key)
 
             if annotations.get("return"):
                 return_type = annotations.get("return")
-                if validate_return or get_origins(return_type)[1] == "TypeGuard":
+                if validate_return or get_origins(return_type)[1] in (
+                    "TypeGuard",
+                    "TypeIs",
+                ):
                     return_val = await func(*args, **kwargs)
-                    if not await asyncio.to_thread(check_type, return_val, return_type, mro=False):
+                    if not await asyncio.to_thread(
+                        check_type, return_val, return_type, mro=False
+                    ):
                         await _raise_error_or_warning(
                             f"Incorrect return value: `{pprint.pformat(return_val, width=20, depth=2)}`",
                             ("return",),

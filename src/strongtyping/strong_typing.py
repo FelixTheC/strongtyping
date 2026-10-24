@@ -8,22 +8,23 @@ from collections.abc import Callable
 from functools import wraps
 from typing import Any, NotRequired, Required, get_args, get_origin
 
-from strongtyping._utils import (
-    CACHE_IGNORE_CLASS_FUNCTIONS,
-    _error_info_msg,
-    action,
-    get_safe_cache_key,
-    get_severity_level,
-    remove_subclass,
-)
+from strongtyping import proj_config
 from strongtyping.cached_set import CachedSet
-from strongtyping.config import SEVERITY_LEVEL
+from strongtyping.config import SeverityLevel
 from strongtyping.exceptions import TypeMismatch, UndefinedKey
 from strongtyping.strong_typing_utils import (
     check_type,
     checking_typing_typedict_values,
     default_return_queue,
     get_origins,
+)
+from strongtyping.utils import (
+    CACHE_IGNORE_CLASS_FUNCTIONS,
+    _error_info_msg,
+    action,
+    get_safe_cache_key,
+    get_severity_level,
+    remove_subclass,
 )
 
 
@@ -33,9 +34,9 @@ def _raise_error_or_warning(
     annotated_values: Any,
     annotations: Any,
     excep_raise: type[Exception] = TypeMismatch,
-    severity_level: int = SEVERITY_LEVEL.ENABLED.value,
+    severity_level: int = SeverityLevel.ENABLED.value,
 ) -> None:
-    if excep_raise is not None and severity_level == SEVERITY_LEVEL.ENABLED.value:
+    if excep_raise is not None and severity_level == SeverityLevel.ENABLED.value:
         raise excep_raise(msg, failed_params, annotated_values, annotations) from None
     else:
         warnings.warn(msg, RuntimeWarning)
@@ -54,17 +55,18 @@ def match_typing(
     check_duck_typing = kwargs.get("allow_duck_typing", False)
     validate_return = kwargs.get("validate_return", False)
 
-    def wrapper(func: Callable[..., Any]) -> Any:
-        # needed in py 3.10
-        # globals().update(func.__globals__)
+    if custom_exception := proj_config.custom_exception:
+        excep_raise = custom_exception
 
+    def wrapper(func: Callable[..., Any]) -> Any:
         arg_names = [name for name in inspect.signature(func).parameters]
         annotations = func.__annotations__
-        severity_level = get_severity_level(severity)
+        severity_level = proj_config.severity or get_severity_level(severity)
 
         @wraps(func)
         def inner(*args: Any, **kwargs: Any) -> Any:
-            if arg_names and severity_level > SEVERITY_LEVEL.DISABLED.value:
+
+            if arg_names and severity_level > SeverityLevel.DISABLED.value:
                 args = remove_subclass(args, subclass)
                 arg_vals, kwarg_vals = get_safe_cache_key(args, kwargs)
                 cached_key = (func, arg_vals, kwarg_vals)
@@ -152,7 +154,10 @@ def match_typing(
 
             if annotations.get("return"):
                 return_type = annotations.get("return")
-                if validate_return or get_origins(return_type)[1] == "TypeGuard":
+                if validate_return or get_origins(return_type)[1] in (
+                    "TypeGuard",
+                    "TypeIs",
+                ):
                     return_val = func(*args, **kwargs)
                     res = check_type(return_val, return_type, mro=False)
                     if not res:
@@ -298,7 +303,7 @@ def match_class_typing(cls: type[Any] | None = None, **kwargs: Any) -> Any:
 
     def __add_decorator(_cls: type[Any]) -> None:
         severity_level = get_severity_level(severity)
-        if severity_level > SEVERITY_LEVEL.DISABLED.value:
+        if severity_level > SeverityLevel.DISABLED.value:
             for method in __find_methods(_cls):
                 try:
                     func = getattr(_cls, method)

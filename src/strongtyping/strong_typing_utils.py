@@ -7,8 +7,8 @@ from functools import lru_cache, partial
 from queue import Queue
 from typing import Any, TypeVar
 
-from strongtyping._utils import ORIGINAL_DUCK_TYPES
 from strongtyping.exceptions import ValidationError
+from strongtyping.utils import ORIGINAL_DUCK_TYPES
 
 empty = object()
 default_return_queue: Queue[Any] = Queue()
@@ -450,8 +450,9 @@ def check_type(argument: Any, type_of: Any, mro: bool = False, **kwargs: Any) ->
             return check_type(argument, sub_type)
         elif origin_name == "annotated":
             return check_annotated_type(argument, type_of)
-        elif origin_name == "typeguard":
-            return check_type(argument, get_possible_types(type_of, origin_name), mro, **kwargs)
+        elif origin_name in ("typeguard", "typeis"):
+            possible_type = get_possible_types(type_of, origin_name)[0]
+            return check_type(argument, possible_type, mro, **kwargs)
         elif mro:
             if origin_name == "union":
                 possible_types = get_possible_types(type_of)

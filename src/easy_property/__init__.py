@@ -1,5 +1,5 @@
 from functools import partial
-from typing import Any
+from typing import Any, Callable
 
 from strongtyping.strong_typing import match_typing
 

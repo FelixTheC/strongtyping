@@ -7,14 +7,17 @@ import warnings
 from types import FunctionType, MethodType
 from typing import Any
 
-from strongtyping._utils import _get_new, action, get_severity_level, remove_subclass
+from strongtyping import proj_config
 from strongtyping.cached_set import CachedSet
-from strongtyping.config import SEVERITY_LEVEL
+from strongtyping.config import SeverityLevel
 from strongtyping.exceptions import TypeMismatch
+from strongtyping.utils import _get_new, action, get_severity_level, remove_subclass
 
 TYPE_EXTRACTION_PATTERN = r"(^[:a-zA-Z0-9 _-]+(:))"
 PATTERN_1 = r""
-EXTRACT_PARAM_NAME_PATTERN = r"(?::(param|parameter|arg|argument|key|keyword|type|vartype)\W)"
+EXTRACT_PARAM_NAME_PATTERN = (
+    r"(?::(param|parameter|arg|argument|key|keyword|type|vartype)\W)"
+)
 TUPLE_PATTERN = r"\(([^)]+)\)"
 PATTERN = r"[\(\)\[\[]"
 OR_PATTERN = r"([\(\[]\w+)\W+(or)\W+(\w+)"
@@ -50,7 +53,9 @@ def get_container_types(ttype_of: str) -> tuple[Any, ...] | None:
     sub_pattern = sub_pattern if ", " not in ttype_of else sub_pattern[0]
     try:
         container_types = tuple(
-            param_attr(re.sub(REMOVE_PATTERN, "", t).strip()) for t in sub_pattern if t != "or"
+            param_attr(re.sub(REMOVE_PATTERN, "", t).strip())
+            for t in sub_pattern
+            if t != "or"
         )
     except TypeError:
         container_types = None
@@ -67,7 +72,8 @@ def get_or_types(ttype: str) -> list[str]:
 def is_tuple(arg: Any, type_of: str) -> bool:
     container_types = get_container_types(type_of)
     sub_types = (
-        all(isinstance(a, container_types) for a in arg) and len(arg) == len(container_types)
+        all(isinstance(a, container_types) for a in arg)
+        and len(arg) == len(container_types)
         if container_types
         else True
     )
@@ -76,7 +82,9 @@ def is_tuple(arg: Any, type_of: str) -> bool:
 
 def is_list(arg: Any, type_of: str) -> bool:
     container_types = get_container_types(type_of)
-    sub_types = all(isinstance(a, container_types) for a in arg) if container_types else True
+    sub_types = (
+        all(isinstance(a, container_types) for a in arg) if container_types else True
+    )
     return isinstance(arg, list) and sub_types
 
 
@@ -142,7 +150,9 @@ def extract_docstring_param_types(func: typing.Callable[..., Any]) -> dict[str, 
         if is_param_info(string)
     ]
     docstring: list[tuple[str, str]] = [
-        separate_param_type(string) for string in doc.split("\n") if is_type_info(string)
+        separate_param_type(string)
+        for string in doc.split("\n")
+        if is_type_info(string)
     ]
     docstring += [tuple(reversed(p)) for p in param if len(p) > 1]  # type: ignore
     _docstring_types = {ds[0]: ds[1] for ds in docstring}
@@ -165,15 +175,12 @@ def match_docstring(
     def wrapper(func: typing.Callable[..., Any]) -> Any:
         docstring_types = extract_docstring_param_types(func)
 
-        severity_level_: SEVERITY_LEVEL | int = get_severity_level(severity)
-        if isinstance(severity_level_, SEVERITY_LEVEL):
-            severity_level = severity_level_.value
-        else:
-            severity_level = severity_level_
+        severity_level = proj_config.severity or get_severity_level(severity)
+        print(f"{severity_level = }")
 
         @functools.wraps(func)
         def inner(*args: Any, **kwargs: Any) -> Any:
-            if severity_level > 0:
+            if severity_level > SeverityLevel.DISABLED.value:
                 args = remove_subclass(args, subclass)
 
                 if cached_set is not None:
@@ -199,7 +206,10 @@ def match_docstring(
                 )
                 if failed_params:
                     msg = f"Incorrect parameters: {', '.join(f'{name}: {docstring_types[name]}' for name in failed_params)}"
-                    if excep_raise is not None and severity_level == 1:
+                    if (
+                        excep_raise is not None
+                        and severity_level == SeverityLevel.ENABLED.value
+                    ):
                         raise excep_raise(msg)
                     else:
                         warnings.warn(msg, RuntimeWarning)
@@ -228,15 +238,14 @@ def match_class_docstring(
     **kwargs: Any,
 ) -> Any:
     def wrapper(cls: type[Any]) -> Any:
-        severity_level_: SEVERITY_LEVEL | int = get_severity_level(severity)
-        if isinstance(severity_level_, SEVERITY_LEVEL):
-            severity_level = severity_level_.value
-        else:
-            severity_level = severity_level_
+        severity_level = proj_config.severity or get_severity_level(severity)
+        print(f"{severity_level = }")
 
         def inner(*args: Any, **kwargs: Any) -> Any:
-            if severity_level > 0:
-                cls.__new__ = _get_new(match_docstring, excep_raise, cache_size, severity, **kwargs)
+            if severity_level > SeverityLevel.DISABLED.value:
+                cls.__new__ = _get_new(
+                    match_docstring, excep_raise, cache_size, severity, **kwargs
+                )
                 if hasattr(cls.__init__, "__annotations__"):
                     cls.__init__ = match_docstring(cls.__init__)
             return cls(*args, **kwargs)
