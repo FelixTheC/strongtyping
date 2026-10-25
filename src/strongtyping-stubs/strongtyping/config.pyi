@@ -1,11 +1,11 @@
-from enum import Enum
+from enum import IntEnum
 
-class SEVERITY_LEVEL(Enum):
+class SeverityLevel(IntEnum):
     DISABLED = 0
     ENABLED = 1
     WARNING = 2
     @property
     def value_as_str(self) -> str: ...
 
-def set_severity_level(_level: SEVERITY_LEVEL) -> None: ...
+def set_severity_level(_level: SeverityLevel) -> None: ...
 def set_dry_run(val: bool, /) -> None: ...

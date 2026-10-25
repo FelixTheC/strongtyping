@@ -1,12 +1,13 @@
 import logging
 import os
-from _ctypes import sizeof
 from collections.abc import Callable, Mapping, Sequence
 from string import Template
 from types import MethodType
 from typing import Any, ParamSpec, TypeVar
 
-from strongtyping.config import SEVERITY_LEVEL
+from _ctypes import sizeof
+
+from strongtyping.config import SeverityLevel
 
 T = TypeVar("T")
 P = ParamSpec("P")
@@ -56,22 +57,22 @@ def remove_subclass(args: Any, subclass: bool) -> Any:
 
 
 SEVERITY_CONFIG = {
-    "warning": SEVERITY_LEVEL.WARNING,
-    "disable": SEVERITY_LEVEL.DISABLED,
-    "enable": SEVERITY_LEVEL.ENABLED,
+    "warning": SeverityLevel.WARNING,
+    "disable": SeverityLevel.DISABLED,
+    "enable": SeverityLevel.ENABLED,
 }
 
 
-def get_severity_level(severity_: str | SEVERITY_LEVEL) -> int:
+def get_severity_level(severity_: str | SeverityLevel) -> int:
     if severity_ == "env":
         _level = os.environ.get("ST_SEVERITY", "1")
         try:
             return int(_level)
         except (TypeError, ValueError):
-            level = SEVERITY_CONFIG.get(_level, SEVERITY_LEVEL.ENABLED)
+            level = SEVERITY_CONFIG.get(_level, SeverityLevel.ENABLED)
             return level.value
     else:
-        return int(severity_.value) if isinstance(severity_, SEVERITY_LEVEL) else int(severity_)
+        return int(severity_.value) if isinstance(severity_, SeverityLevel) else int(severity_)
 
 
 exclude_builtins = dir(object)

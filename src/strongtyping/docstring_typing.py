@@ -7,10 +7,11 @@ import warnings
 from types import FunctionType, MethodType
 from typing import Any
 
-from strongtyping._utils import _get_new, action, get_severity_level, remove_subclass
+from strongtyping import proj_config
 from strongtyping.cached_set import CachedSet
-from strongtyping.config import SEVERITY_LEVEL
+from strongtyping.config import SeverityLevel
 from strongtyping.exceptions import TypeMismatch
+from strongtyping.utils import _get_new, action, get_severity_level, remove_subclass
 
 TYPE_EXTRACTION_PATTERN = r"(^[:a-zA-Z0-9 _-]+(:))"
 PATTERN_1 = r""
@@ -165,15 +166,12 @@ def match_docstring(
     def wrapper(func: typing.Callable[..., Any]) -> Any:
         docstring_types = extract_docstring_param_types(func)
 
-        severity_level_: SEVERITY_LEVEL | int = get_severity_level(severity)
-        if isinstance(severity_level_, SEVERITY_LEVEL):
-            severity_level = severity_level_.value
-        else:
-            severity_level = severity_level_
+        severity_level = proj_config.severity or get_severity_level(severity)
+        print(f"{severity_level = }")
 
         @functools.wraps(func)
         def inner(*args: Any, **kwargs: Any) -> Any:
-            if severity_level > 0:
+            if severity_level > SeverityLevel.DISABLED.value:
                 args = remove_subclass(args, subclass)
 
                 if cached_set is not None:
@@ -199,7 +197,7 @@ def match_docstring(
                 )
                 if failed_params:
                     msg = f"Incorrect parameters: {', '.join(f'{name}: {docstring_types[name]}' for name in failed_params)}"
-                    if excep_raise is not None and severity_level == 1:
+                    if excep_raise is not None and severity_level == SeverityLevel.ENABLED.value:
                         raise excep_raise(msg)
                     else:
                         warnings.warn(msg, RuntimeWarning)
@@ -228,14 +226,11 @@ def match_class_docstring(
     **kwargs: Any,
 ) -> Any:
     def wrapper(cls: type[Any]) -> Any:
-        severity_level_: SEVERITY_LEVEL | int = get_severity_level(severity)
-        if isinstance(severity_level_, SEVERITY_LEVEL):
-            severity_level = severity_level_.value
-        else:
-            severity_level = severity_level_
+        severity_level = proj_config.severity or get_severity_level(severity)
+        print(f"{severity_level = }")
 
         def inner(*args: Any, **kwargs: Any) -> Any:
-            if severity_level > 0:
+            if severity_level > SeverityLevel.DISABLED.value:
                 cls.__new__ = _get_new(match_docstring, excep_raise, cache_size, severity, **kwargs)
                 if hasattr(cls.__init__, "__annotations__"):
                     cls.__init__ = match_docstring(cls.__init__)

@@ -3,11 +3,7 @@
 
 name: Strongtyping Module integration
 
-on:
-  push:
-    branches:
-      - 'py_3_13'
-      - 'py_3_14'
+on: push
 
 jobs:
   setup:

@@ -1,7 +1,6 @@
 import pytest
-from strongtyping.config import SEVERITY_LEVEL
-from strongtyping.docstring_typing import (match_class_docstring,
-                                           match_docstring)
+from strongtyping.config import SeverityLevel
+from strongtyping.docstring_typing import match_class_docstring, match_docstring
 from strongtyping.exceptions import TypeMismatch
 
 
@@ -456,7 +455,7 @@ def test_with_severity_param():
     with pytest.raises(TypeMismatch):
         a("2")
 
-    @match_docstring(severity=SEVERITY_LEVEL.WARNING)
+    @match_docstring(severity=SeverityLevel.WARNING)
     def a(value):
         """
         :param value: foo
@@ -469,7 +468,7 @@ def test_with_severity_param():
         a("2")
         assert str(record[0].message) == "Incorrect parameters: value: int"
 
-    @match_docstring(severity=SEVERITY_LEVEL.DISABLED)
+    @match_docstring(severity=SeverityLevel.DISABLED)
     def a(value):
         """
         :param value: foo
