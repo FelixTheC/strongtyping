@@ -35,37 +35,37 @@ jobs:
           )
           python3 -c "$PYTHON_CODE" >> "$GITHUB_OUTPUT"
 
-  update_version:
-    needs: setup
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    outputs:
-      new-sha: ${{ steps.get-sha.outputs.sha }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.release.target_commitish }}
-          fetch-depth: 0
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v5
-
-      - name: Set Release version
-        run: uv version ${{ github.event.release.tag_name }}
-
-      - name: Commit and push changes
-        id: get-sha
-        run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git add pyproject.toml
-          git commit -m "chore: bump version to ${{ github.event.release.tag_name }}"
-          git push
-          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+  #  update_version:
+  #    needs: setup
+  #    runs-on: ubuntu-latest
+  #    permissions:
+  #      contents: write
+  #    outputs:
+  #      new-sha: ${{ steps.get-sha.outputs.sha }}
+  #    steps:
+  #      - uses: actions/checkout@v4
+  #        with:
+  #          ref: ${{ github.event.release.target_commitish }}
+  #          fetch-depth: 0
+  #
+  #      - name: Install uv
+  #        uses: astral-sh/setup-uv@v5
+  #
+  #      - name: Set Release version
+  #        run: uv version ${{ github.event.release.tag_name }}
+  #
+  #      - name: Commit and push changes
+  #        id: get-sha
+  #        run: |
+  #          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+  #          git config --local user.name "github-actions[bot]"
+  #          git add pyproject.toml
+  #          git commit -m "chore: bump version to ${{ github.event.release.tag_name }}"
+  #          git push
+  #          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
   build_sdist:
-    needs: [ setup, update_version ]
+    needs: [ setup ]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -90,7 +90,7 @@ jobs:
           path: dist/*.tar.gz
 
   build_wheels:
-    needs: [ setup, update_version ]
+    needs: [ setup ]
     name: Build wheels on ${{ matrix.os }} for Python ${{ needs.setup.outputs.python-version }}
     runs-on: ${{ matrix.os }}
     strategy:
