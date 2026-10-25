@@ -5,12 +5,10 @@ name: Strongtyping Module integration
 
 on:
   push:
-    branches-ignore:
+    branches:
       - 'py_3_10'
       - 'py_3_11'
       - 'py_3_12'
-      - 'py_3_13'
-      - 'py_3_14'
 
 jobs:
   build:
