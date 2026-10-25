@@ -6,4 +6,11 @@ from typing import Any
 use_match_typing: dict[bool, Any]
 
 @match_typing
-def typed_namedtuple(typename: str, field_names: list[str] | str | list[tuple[str, object]], *, rename: bool = False, defaults: list[Any] | tuple[Any, ...] | None = None, module: str | None = None) -> type: ...
+def typed_namedtuple(
+    typename: str,
+    field_names: list[str] | str | list[tuple[str, object]],
+    *,
+    rename: bool = False,
+    defaults: list[Any] | tuple[Any, ...] | None = None,
+    module: str | None = None,
+) -> type: ...

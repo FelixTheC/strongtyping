@@ -110,9 +110,7 @@ def a_match_typing(
                     return default_return_queue.queue.pop()
 
                 if failed_params or failed_unpacking:
-                    annotated_values = {
-                        arg_name: arg for arg, arg_name in zip(args, arg_names)
-                    }
+                    annotated_values = {arg_name: arg for arg, arg_name in zip(args, arg_names)}
 
                     for kwarg_name, kwarg in kwargs.items():
                         annotated_values[kwarg_name] = kwarg
@@ -144,10 +142,7 @@ def a_match_typing(
                         severity_level,
                     )
 
-                if (
-                    cached_set is not None
-                    and func.__name__ not in CACHE_IGNORE_CLASS_FUNCTIONS
-                ):
+                if cached_set is not None and func.__name__ not in CACHE_IGNORE_CLASS_FUNCTIONS:
                     cached_set.add(cached_key)
 
             if annotations.get("return"):
@@ -157,9 +152,7 @@ def a_match_typing(
                     "TypeIs",
                 ):
                     return_val = await func(*args, **kwargs)
-                    if not await asyncio.to_thread(
-                        check_type, return_val, return_type, mro=False
-                    ):
+                    if not await asyncio.to_thread(check_type, return_val, return_type, mro=False):
                         await _raise_error_or_warning(
                             f"Incorrect return value: `{pprint.pformat(return_val, width=20, depth=2)}`",
                             ("return",),

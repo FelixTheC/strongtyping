@@ -41,21 +41,15 @@ class Config:
         if not self.pyproject_toml:
             return None
 
-        custom_exception_module: str | None = self.pyproject_toml.get(
-            "custom_exception"
-        )
+        custom_exception_module: str | None = self.pyproject_toml.get("custom_exception")
         if custom_exception_module is None:
             return None
 
         import importlib
 
-        *exception_module_path, exception_module_class = custom_exception_module.split(
-            "."
-        )
+        *exception_module_path, exception_module_class = custom_exception_module.split(".")
 
-        exception_module: ModuleType = importlib.import_module(
-            ".".join(exception_module_path)
-        )
+        exception_module: ModuleType = importlib.import_module(".".join(exception_module_path))
         return getattr(exception_module, exception_module_class)
 
     @property

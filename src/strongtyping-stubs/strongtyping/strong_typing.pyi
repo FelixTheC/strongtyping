@@ -4,11 +4,29 @@ from strongtyping import proj_config as proj_config
 from strongtyping.cached_set import CachedSet as CachedSet
 from strongtyping.config import SeverityLevel as SeverityLevel
 from strongtyping.exceptions import TypeMismatch as TypeMismatch, UndefinedKey as UndefinedKey
-from strongtyping.strong_typing_utils import check_type as check_type, checking_typing_typedict_values as checking_typing_typedict_values, default_return_queue as default_return_queue, get_origins as get_origins
-from strongtyping.utils import CACHE_IGNORE_CLASS_FUNCTIONS as CACHE_IGNORE_CLASS_FUNCTIONS, action as action, get_safe_cache_key as get_safe_cache_key, get_severity_level as get_severity_level, remove_subclass as remove_subclass
+from strongtyping.strong_typing_utils import (
+    check_type as check_type,
+    checking_typing_typedict_values as checking_typing_typedict_values,
+    default_return_queue as default_return_queue,
+    get_origins as get_origins,
+)
+from strongtyping.utils import (
+    CACHE_IGNORE_CLASS_FUNCTIONS as CACHE_IGNORE_CLASS_FUNCTIONS,
+    action as action,
+    get_safe_cache_key as get_safe_cache_key,
+    get_severity_level as get_severity_level,
+    remove_subclass as remove_subclass,
+)
 from typing import Any
 
-def match_typing(_func: Callable[..., Any] | None = None, *, excep_raise: type[Exception] = ..., subclass: bool = False, severity: str = 'env', **kwargs: Any) -> Any: ...
+def match_typing(
+    _func: Callable[..., Any] | None = None,
+    *,
+    excep_raise: type[Exception] = ...,
+    subclass: bool = False,
+    severity: str = "env",
+    **kwargs: Any,
+) -> Any: ...
 def add_required_methods_to_class(cls, inst: Any) -> None: ...
 
 class MatchTypedDict:
