@@ -102,4 +102,3 @@ def test_pyproject_includes_skills():
     assert (
         "skills/**/*" in strongtyping_data
     ), "skills/**/* should be included in [tool.setuptools.package-data].strongtyping"
-ols.package-data].strongtyping"
