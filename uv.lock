@@ -552,6 +552,7 @@ version = "3.14.6"
 source = { editable = "." }
 dependencies = [
     { name = "librt" },
+    { name = "pytest" },
     { name = "typing-extensions" },
     { name = "ujson" },
 ]
@@ -573,6 +574,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "librt", specifier = ">=0.16.0" },
+    { name = "pytest", specifier = ">=9.0.3" },
     { name = "typing-extensions", specifier = ">=4.16.0" },
     { name = "ujson", specifier = "==6.1.0" },
 ]

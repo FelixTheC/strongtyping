@@ -12,6 +12,7 @@ dependencies = [
     "ujson==6.1.0",
     "librt>=0.16.0",
     "typing-extensions>=4.16.0",
+    "pytest>=9.0.3",
 ]
 classifiers = [
     "License :: OSI Approved :: MIT License",

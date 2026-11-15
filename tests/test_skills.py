@@ -1,6 +1,11 @@
 from pathlib import Path
 
-import yaml
+import pytest
+
+try:
+    import yaml
+except ImportError:
+    yaml = None
 
 
 def get_skills_dir():
@@ -22,6 +27,7 @@ def test_skills_structure():
         assert skill_file.exists(), f"SKILL.md missing in {skill_folder.name}"
 
 
+@pytest.mark.skipif(yaml is None, reason="yaml module not available")
 def test_skill_content_validation():
     skills_dir = get_skills_dir()
     skill_folders = [f for f in skills_dir.iterdir() if f.is_dir()]
@@ -96,3 +102,4 @@ def test_pyproject_includes_skills():
     assert (
         "skills/**/*" in strongtyping_data
     ), "skills/**/* should be included in [tool.setuptools.package-data].strongtyping"
+ols.package-data].strongtyping"
